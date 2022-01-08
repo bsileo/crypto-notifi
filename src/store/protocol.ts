@@ -9,7 +9,6 @@ import { store } from ".";
 import Moralis from "@/config/moralis";
 import { Protocol } from "@/models/Protocol";
 
-
 @Module({
   dynamic: true,
   store: store,

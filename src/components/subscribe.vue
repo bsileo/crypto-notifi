@@ -6,25 +6,33 @@
       </div>
       <div class="row pt-2 pb-4">
         <va-card
-          class="flex md4 lg2 mr-2"
-          :color="primary"
-          :class="{ active: this.selectedProtocol == protocol.name }"
-          :dark="this.selectedProtocol == protocol.name"
-          :bordered="this.selectedProtocol == protocol.name"
-          :stripe="this.selectedProtocol == protocol.name"
-          stripe-color="primary"
-          v-bind:key="protocol.id"
-          v-for="protocol in protocols"
+          class="flex sm6 md4 lg3 mr-2"
+          :class="{ active: this.selectedProtocol == protocolInfo.name }"
+          :dark="this.selectedProtocol == protocolInfo.name"
+          :stripe="this.selectedProtocol == protocolInfo.name"
+          stripe-color="success"
+          v-bind:key="protocolInfo.id"
+          v-for="protocolInfo in protocols"
         >
-          <va-card-title>{{ protocol.name }}</va-card-title>
-          <va-image contain :src="protocol.iconURL">
+          <va-card-title>{{ protocolInfo.name }}</va-card-title>
+          <va-image contain :src="protocolInfo.iconURL">
             <template #error> Image not found! :( </template>
             <template #loader>
               <va-progress-circle indeterminate />
             </template>
           </va-image>
+          <div>
+            Token:
+            <a :href="protocolInfo.protocol.tokenContractURL()" target="_frame">
+              > {{ protocolInfo.protocol.get("tokenData").symbol }}</a
+            >
+          </div>
+          <div>Balance: {{ getWalletBalance(protocolInfo.protocol) }}</div>
+          <div>Level: {{ getProtocolLevel(protocolInfo.protocol) }}</div>
           <va-card-actions align="between">
-            <va-button @click="selectProtocol(protocol.name)">Select</va-button>
+            <va-button @click="selectProtocol(protocolInfo.name)"
+              >Select</va-button
+            >
           </va-card-actions>
         </va-card>
       </div>
@@ -164,14 +172,15 @@ import { defineComponent } from "vue";
 import { channelsModule, providerFor } from "../store/channels";
 import { userModule } from "@/store/user";
 import { Subscription, SubscriptionType, Chain } from "@/models/Subscription";
-import { Protocol } from "@/models/Protocol";
+import { Protocol, ProtocolLevel } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
 
-// import { toRef, watch } from "vue";
+import { inject } from "vue";
 
 import Moralis from "moralis";
 import { UserChannel } from "@/models/Channel";
 import { subscriptionsModule } from "@/store/subscription";
+import { UserModel } from "@/models/User";
 //import Moralis from "moralis/types";
 // let tx: Moralis.TransactionResult | null = null;
 let tx: Record<string, unknown> | null = null;
@@ -186,6 +195,7 @@ interface channelInfo {
 interface protocolInfo {
   name: string;
   iconURL: string;
+  protocol: Protocol;
 }
 
 interface subGeneralTypeInfo {
@@ -193,6 +203,17 @@ interface subGeneralTypeInfo {
   name: string;
 }
 let sgti: subGeneralTypeInfo[] = [];
+
+interface TokenBalance {
+  balance: number;
+  decimals: number;
+  logo: string;
+  name: string;
+  symbol: string;
+  thumbnail: string;
+  token_address: string;
+}
+const tokenBal: TokenBalance[] = [];
 
 let iconPath: string | undefined = undefined;
 let chain: Chain | undefined = { name: "Avalanche" };
@@ -227,7 +248,13 @@ export default defineComponent({
       valueOperators: ["=", ">", "<"],
       fromIcon: iconPath,
       toIcon: iconPath,
-      myTokens: [],
+      myTokens: tokenBal,
+    };
+  },
+  setup() {
+    const user: UserModel | undefined = inject("user");
+    return {
+      user,
     };
   },
   emits: ["saved"],
@@ -338,7 +365,9 @@ export default defineComponent({
       if (this.subType === "Smart Contract") {
         msg = `${msg} which triggers on transactions<br/>`;
       } else if (this.subType === "General") {
-        msg = `${msg} for Community alerts about <strong>${this.selectedSubGeneralTypeName || "[Select a Type above]"}</strong>`;
+        msg = `${msg} for Community alerts about <strong>${
+          this.selectedSubGeneralTypeName || "[Select a Type above]"
+        }</strong>`;
       } else if (this.subType === "My Wallet(s)") {
         msg = `${msg} for my wallet transactions`;
       }
@@ -471,9 +500,32 @@ export default defineComponent({
       );
       return tokenMetadata[0]?.thumbnail;
     },
+    getProtocolLevel(p: Protocol): ProtocolLevel {
+      const bal = this.getWalletBalance(p);
+      if (bal > p.get("tokenData").goldQuantity) {
+        return ProtocolLevel.Gold;
+      } else if (bal > p.get("tokenData").basicQuantity) {
+        return ProtocolLevel.Basic;
+      } else {
+        return ProtocolLevel.Free;
+      }
+    },
+    getWalletBalance(p: Protocol): number | string {
+      const token = this.myTokens.find(
+        (e) => e?.symbol == p.get("tokenData").symbol
+      );
+      if (token) {
+        return (token.balance / 10 ** token.decimals).toFixed(2);
+      }
+      return 0;
+    },
     async getMyTokens(): Promise<void> {
       // eslint-disable-next-line prettier/prettier
-      const options = { chain: 'avalanche', address: "0x1dddd5e5cD54175a8d63082217C6e7B6eFbee90c" };
+      console.log(userModule.user);
+      const options = {
+        chain: "avalanche",
+        address: this.user?.get("accounts")[0],
+      };
       const balances = await Moralis.Web3API.account.getTokenBalances(options);
       this.myTokens = balances;
     },

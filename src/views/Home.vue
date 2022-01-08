@@ -85,6 +85,7 @@ import Subscriptions from "@/components/subscriptions.vue";
 import Subscribe from "@/components/subscribe.vue";
 import Transactions from "@/components/transactions.vue";
 import Alerter from "@/components/alerter.vue";
+import { computed } from "vue";
 
 let tx: Moralis.TransactionResult | null = null;
 
@@ -97,6 +98,11 @@ export default defineComponent({
       subscribeTx: tx,
       showAlerter: false,
       showTransactions: false,
+    };
+  },
+  provide() {
+    return {
+      user: computed(() => userModule.user as UserModel),
     };
   },
   computed: {
@@ -113,7 +119,6 @@ export default defineComponent({
       this.$router.push({ name: "Login" });
     },
     async doSubscribe(tx: Moralis.TransactionResult | null) {
-      console.log(`Home do sub ${tx}`);
       if (tx) {
         this.subscribeTx = tx;
       }

@@ -53,7 +53,7 @@
     <slot>
       <Subscribe
         :subscription="selectedSubscription"
-        @addSubscription="showSubscribe = false"
+        @saved="showSubscribe = false"
       ></Subscribe>
     </slot>
   </va-modal>
@@ -89,6 +89,7 @@ export default defineComponent({
       showSubscribe: false,
     };
   },
+  emits: ["subscribe"],
   computed: {
     selectedSubscription(): Subscription | null {
       if (this.selected.length == 0) return null;
