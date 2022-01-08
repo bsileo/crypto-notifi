@@ -34,6 +34,7 @@ Moralis.Cloud.define("databaseSetup", async (request) => {
     goldQuantity: 1000,
   });
   p.set("chains", ["avalanche"]);
+  p.set("managers")
   p.save();
   // Axial
   query.equalTo("name", "Axial");

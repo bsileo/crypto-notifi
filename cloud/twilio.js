@@ -3,8 +3,8 @@
 function sendTwilioAlert(channel, content) {
   const logger = Moralis.Cloud.getLogger();
   logger.info(`Twilio send ${content} to ${channel}`);
-  const SID = "AC79bd999e06833449505044506b463878";
-  const auth = "6a51b5f49be9656e02d218650c110a7b";
+  const SID = getAPIKey("TWILIO_SID");
+  const auth = getAPIKey("TWILIO_AUTH");
   let buff = new Buffer(`${SID}:${auth}`);
   let authCode = buff.toString("base64");
   logger.info(`Twilio authCode ${authCode}`);

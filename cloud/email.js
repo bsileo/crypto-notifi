@@ -3,11 +3,7 @@
 function sendEmailAlert(channel, content) {
   const logger = Moralis.Cloud.getLogger();
   logger.info(`Email send ${content} to ${channel.get("providerData").email}`);
-  const SENDGRID_API_KEY =
-    "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";
-  //let buff = new Buffer(`${SID}:${auth}`);
-  //let authCode = buff.toString("base64");
-  //logger.info(`SendGrid authCode ${authCode}`);
+  const SENDGRID_API_KEY = getAPIKey("SENDGRID_API_KEY");
   const data = {
     personalizations: [
       {
