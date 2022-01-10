@@ -7,7 +7,7 @@ import {
 import { store } from ".";
 
 import Moralis from "@/config/moralis";
-import { Subscription, SubscriptionType, Chain } from "@/models/Subscription";
+import { Subscription, SubscriptionType } from "@/models/Subscription";
 
 @Module({
   dynamic: true,
@@ -18,7 +18,6 @@ import { Subscription, SubscriptionType, Chain } from "@/models/Subscription";
 export class SubscriptionsModule extends VuexModule {
   SUBSCRPTIONS: Array<Subscription> = [];
   SUBSCRIPTIONTYPES: Array<SubscriptionType> = [];
-  CHAINS: Array<Chain> = [{ name: "Avalanche" }];
 
   get mySubscriptions(): Array<Subscription> {
     return this.SUBSCRPTIONS;

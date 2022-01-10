@@ -1,4 +1,5 @@
 import Moralis from "moralis";
+import { Subscription } from "./Subscription";
 
 export interface ChannelModel {
   id: number | string;
@@ -33,6 +34,14 @@ export class UserChannel extends Moralis.Object {
 
   public setProviderData(providerData: Record<string | number, unknown>): void {
     this.set("providerData", providerData);
+  }
+
+  public async subscriptionCount(): Promise<number> {
+    const query = new Moralis.Query(Subscription);
+    query.equalTo("UserChannel", this.id);
+    const count = await query.count();
+    console.log(`Count subs for ${this.id}==${count}`);
+    return count;
   }
 }
 

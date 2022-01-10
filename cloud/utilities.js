@@ -6,6 +6,6 @@ async function getAPIKey(name) {
   query.equalTo("keyName", name);
   const res = await query.find();
   for (let i = 0; i < res.length; i++) {
-    return res[i];
+    return await res[i].get("keyValue");
   }
 }

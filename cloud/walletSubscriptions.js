@@ -23,7 +23,7 @@ async function processWalletSubscriptions(transaction) {
 
 function processAddressHit(subscription, transaction, content) {
   const logger = Moralis.Cloud.getLogger();
-  logger.info(`Hit on TX ${transaction.id}`);
+  logger.info(`Address Hit on TX ${transaction.id}`);
   let hit = true;
   if (subscription.get("value")) {
     logger.info(
@@ -31,11 +31,18 @@ function processAddressHit(subscription, transaction, content) {
         "valueOperator"
       )}' ${subscription.get("value")} )`
     );
-    if (subscription.get("valueOperator") == ">") {
-      hit =
-        hit &&
-        parseInt(transaction.get("value")) >
-          parseInt(subscription.get("value"));
+    const txVal = parseInt(transaction.get("value"));
+    const subVal = parseInt(subscription.get("value"));
+    switch (subscription.get("valueOperator")) {
+      case ">":
+        hit = hit && txVal > subVal;
+        break;
+      case "<":
+        hit = hit && txVal < subVal;
+        break;
+      case "=":
+        hit = hit && txVal == subVal;
+        break;
     }
   }
   if (hit) {

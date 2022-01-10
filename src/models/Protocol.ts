@@ -19,6 +19,7 @@ export class Protocol extends Moralis.Object {
   public iconURL!: string;
   public chains!: string[];
   public tokenData!: TokenData;
+  public managers!: string[];
 
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor
@@ -35,11 +36,20 @@ export class Protocol extends Moralis.Object {
   }
 
   tokenContractURL(): string {
-    if (this.get("tokenData").chain == "Avalanche") {
-      return `https://snowtrace.io/token/${
-        this.get("tokenData").contractAddress
-      }`;
-    } else throw "Chain not configured";
+    if (this.get("tokenData")) {
+      const chain = this.get("tokenData").chain;
+      if (chain == "Avalanche") {
+        return `https://snowtrace.io/token/${
+          this.get("tokenData").contractAddress
+        }`;
+      } else if (chain == "Ethereum") {
+        return `https://etherscan.io/address/${
+          this.get("tokenData").contractAddress
+        }`;
+      } else throw "Chain not configured in tokenContractURL()";
+    } else {
+      return "";
+    }
   }
 }
 

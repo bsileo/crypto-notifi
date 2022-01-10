@@ -1,6 +1,10 @@
-//import { userModule } from "./../store/user";
+import { Chain } from '@/models/Contract';
+import { AlertTypes } from "./Alert";
 import Moralis from "moralis";
 import { UserChannel } from "./Channel";
+import { Contract } from "./Contract";
+import { ContractActivity } from "./ContractActivity";
+import { Protocol } from "./Protocol";
 
 export class SubscriptionType extends Moralis.Object {
   public type = "";
@@ -13,21 +17,21 @@ export interface SubscriptionModel {
   protocol: string;
   provider?: string;
 }
-
-export interface Chain {
-  name: string;
-}
-
 export class Subscription extends Moralis.Object {
-  public protocol = "";
+  public protocol?: Protocol;
   public name = "";
   public subscriptionType = "";
   public userID: string | undefined = "";
   public channels: UserChannel[] = [];
-  public fromAddress: string | undefined;
-  public toAddress: string | undefined;
-  public value: number | undefined;
-  public valueOperator: string | undefined;
+  public fromAddress?: string;
+  public toAddress?: string;
+  public value?: number;
+  public valueOperator?: string;
+  public description?: string;
+  public contract?: Contract;
+  public contractChain?: Chain;
+  public contractAddress?: string;
+  public contractActivity?: ContractActivity;
 
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor
@@ -40,10 +44,10 @@ export class Subscription extends Moralis.Object {
     name: string,
     userID: string,
     userChannels: UserChannel[],
-    subType: string
+    subType: AlertTypes
   ): Subscription {
     const s = new Subscription();
-    s.set("protocol",protocol);
+    s.set("protocol", protocol);
     s.set("name", name);
     s.set("userID", userID);
     s.set("subscriptionType", subType);

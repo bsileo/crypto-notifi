@@ -1,6 +1,6 @@
 {
-  "name": "vue3-boiler-plate",
-  "version": "0.1.0",
+  "name": "crypto-notifi",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --host localhost",
@@ -13,8 +13,8 @@
     "core-js": "^3.6.5",
     "dotenv": "^10.0.0",
     "env-var": "^7.0.1",
-    "moralis": "^0.0.90",
-    "vue": "^3.0.0",
+    "moralis": "^0.0.183",
+    "vue": "^3.2.26",
     "vue-class-component": "^8.0.0-0",
     "vue-property-decorator": "^10.0.0-rc.3",
     "vue-router": "^4.0.0-0",
@@ -39,8 +39,7 @@
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^7.0.0",
     "prettier": "^2.2.1",
-    "typescript": "~4.1.5",
-    "vuex-class": "^0.3.2"
+    "typescript": "~4.1.5"
   },
   "eslintConfig": {
     "root": true,
@@ -64,6 +63,6 @@
     "last 2 versions",
     "not dead"
   ],
-  "_id": "vue3-boiler-plate@0.1.0",
+  "_id": "crypto-notifi@0.5.0",
   "readme": "ERROR: No README data found!"
 }

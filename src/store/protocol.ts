@@ -8,7 +8,7 @@ import { store } from ".";
 
 import Moralis from "@/config/moralis";
 import { Protocol } from "@/models/Protocol";
-
+import { userModule } from "./user";
 @Module({
   dynamic: true,
   store: store,
@@ -20,6 +20,13 @@ export class ProtocolsModule extends VuexModule {
 
   get allProtocols(): Array<Protocol> {
     return this.PROTOCOLS;
+  }
+
+  get myAdminProtocols(): Array<Protocol> {
+    const prots = this.PROTOCOLS.filter((p: Protocol) => {
+      return p.get("managers").includes(userModule.user.id);
+    });
+    return prots;
   }
 
   @Mutation

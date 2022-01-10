@@ -17,7 +17,7 @@
           class="flex float-end"
           @click.prevent="showAlerter = true"
         >
-          Send Alert
+          Manage
         </va-button>
       </div>
     </div>
@@ -34,14 +34,14 @@
         </va-card>
       </div>
     </div>
-    <div class="row p-3" style="max-height: 60%">
+    <div class="row p-3" style="max-height: 50%">
       <div class="flex md12 sm12">
         <va-collapse
           header="Transactions"
-          style="width=200px;"
+          color="primary"
           v-model="showTransactions"
         >
-          <va-card color="primary" gradient>
+          <va-card color="secondary" gradient>
             <Transactions
               :showTX="this.showTransactions"
               @subscribe="doSubscribe"
@@ -65,9 +65,6 @@
       </slot>
     </va-modal>
     <va-modal hide-default-actions size="large" v-model="showAlerter">
-      <template #header>
-        <h2>Send a new Alert</h2>
-      </template>
       <slot>
         <Alerter></Alerter>
       </slot>

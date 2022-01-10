@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-function sendEmailAlert(channel, content) {
+async function sendEmailAlert(channel, content) {
   const logger = Moralis.Cloud.getLogger();
   logger.info(`Email send ${content} to ${channel.get("providerData").email}`);
-  const SENDGRID_API_KEY = getAPIKey("SENDGRID_API_KEY");
+  const SENDGRID_API_KEY = await getAPIKey("SENDGRID_API_KEY");
   const data = {
     personalizations: [
       {
@@ -14,6 +14,7 @@ function sendEmailAlert(channel, content) {
     subject: "CryptoNotifi Alert",
     content: [{ type: "text/plain", value: content }],
   };
+  logger.info(`SendGrid Key-${SENDGRID_API_KEY}`);
   Moralis.Cloud.httpRequest({
     method: "POST",
     url: "https://api.sendgrid.com/v3/mail/send",
@@ -24,11 +25,13 @@ function sendEmailAlert(channel, content) {
     },
   }).then(
     function (httpResp) {
-      logger.info(`Email sent - response= (${httpResp.status})-${httpResp.text}`);
+      logger.info(
+        `Email sent - response= (${httpResp.status})-${httpResp.text}`
+      );
     },
     function (httpResp) {
       logger.error(
-        "Request failed with response code " +
+        "SendGrid Email Send Request failed with response code " +
           httpResp.status +
           "::" +
           httpResp.text

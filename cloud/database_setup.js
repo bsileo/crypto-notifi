@@ -10,52 +10,53 @@
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 Moralis.Cloud.define("databaseSetup", async (request) => {
-  // PROTOCOL
-  const protocol = Moralis.Object.extend("Protocol");
-  const query = new Moralis.Query(protocol);
-  query.equalTo("name", "Snowball");
-  let results = await query.find();
-  if (results.length > 0) {
-    p = results[0];
-  } else {
-    p = new protocol();
-  }
-  p.set("name", "Snowball");
-  p.set("website", "https://app.snowball.network/");
-  p.set(
-    "iconURL",
-    "https://app.snowball.network/_next/image?url=%2Fassets%2Fimages%2Flogo-dark-label.svg&w=640&q=75"
-  );
-  p.set("tokenData", {
-    symbol: "xSNOB",
-    contractAddress: "0x83952E7ab4aca74ca96217D6F8f7591BEaD6D64E",
-    chain: "Avalanche",
-    basicQuantity: 100,
-    goldQuantity: 1000,
-  });
-  p.set("chains", ["avalanche"]);
-  p.set("managers")
-  p.save();
-  // Axial
-  query.equalTo("name", "Axial");
-  results = await query.find();
-  if (results.length > 0) {
-    p = results[0];
-  } else {
-    p = new protocol();
-  }
-  p.set("name", "Axial");
-  p.set("website", "https://www.axial.exchange/");
-  p.set("iconURL", "https://app.axial.exchange/static/media/logo.6a08160b.svg");
-  p.set("chains", ["avalanche"]);
-  p.set("tokenData", {
-    symbol: "AXIAL",
-    contractAddress: "0xcF8419A615c57511807236751c0AF38Db4ba3351",
-    chain: "Avalanche",
-    basicQuantity: 2500,
-    goldQuantity: 10000,
-  });
-  p.save();
+  let res = {};
 
-  return true;
+  res.protocols = await setupProtocols();
+  res.contracts = await setupContracts();
+
+  // *******************************************
+  //
+  // Setup Default Contract Watchers
+  //
+  // *******************************************
+  // code example of creating a sync event from cloud code
+  let options = {
+    chainId: "0x1",
+    address: "0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f",
+    topic: "PairCreated(address, address, address, uint)",
+    abi: {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
+          name: "token0",
+          type: "address",
+        },
+        {
+          indexed: true,
+          internalType: "address",
+          name: "token1",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "address",
+          name: "pair",
+          type: "address",
+        },
+        { indexed: false, internalType: "uint256", name: "", type: "uint256" },
+      ],
+      name: "PairCreated",
+      type: "event",
+    },
+    tableName: "UniswapPairCreated",
+    sync_historical: false,
+  };
+
+  Moralis.Cloud.run("watchContractEvent", options, { useMasterKey: true });
+  res.watchers = true;
+
+  return res;
 });

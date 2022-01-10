@@ -1,5 +1,11 @@
 import Moralis from "moralis";
 
+export enum AlertTypes {
+  protocol = "Protocol Alerts",
+  wallet = "Smart Wallet Alerts",
+  contract = "Smart Contracts",
+}
+
 export interface AlertModel {
   id: number | string;
   type: string;

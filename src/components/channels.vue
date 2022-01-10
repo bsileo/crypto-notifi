@@ -67,6 +67,15 @@ import Email from "@/components/EmailAdd.vue";
 //const channels = namespace("channels");
 type ProviderData = Record<string, string | undefined>;
 
+interface UserChannelInfo {
+  provider: string | null;
+  providerID: string;
+  name: string;
+  subscriptions: number;
+  id: string;
+  userChannel: UserChannel
+}
+
 export default defineComponent({
   name: "Channels",
   components: { Twilio, Discord, Email },
@@ -90,15 +99,18 @@ export default defineComponent({
     channels(): ChannelModel[] {
       return channelsModule.channels;
     },
-    myChannels(): Record<string, string | number | null>[] {
+    myChannels(): UserChannelInfo[] {
       return channelsModule.myChannels.map((v) => {
-        return {
+        const uci: UserChannelInfo = {
           provider: providerFor(v.attributes.providerID),
           providerID: v.attributes.providerID,
           name: v.attributes.name,
-          subscriptions: "",
+          subscriptions: 0,
           id: v.id,
+          userChannel: v,
         };
+        this.updateSubscriptionCount(uci);
+        return uci;
       });
     },
     availableChannels(): ChannelModel[] {
@@ -124,6 +136,9 @@ export default defineComponent({
     },
   },
   methods: {
+    async updateSubscriptionCount(uc: UserChannelInfo) {
+      uc.subscriptions = await uc.userChannel.subscriptionCount();
+    },
     setProviderData(pd: ProviderData): void {
       console.log("Set PD");
       console.log(pd);

@@ -1,15 +1,24 @@
 <template>
   <div class="flex">
     <va-form type="form">
-      <div class="row pt-3 pb-1">
+      <div class="row pt-2">
+        <va-select
+          class="flex sm12"
+          label="Subscription Type"
+          v-model="subType"
+          :options="subTypes"
+          :rules="[(subType) => subType != null || 'Select a type']"
+        />
+      </div>
+      <div v-if="showProtocols" class="row pt-3 pb-1">
         <h2>Select a protocol:</h2>
       </div>
-      <div class="row pt-2 pb-4">
+      <div v-if="showProtocols" class="row pt-2 pb-4">
         <va-card
           class="flex sm6 md4 lg3 mr-2"
-          :class="{ active: this.selectedProtocol == protocolInfo.name }"
-          :dark="this.selectedProtocol == protocolInfo.name"
-          :stripe="this.selectedProtocol == protocolInfo.name"
+          :class="{ active: this.selectedProtocolName == protocolInfo.name }"
+          :dark="this.selectedProtocolName == protocolInfo.name"
+          :stripe="this.selectedProtocolName == protocolInfo.name"
           stripe-color="success"
           v-bind:key="protocolInfo.id"
           v-for="protocolInfo in protocols"
@@ -24,41 +33,26 @@
           <div>
             Token:
             <a :href="protocolInfo.protocol.tokenContractURL()" target="_frame">
-              > {{ protocolInfo.protocol.get("tokenData").symbol }}</a
+              {{ protocolInfo.protocol.get("tokenData")?.symbol }}</a
             >
           </div>
           <div>Balance: {{ getWalletBalance(protocolInfo.protocol) }}</div>
           <div>Level: {{ getProtocolLevel(protocolInfo.protocol) }}</div>
           <va-card-actions align="between">
-            <va-button @click="selectProtocol(protocolInfo.name)"
+            <va-button
+              @click="
+                selectedProtocolName = protocolInfo.name;
+                selectedProtocol = protocolInfo.protocol;
+              "
               >Select</va-button
             >
           </va-card-actions>
         </va-card>
       </div>
-      <div class="row pt-2">
-        <va-input
-          class="flex sm11"
-          label="Name"
-          v-model="subName"
-          :rules="[this.validName || 'Enter a valid name']"
-        />
-      </div>
-      <div class="row pt-2">
+      <div class="row pt-2" v-if="showSubGeneral">
         <va-select
           class="flex sm12"
-          label="Subscription Type"
-          v-model="subType"
-          :options="subTypes"
-          value-by="id"
-          :text-by="(option) => option.name"
-          :rules="[(subType) => subType != null || 'Select a type']"
-        />
-      </div>
-      <div class="row pt-2" v-if="subType == 'General'">
-        <va-select
-          class="flex sm12"
-          label="Type of Updates"
+          label="Update Category"
           v-model="subGeneralType"
           :options="subGeneralTypes"
           value-by="type"
@@ -68,7 +62,43 @@
           ]"
         />
       </div>
-      <div class="row pt-2" v-if="subType == 'Smart Contracts'">
+      <div class="row pt-2" v-if="showContracts">
+        <va-select
+          class="flex sm2"
+          label="Chain"
+          v-model="chain"
+          :options="chains"
+          :rules="[this.chain != undefined || 'Select a chain']"
+        />
+        <va-select
+          class="flex sm5"
+          label="Contract Address"
+          v-model="contractAddress"
+          :options="contracts"
+          :track-by="(option) => option.id"
+          value-by="id"
+          text-by="short_address"
+          allowCreate
+          @create-new="addNewContract"
+          :rules="[this.validContract || 'Enter a valid contract address']"
+        />
+        <va-select
+          class="flex sm3"
+          label="Contract Actvity"
+          v-model="contractActivityInfoID"
+          :options="contractActivities"
+          track-by="id"
+          value-by="id"
+          text-by="name"
+          searchable
+        />
+        <va-avatar
+          v-if="contractIcon != null"
+          class="flex sm1"
+          :src="contractIcon"
+        />
+      </div>
+      <div class="row pt-2" v-if="showFrom">
         <va-switch
           class="flex sm1 pr-3"
           color="primary"
@@ -83,7 +113,7 @@
         />
         <va-avatar v-if="fromIcon != null" class="flex sm1" :src="fromIcon" />
       </div>
-      <div class="row pt-2" v-if="subType == 'Smart Contracts'">
+      <div class="row pt-2" v-if="showTo">
         <va-switch
           class="flex sm1 pr-3"
           color="primary"
@@ -102,7 +132,7 @@
           :src="toIcon"
         />
       </div>
-      <div class="row pt-2" v-if="valueAllowed">
+      <div class="row pt-2" v-if="showValue">
         <va-switch
           class="flex sm2"
           color="primary"
@@ -111,20 +141,19 @@
         />
         <va-select
           class="flex sm3"
-          label="Transaction is"
+          label="Transaction value is"
           v-model="valueOp"
           :options="valueOperators"
         />
         <va-input class="flex sm5" label="This Value" v-model="value" />
       </div>
       <div class="row pt-2">
-        <va-select
-          class="flex sm3"
-          label="Chain"
-          v-model="chain"
-          :options="chains"
-          textBy="name"
-          :rules="[this.chain || 'Select a chain']"
+        <va-input
+          class="flex sm11"
+          label="Subscription Name"
+          size="large"
+          v-model="subName"
+          :rules="[this.validName || 'Enter a valid name']"
         />
       </div>
       <div class="pt-4">
@@ -164,23 +193,27 @@
         </div>
       </div>
     </va-form>
+    <VAToast></VAToast>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, inject, getCurrentInstance } from "vue";
+
 import { channelsModule, providerFor } from "../store/channels";
 import { userModule } from "@/store/user";
-import { Subscription, SubscriptionType, Chain } from "@/models/Subscription";
+import { Subscription, SubscriptionType } from "@/models/Subscription";
 import { Protocol, ProtocolLevel } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
-
-import { inject } from "vue";
+import { ContractActivity } from "@/models/ContractActivity";
 
 import Moralis from "moralis";
 import { UserChannel } from "@/models/Channel";
-import { subscriptionsModule } from "@/store/subscription";
+import { contractsModule } from "@/store/contracts";
+import { Contract, Chain, ContractStatus } from "@/models/Contract";
 import { UserModel } from "@/models/User";
+import { AlertTypes } from "@/models/Alert";
+
 //import Moralis from "moralis/types";
 // let tx: Moralis.TransactionResult | null = null;
 let tx: Record<string, unknown> | null = null;
@@ -198,11 +231,26 @@ interface protocolInfo {
   protocol: Protocol;
 }
 
+interface ContractActivityInfo {
+  id: string;
+  name: string;
+  type: "Event" |"Transaction";
+  activity: ContractActivity | undefined;
+}
+
 interface subGeneralTypeInfo {
   type: string;
   name: string;
 }
 let sgti: subGeneralTypeInfo[] = [];
+
+interface ContractInfo {
+  id: string;
+  address: string;
+  short_address?: string;
+  contract: Contract;
+  status?: ContractStatus;
+}
 
 interface TokenBalance {
   balance: number;
@@ -216,7 +264,13 @@ interface TokenBalance {
 const tokenBal: TokenBalance[] = [];
 
 let iconPath: string | undefined = undefined;
-let chain: Chain | undefined = { name: "Avalanche" };
+let allSubTypes: AlertTypes[] = [
+  AlertTypes.protocol,
+  AlertTypes.wallet,
+  AlertTypes.contract,
+];
+let subType: AlertTypes = AlertTypes.protocol;
+let prot: Protocol | undefined = undefined;
 
 export default defineComponent({
   name: "Subscribe",
@@ -227,14 +281,15 @@ export default defineComponent({
   },
   data() {
     return {
-      selectedProtocol: "",
+      selectedProtocolName: "",
+      selectedProtocol: prot,
       subName: "My Subscription",
-      subType: "",
-      subTypes: ["General", "My Wallet(s)", "Smart Contracts"],
+      subType: subType,
+      subTypes: allSubTypes,
       subGeneralType: "",
       subGeneralTypes: sgti,
       newChannelIDs: channelIDs,
-      chain: chain,
+      chain: "avalanche" as Chain,
       validation: null,
       chkFrom: false,
       allowFrom: true,
@@ -249,6 +304,11 @@ export default defineComponent({
       fromIcon: iconPath,
       toIcon: iconPath,
       myTokens: tokenBal,
+      contractAddress: "",
+      contractIcon: "" as string | undefined,
+      chkContract: false,
+      contractActivities: [] as Array<ContractActivityInfo>,
+      contractActivityInfoID: undefined as string | undefined,
     };
   },
   setup() {
@@ -261,7 +321,6 @@ export default defineComponent({
   watch: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     subscription(newSub: Subscription, oldSub: Subscription): void {
-      console.log("WATCHER");
       this.subName = newSub.attributes.name;
       this.subType = newSub.attributes.name;
       this.newFrom = newSub.attributes.fromAddress;
@@ -269,7 +328,13 @@ export default defineComponent({
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     selectedProtocol(newProtocol: string, oldProtocol: string) {
+      this.contractAddress = "";
+      this.contractActivityInfoID = "";
       this.fetchSubGeneralTypes();
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    contractAddress(newAddress: string, oldAddress: string) {
+      this.fetchContractActivities();
     },
   },
   mounted() {
@@ -281,17 +346,58 @@ export default defineComponent({
       return this.value > 0 && this.valueOp != null;
     },
     // Are we allowed to enter a Value criteria for the current Subscription Type?
-    valueAllowed(): boolean {
+    showValue(): boolean {
       return (
-        this.subType == "Smart Contracts" || this.subType == "My Wallet(s)"
+        this.subType == AlertTypes.wallet ||
+        (this.subType == AlertTypes.contract &&
+          this.selectedContractActivityInfo?.type == "Transaction")
       );
     },
-    cardColor(aProtocol: string) {
-      if (aProtocol == this.selectedProtocol) {
+    cardColor(aProtocolName: string): string {
+      if (aProtocolName == this.selectedProtocolName) {
         return "primary";
       } else {
         return "dark";
       }
+    },
+    showContracts(): boolean {
+      return this.subType == AlertTypes.contract;
+    },
+    selectedContractInfo(): ContractInfo | undefined {
+      return this.contracts.find((e) => e.id == this.contractAddress);
+    },
+    selectedContractActivityInfo(): ContractActivityInfo | undefined {
+      return this.contractActivities.find(
+        (e) => e.id == this.contractActivityInfoID
+      );
+    },
+    validContract(): boolean {
+      return true;
+    },
+    contracts(): ContractInfo[] {
+      if (this.selectedProtocol) {
+        return contractsModule.allContracts
+          .filter((c) => c.get("protocol").id == this.selectedProtocol?.id)
+          .map((elem) => {
+            const addr = elem.get("address");
+            const sh_address =
+              addr.slice(1, 6) + "..." + addr.substring(addr.length - 4);
+            return {
+              id: elem.id,
+              address: addr,
+              short_address: sh_address,
+              contract: elem,
+              status: elem.status,
+            };
+          });
+      }
+      return [];
+    },
+    showProtocols(): boolean {
+      return (
+        this.subType == AlertTypes.protocol ||
+        this.subType == AlertTypes.contract
+      );
     },
     protocols(): protocolInfo[] {
       return protocolsModule.allProtocols.map((e: Protocol) => {
@@ -304,7 +410,10 @@ export default defineComponent({
       });
     },
     chains(): Chain[] {
-      return subscriptionsModule.CHAINS;
+      return contractsModule.CHAINS;
+    },
+    showSubGeneral(): boolean {
+      return this.subType == AlertTypes.protocol;
     },
     selectedSubGeneralTypeName(): string | undefined {
       const t = this.subGeneralTypes.find(
@@ -332,6 +441,9 @@ export default defineComponent({
       });
       return res;
     },
+    showFrom(): boolean {
+      return this.subType == AlertTypes.wallet;
+    },
     from_address: {
       get() {
         if (this.newFrom) {
@@ -342,6 +454,9 @@ export default defineComponent({
       set(newValue: string) {
         this.newFrom = newValue;
       },
+    },
+    showTo(): boolean {
+      return this.subType == AlertTypes.wallet;
     },
     to_address: {
       get() {
@@ -359,16 +474,26 @@ export default defineComponent({
     // *********************************
     message(): string {
       let msg = "";
-      if (this.selectedProtocol) {
-        msg = `Create an alert for the <strong>${this.selectedProtocol} Protocol</strong> called <strong>${this.subName}</strong>`;
+      if (this.selectedProtocolName) {
+        msg = `Create an alert for the <strong>${this.selectedProtocolName} Protocol</strong> called <strong>${this.subName}</strong>`;
       }
-      if (this.subType === "Smart Contract") {
-        msg = `${msg} which triggers on transactions<br/>`;
-      } else if (this.subType === "General") {
-        msg = `${msg} for Community alerts about <strong>${
+      if (this.subType === AlertTypes.contract) {
+        msg = `${msg} which triggers on`;
+        if (this.selectedContractActivityInfo?.type == "Transaction") {
+          msg = `${msg} transactions`;
+        } else if (this.selectedContractActivityInfo?.type == "Event") {
+          msg = `${msg} the event <strong>${this.selectedContractActivityInfo.name}</strong>`;
+        } else {
+          msg = `${msg} <strong>[Select an Activity]</strong>`;
+        }
+        if (this.selectedContractInfo) {
+          msg = `${msg} for the contract ${this.selectedContractInfo.address}`;
+        }
+      } else if (this.subType === AlertTypes.protocol) {
+        msg = `${msg} for Protocol Alerts about <strong>${
           this.selectedSubGeneralTypeName || "[Select a Type above]"
         }</strong>`;
-      } else if (this.subType === "My Wallet(s)") {
+      } else if (this.subType === AlertTypes.wallet) {
         msg = `${msg} for my wallet transactions`;
       }
       if (this.chkFrom) {
@@ -381,7 +506,7 @@ export default defineComponent({
         msg = `${msg} whose value is ${this.valueOp} ${this.value}`;
       }
       if (this.chain != undefined && msg != "") {
-        msg = `${msg} on the <strong>${this.chain.name} blockchain</strong>`;
+        msg = `${msg} on the <strong>${this.chain} blockchain</strong>`;
       }
 
       return msg;
@@ -396,7 +521,7 @@ export default defineComponent({
       return this.from_address?.length == 42;
     },
     validSubmit(): boolean {
-      if (this.subType == "General") {
+      if (this.subType == AlertTypes.protocol) {
         return this.validGeneralSubmit;
       } else {
         return (
@@ -404,14 +529,13 @@ export default defineComponent({
           (!this.chkFrom || this.validFrom) &&
           (!this.chkValue || (this.valueOp != null && this.value > 0)) &&
           this.validName &&
-          this.subType != "" &&
           this.newChannels?.length > 0
         );
       }
     },
     validGeneralSubmit(): boolean {
       return (
-        this.selectedProtocol != "" &&
+        this.selectedProtocolName != "" &&
         this.validName &&
         this.subGeneralType != "" &&
         this.newChannels?.length > 0
@@ -419,9 +543,6 @@ export default defineComponent({
     },
   },
   methods: {
-    selectProtocol(name: string) {
-      this.selectedProtocol = name;
-    },
     // returns the current user or raises an error if none
     userID(): string {
       if (userModule.user.id) {
@@ -433,9 +554,10 @@ export default defineComponent({
     },
     async fetchSubGeneralTypes(): Promise<void> {
       const q = new Moralis.Query("GeneralSubscriptionTypes");
-      q.equalTo("protocol", this.selectedProtocol);
+      q.equalTo("protocol", this.selectedProtocolName);
       console.log("Fetch Genaral Subtypes");
       const res = await q.find();
+      this.selectedSubGeneralTypeName = "";
       this.subGeneralTypes = res.map((e: SubscriptionType) => {
         return {
           type: e.get("type"),
@@ -443,15 +565,69 @@ export default defineComponent({
         };
       });
     },
+    async fetchContractActivities(): Promise<void> {
+      const tx: ContractActivityInfo = {
+        name: "Transaction",
+        activity: undefined,
+        type: "Transaction",
+        id: "tx",
+      };
+      const res = [tx];
+      const ci = this.selectedContractInfo;
+      if (ci) {
+        const actsRel = ci.contract.relation("ContractActivities");
+        const acts = await actsRel.query().find();
+        for (let i = 0; i < acts.length; i = i + 1) {
+          res.push({
+            name: acts[i].get("name"),
+            activity: acts[i],
+            type: "Event",
+            id: acts[i].id,
+          });
+        }
+      }
+      this.selectedContractActivityInfo = undefined;
+      this.contractActivities = res;
+    },
+    addNewContract(address: string): boolean {
+      console.log(address);
+      if (this.isValidContractAddress(address)) {
+        const c = Contract.spawn(this.chain, address);
+        c.set("protocol", this.selectedProtocol);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        c.save().then((c: Contract) => {
+          getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init(
+            {
+              message:
+                "This Contract was added in 'Requested Status'. Complete your Subscription to be alerted when it is enabled for alerts.",
+              color: "warning",
+            }
+          );
+        });
+      } else {
+        console.log("INVALID");
+        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
+          message: "Enter a valid contract address.",
+          color: "error",
+        });
+        return false;
+      }
+      return true;
+    },
+    isValidContractAddress(address: string) {
+      const web3 = new Moralis.Web3();
+      return web3.utils.isAddress(address);
+    },
     async subscribe(): Promise<void> {
       console.log("Create/Update subscription");
       const c = Subscription.spawn(
-        this.selectedProtocol,
+        this.selectedProtocolName,
         this.subName,
         this.userID(),
         this.newChannels,
         this.subType
       );
+      c.set("description", this.message);
       if (this.chkFrom) {
         c.set("fromAddress", this.from_address);
       }
@@ -465,10 +641,29 @@ export default defineComponent({
       if (this.subGeneralType) {
         c.set("generalType", this.subGeneralType);
       }
+      if (this.selectedContractInfo) {
+        c.set("contract", this.selectedContractInfo.contract);
+        c.set(
+          "contractAddress",
+          this.selectedContractInfo.contract.get("address")
+        );
+        c.set("contractChain", this.selectedContractInfo.contract.get("chain"));
+        console.log(c);
+      }
+      if (this.selectedContractActivityInfo) {
+        if (this.selectedContractActivityInfo.type == "Event")
+          c.set("contractActivity", this.selectedContractActivityInfo.activity);
+      }
       c.save().then(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (uc: Subscription) => {
           // Execute any logic that should take place after the object is saved.
+          getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init(
+            {
+              message: "Subscription added successfully!",
+              color: "success",
+            }
+          );
           this.$emit("saved");
         },
         (error: { message: string }) => {
@@ -492,6 +687,13 @@ export default defineComponent({
         return this.toIcon;
       }
     },
+    async getContractIcon(): Promise<string | undefined> {
+      const addr = this.contractAddress;
+      if (addr) {
+        this.contractIcon = await this.getIcon(addr);
+        return this.contractIcon;
+      }
+    },
     async getIcon(addr: string): Promise<string | undefined> {
       // const chain = "0xa86a";
       const options = { addresses: [addr] };
@@ -511,9 +713,12 @@ export default defineComponent({
       }
     },
     getWalletBalance(p: Protocol): number | string {
-      const token = this.myTokens.find(
-        (e) => e?.symbol == p.get("tokenData").symbol
-      );
+      let token = undefined;
+      if (p.get("tokenData")) {
+        token = this.myTokens.find(
+          (e) => e?.symbol == p.get("tokenData").symbol
+        );
+      }
       if (token) {
         return (token.balance / 10 ** token.decimals).toFixed(2);
       }

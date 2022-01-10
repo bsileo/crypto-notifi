@@ -1,17 +1,17 @@
 /* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-function sendTwilioAlert(channel, content) {
+async function sendTwilioAlert(channel, content) {
   const logger = Moralis.Cloud.getLogger();
   logger.info(`Twilio send ${content} to ${channel}`);
-  const SID = getAPIKey("TWILIO_SID");
-  const auth = getAPIKey("TWILIO_AUTH");
+  const SID = await getAPIKey("TWILIO_SID");
+  const auth = await getAPIKey("TWILIO_AUTH");
   let buff = new Buffer(`${SID}:${auth}`);
   let authCode = buff.toString("base64");
   logger.info(`Twilio authCode ${authCode}`);
   let data = {
     Body: content,
     MessagingServiceSid: "MG9b664aec58995086004ee6def5c8b333",
-    To: "+14124988602",
+    To: channel.get("providerData").to,
   };
   Moralis.Cloud.httpRequest({
     method: "POST",

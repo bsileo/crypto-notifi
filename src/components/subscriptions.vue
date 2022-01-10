@@ -28,6 +28,7 @@
           ></va-button
           ><va-button
             @click.prevent="edit(id)"
+            v-if="false"
             icon-right="edit"
             size="small"
             class="mr-2"
@@ -119,12 +120,11 @@ export default defineComponent({
     },
   },
   methods: {
-    edit(): void {
+    edit(id: string): void {
       console.log("Edit");
       this.showSubscribe = true;
     },
-    remove(): void {
-      const id = this.selected[0].id;
+    remove(id: string): void {
       console.log(`remove ${id}`);
       const query = new Moralis.Query("Subscription");
       query.get(id).then((s: { destroy: () => Promise<unknown> }) => {
