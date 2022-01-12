@@ -9,13 +9,34 @@ import { store } from ".";
 
 import { Alert } from "@/models/Alert";
 import Moralis from "@/config/moralis";
+import { Protocol } from "@/models/Protocol";
 
 @Module({ dynamic: true, store: store, namespaced: true, name: "Alerts" })
 export class AlertsModule extends VuexModule {
   ALERTS: Array<Alert> = [];
+  PROTOCOL: Protocol | undefined = undefined;
 
   get sentAlerts(): Array<Alert> {
     return this.ALERTS;
+  }
+
+  @Action
+  public async SET_PROTOCOL(protocol: Protocol | undefined): Promise<void> {
+    this.context.commit("SetProtocol", protocol);
+    const query = new Moralis.Query(Alert);
+    if (protocol) {
+      query.equalTo("protocol", protocol);
+    }
+    console.log(`Query with Prot=${protocol}`);
+    console.log(protocol);
+    console.log(query);
+    this.context.commit("ClearAlerts");
+    this.context.commit("SetAlerts", await query.find());
+  }
+
+  @Action
+  public AddAlert(alert: Alert): void {
+    this.context.commit("ADD_ALERT", alert);
   }
 
   @Mutation
@@ -24,35 +45,44 @@ export class AlertsModule extends VuexModule {
   }
 
   @Mutation
+  public SetProtocol(protocol: Protocol): void {
+    this.PROTOCOL = protocol;
+  }
+
+  @Mutation
+  public ClearAlerts(): void {
+    this.ALERTS = [];
+  }
+
+  @Mutation
   public SetAlerts(alerts: Alert[]): void {
     this.ALERTS = alerts;
   }
 
-  @Action
-  public AddAlert(alert: Alert): void {
-    this.context.commit("ADD_ALERT", alert);
-  }
+ 
 }
 
 export const alertsModule = getModule(AlertsModule);
 
 const setupAlertsSub = async () => {
-  const query = new Moralis.Query(Alert);
-  const subscription = await query.subscribe();
   const refresh = (): void => {
+    const qr = new Moralis.Query(Alert);
+    if (alertsModule.PROTOCOL) {
+      qr.equalTo("protocol", alertsModule.PROTOCOL);
+    }
     query.find().then((results: Array<Alert>) => {
-      console.log("Initial objects created");
+      console.log("New Alerts objects loaded");
       alertsModule.SetAlerts(results);
     });
   };
+  const query = new Moralis.Query(Alert);
+  const subscription = await query.subscribe();
   subscription.on("open", () => {
-    query.find().then((results: Array<Alert>) => {
-      alertsModule.SetAlerts(results);
-    });
+    refresh();
   });
   subscription.on("create", (object: Alert) => {
     //console.log("object created");
-    alertsModule.AddAlert(object);
+    refresh();
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("update", (object: Alert) => {
@@ -78,4 +108,4 @@ const setupAlertsSub = async () => {
     console.log("subscription closed");
   });
 };
-setupAlertsSub();
+//setupAlertsSub();

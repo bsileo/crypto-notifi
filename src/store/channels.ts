@@ -30,11 +30,15 @@ export class ChannelsModule extends VuexModule {
   @Mutation
   public ADD_MY_CHANNEL(channel: UserChannel): void {
     this.MYCHANNELS.push(channel);
+    channel.initialize();
   }
 
   @Mutation
   public SetMyChannels(channels: UserChannel[]): void {
     this.MYCHANNELS = channels;
+    channels.forEach((c: UserChannel) => {
+      c.initialize();
+    });
   }
 
   @Action
@@ -45,16 +49,7 @@ export class ChannelsModule extends VuexModule {
 
 export const channelsModule = getModule(ChannelsModule);
 
-export const providerFor = (providerID: string): string | null => {
-  const res = channelsModule.channels.find((e) => e.id == providerID);
-  if (res) {
-    return res.name;
-  } else {
-    return null;
-  }
-};
-
-const setupMyChannelsSub = async () => {
+const setupMyChannelsSub = async (): Promise<void> => {
   const query = new Moralis.Query(UserChannel);
   const subscription = await query.subscribe();
   const refresh = (): void => {
@@ -69,8 +64,8 @@ const setupMyChannelsSub = async () => {
     });
   });
   subscription.on("create", (object: UserChannel) => {
-    console.log("UserChannel object created - add it");
-    channelsModule.AddMyChannel(object);
+    console.log(`UserChannel object created - add it = ${object.id}`);
+    refresh();
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("update", (object: UserChannel) => {
@@ -93,7 +88,7 @@ const setupMyChannelsSub = async () => {
     refresh();
   });
   subscription.on("close", () => {
-    console.log("subscription closed");
+    console.log("UserChannel subscription closed");
   });
 };
 setupMyChannelsSub();

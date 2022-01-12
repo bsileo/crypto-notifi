@@ -14,12 +14,29 @@ export type TokenData = {
   goldQuantity: number;
 };
 export class Protocol extends Moralis.Object {
-  public name!: string;
-  public website!: string;
-  public iconURL!: string;
-  public chains!: string[];
-  public tokenData!: TokenData;
-  public managers!: string[];
+  get name(): string {
+    return this.get("name");
+  }
+
+  get website(): string {
+    return this.get("website");
+  }
+
+  get iconURL(): string {
+    return this.get("iconURL");
+  }
+
+  get chains(): string[] {
+    return this.get("chains");
+  }
+
+  get tokenData(): Record<string, string | number> {
+    return this.get("tokenData");
+  }
+
+  get managers(): string {
+    return this.get("managers");
+  }
 
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor

@@ -200,9 +200,10 @@
 <script lang="ts">
 import { defineComponent, inject, getCurrentInstance } from "vue";
 
-import { channelsModule, providerFor } from "../store/channels";
+import { channelsModule } from "../store/channels";
 import { userModule } from "@/store/user";
-import { Subscription, SubscriptionType } from "@/models/Subscription";
+import { Subscription } from "@/models/Subscription";
+import { SubscriptionType } from "@/models/SubscriptionType";
 import { Protocol, ProtocolLevel } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
 import { ContractActivity } from "@/models/ContractActivity";
@@ -234,7 +235,7 @@ interface protocolInfo {
 interface ContractActivityInfo {
   id: string;
   name: string;
-  type: "Event" |"Transaction";
+  type: "Event" | "Transaction";
   activity: ContractActivity | undefined;
 }
 
@@ -423,7 +424,7 @@ export default defineComponent({
     },
     myChannels(): channelInfo[] {
       return channelsModule.myChannels.map((v) => {
-        const p = providerFor(v.attributes.providerID);
+        const p = v.providerName;
         return {
           name: `${v.attributes.name} - (${p})`,
           channel: v,
@@ -620,11 +621,10 @@ export default defineComponent({
     },
     async subscribe(): Promise<void> {
       console.log("Create/Update subscription");
-      const c = Subscription.spawn(
+      const c = await Subscription.spawn(
         this.selectedProtocolName,
         this.subName,
         this.userID(),
-        this.newChannels,
         this.subType
       );
       c.set("description", this.message);
@@ -648,7 +648,6 @@ export default defineComponent({
           this.selectedContractInfo.contract.get("address")
         );
         c.set("contractChain", this.selectedContractInfo.contract.get("chain"));
-        console.log(c);
       }
       if (this.selectedContractActivityInfo) {
         if (this.selectedContractActivityInfo.type == "Event")
@@ -658,6 +657,7 @@ export default defineComponent({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (uc: Subscription) => {
           // Execute any logic that should take place after the object is saved.
+          uc.setUserChannels(this.newChannels);
           getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init(
             {
               message: "Subscription added successfully!",

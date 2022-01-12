@@ -3,6 +3,7 @@
     <va-data-table :items="myChannels" :columns="columns">
       <template #header(name)>Name</template>
       <template #header(provider)>Provider</template>
+      <template #header(subscriptionCount)>Subscriptions</template>
       <template #header(id)></template>
       <template #cell(id)="{ source: id }">
         <va-button size="small" @click="remove(id)" icon="delete"></va-button>
@@ -58,7 +59,7 @@
 import { userModule } from "../store/user";
 import { defineComponent } from "vue";
 import { ChannelModel, UserChannel } from "../models/Channel";
-import { channelsModule, providerFor } from "../store/channels";
+import { channelsModule } from "../store/channels";
 import Twilio from "@/components/TwilioAdd.vue";
 import Discord from "@/components/DiscordAdd.vue";
 import Email from "@/components/EmailAdd.vue";
@@ -67,15 +68,6 @@ import Email from "@/components/EmailAdd.vue";
 //const channels = namespace("channels");
 type ProviderData = Record<string, string | undefined>;
 
-interface UserChannelInfo {
-  provider: string | null;
-  providerID: string;
-  name: string;
-  subscriptions: number;
-  id: string;
-  userChannel: UserChannel
-}
-
 export default defineComponent({
   name: "Channels",
   components: { Twilio, Discord, Email },
@@ -83,8 +75,8 @@ export default defineComponent({
     const columns = [
       { key: "id", label: "Remove", sortable: true },
       { key: "name", label: "Name", sortable: true },
-      { key: "provider", label: "Provider", sortable: false },
-      { key: "subscriptions", label: "Subscriptions", sortable: false },
+      { key: "providerName", label: "Provider", sortable: false },
+      { key: "subscriptionsCount", label: "Subscriptions", sortable: false },
     ];
     const pd: ProviderData | undefined = { to: undefined };
     return {
@@ -99,19 +91,8 @@ export default defineComponent({
     channels(): ChannelModel[] {
       return channelsModule.channels;
     },
-    myChannels(): UserChannelInfo[] {
-      return channelsModule.myChannels.map((v) => {
-        const uci: UserChannelInfo = {
-          provider: providerFor(v.attributes.providerID),
-          providerID: v.attributes.providerID,
-          name: v.attributes.name,
-          subscriptions: 0,
-          id: v.id,
-          userChannel: v,
-        };
-        this.updateSubscriptionCount(uci);
-        return uci;
-      });
+    myChannels(): UserChannel[] {
+      return channelsModule.myChannels;
     },
     availableChannels(): ChannelModel[] {
       let base = this.channels;
@@ -136,9 +117,6 @@ export default defineComponent({
     },
   },
   methods: {
-    async updateSubscriptionCount(uc: UserChannelInfo) {
-      uc.subscriptions = await uc.userChannel.subscriptionCount();
-    },
     setProviderData(pd: ProviderData): void {
       console.log("Set PD");
       console.log(pd);

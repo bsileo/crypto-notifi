@@ -1,5 +1,5 @@
+import { channelsModule } from "@/store/channels";
 import Moralis from "moralis";
-import { Subscription } from "./Subscription";
 
 export interface ChannelModel {
   id: number | string;
@@ -9,15 +9,45 @@ export interface ChannelModel {
 }
 
 export class UserChannel extends Moralis.Object {
-  public userID!: string | undefined;
-  public providerID!: string;
-  public providerData!: Record<string | number, unknown>;
-  public name!: string;
+  subscriptionCounter: undefined | number = undefined;
 
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor
     super("UserChannel");
     // All other initialization
+  }
+
+  get name(): string {
+    return this.get("name");
+  }
+
+  get providerID(): string {
+    return this.get("providerID");
+  }
+
+  get subscriptionCount(): number | undefined {
+    if (this.subscriptionCounter == undefined) {
+
+      this.fetchSubscriptionCount();
+    }
+    return this.subscriptionCounter;
+  }
+
+  get userID(): string {
+    return this.get("userID");
+  }
+
+  get providerData(): Record<string | number, unknown> {
+    return this.get("providerData");
+  }
+
+  get providerName(): string | null {
+    const res = channelsModule.channels.find((e) => e.id == this.providerID);
+    if (res) {
+      return res.name;
+    } else {
+      return null;
+    }
   }
 
   static spawn(
@@ -32,16 +62,25 @@ export class UserChannel extends Moralis.Object {
     return us;
   }
 
+  public async initialize(): Promise<void> {
+    //await this.fetchSubscriptionCount();
+  }
+
   public setProviderData(providerData: Record<string | number, unknown>): void {
     this.set("providerData", providerData);
   }
 
-  public async subscriptionCount(): Promise<number> {
-    const query = new Moralis.Query(Subscription);
-    query.equalTo("UserChannel", this.id);
-    const count = await query.count();
-    console.log(`Count subs for ${this.id}==${count}`);
+  public async getSubscriptionCount(): Promise<number> {
+    const q = this.relation("subscriptions").query();
+    const count = await q.count();
+    console.log(`${this.name} SUB Count ${count}`);
     return count;
+  }
+
+  public fetchSubscriptionCount(): void {
+    this.getSubscriptionCount().then((count) => {
+      this.subscriptionCounter = count;
+    });
   }
 }
 

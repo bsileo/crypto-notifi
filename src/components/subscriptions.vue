@@ -17,8 +17,13 @@
         <template #header(id)></template>
         <template #header(subscriptionType)>Type</template>
         <template #header(channels)>Channels</template>
-        <template #header(fromAddress)>From Address</template>
-        <template #header(toAddress)>To Address</template>
+        <template #header(description)>Summary</template>
+        <template #cell(description)="{ source: description }">
+          <span
+            style="width: 50px; overflow: hidden; text-overflow: ellipsis"
+            v-html="description"
+          ></span>
+        </template>
         <template #cell(id)="{ source: id }">
           <va-button
             @click.prevent="remove(id)"
@@ -77,10 +82,9 @@ export default defineComponent({
     const columns = [
       { key: "id", label: "", sortable: false },
       { key: "name", label: "Name", sortable: true },
-      { key: "subscriptionType", label: "Type", sortable: true },
-      { key: "channels", label: "Channels", sortable: false },
-      { key: "fromAddress", label: "From", sortable: true },
-      { key: "toAddress", label: "To", sortable: true },
+      { key: "subscriptionDescriptor", label: "Type", sortable: true },
+      { key: "channelNames", label: "Channels", sortable: false },
+      { key: "description", label: "Description", sortable: false },
     ];
     const subs: Subscription[] = [];
     return {
@@ -90,27 +94,17 @@ export default defineComponent({
       showSubscribe: false,
     };
   },
+  mounted() {
+    //this.fetchSubscriptions();
+  },
   emits: ["subscribe"],
   computed: {
+    subscriptions(): Subscription[] {
+      return subscriptionsModule.mySubscriptions;
+    },
     selectedSubscription(): Subscription | null {
       if (this.selected.length == 0) return null;
       return this.selected[0].subscription;
-    },
-    subscriptions(): Record<string, string | number | Subscription>[] {
-      return subscriptionsModule.mySubscriptions.map((v: Subscription) => {
-        let typ = v.get("subscriptionType");
-        if (typ === "General") {
-          typ = `${typ} (${v.get("generalType")})`;
-        }
-        return {
-          name: v.attributes["name"],
-          subscriptionType: typ,
-          fromAddress: v.attributes["fromAddress"],
-          toAddress: v.attributes["toAddress"],
-          id: v.id,
-          subscription: v,
-        };
-      });
     },
     allowEdit(): boolean {
       return this.selected.length == 1;
@@ -121,7 +115,7 @@ export default defineComponent({
   },
   methods: {
     edit(id: string): void {
-      console.log("Edit");
+      console.log(`Edit ${id}`);
       this.showSubscribe = true;
     },
     remove(id: string): void {

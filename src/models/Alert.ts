@@ -1,4 +1,5 @@
 import Moralis from "moralis";
+import { Protocol } from "./Protocol";
 
 export enum AlertTypes {
   protocol = "Protocol Alerts",
@@ -13,24 +14,46 @@ export interface AlertModel {
 }
 
 export class Alert extends Moralis.Object {
-  public objectId: string | undefined;
-  public timestamp: number;
-  public type: string;
-  public content: string;
+  get createdAt(): string {
+    return this.get("createdAt");
+  }
+  get shortDateTime(): string {
+    const d = new Date(this.createdAt);
+    //console.log(this.createdAt);
+    //console.log(d);
+    return d.toLocaleDateString("en-us", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+    });
+  }
+  get type(): string {
+    return this.get("type");
+  }
+
+  get content(): string {
+    return this.get("content");
+  }
 
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor
     super("Alert");
     // All other initialization
-    this.timestamp = Date.now();
-    this.content = "";
-    this.type = "General Update";
   }
 
-  static spawn(type: string, content: string): Alert {
+  static spawn(
+    type: string,
+    content: string,
+    protocol?: Protocol | undefined
+  ): Alert {
     const a = new Alert();
     a.set("type", type);
     a.set("content", content);
+    if (protocol) {
+      a.set("protocol", protocol);
+    }
     return a;
   }
 }

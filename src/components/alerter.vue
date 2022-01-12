@@ -1,69 +1,77 @@
 <template>
   <div>
-    <va-collapse v-model="showAlert" header="Send an Alert">
-      <div class="flex sm12">
-        <div class="row pt-2 pb-4">
-          <va-card
-            class="flex sm6 md4 lg3 mr-2"
-            :class="{
-              active: this.selectedProtocol?.get('name') == protocolInfo.name,
-            }"
-            :dark="this.selectedProtocol?.get('name') == protocolInfo.name"
-            :stripe="this.selectedProtocol?.get('name') == protocolInfo.name"
-            stripe-color="success"
-            v-bind:key="protocolInfo.id"
-            v-for="protocolInfo in protocols"
-          >
-            <va-card-title>{{ protocolInfo.name }}</va-card-title>
-            <va-image contain :src="protocolInfo.iconURL">
-              <template #error> Image not found! :( </template>
-              <template #loader>
-                <va-progress-circle indeterminate />
-              </template>
-            </va-image>
-            <div>
-              Token:
-              <a :href="protocolInfo.protocol.tokenContractURL()" target="_frame">
-                {{ protocolInfo.protocol.get("tokenData").symbol }}</a
-              >
-            </div>
-            <va-card-actions align="between">
-              <va-button @click="selectedProtocol = protocolInfo.protocol"
-                >Select</va-button
-              >
-            </va-card-actions>
-          </va-card>
-        </div>
+    <va-collapse
+      v-model="showProtocolSelect"
+      header="Select the Protcol to Manage"
+      class="pb-3"
+    >
+      <div class="row pt-2 pb-2">
+        <va-card
+          class="flex sm6 md4 lg3 mr-2"
+          :class="{
+            active: this.selectedProtocol?.get('name') == protocol.name,
+          }"
+          :dark="this.selectedProtocol?.get('name') == protocol.name"
+          :stripe="this.selectedProtocol?.get('name') == protocol.name"
+          stripe-color="success"
+          v-bind:key="protocol.id"
+          v-for="protocol in protocols"
+        >
+          <va-card-title>{{ protocol.name }}</va-card-title>
+          <va-image contain :src="protocol.iconURL">
+            <template #error> Image not found! :( </template>
+            <template #loader>
+              <va-progress-circle indeterminate />
+            </template>
+          </va-image>
+          <div>
+            Token:
+            <a :href="protocol.tokenContractURL()" target="_frame">
+              {{ protocol.tokenData.symbol }}</a
+            >
+          </div>
+          <va-card-actions align="between">
+            <va-button @click="selectedProtocol = protocol">Select</va-button>
+          </va-card-actions>
+        </va-card>
+      </div>
+    </va-collapse>
+    <va-collapse
+      class="pb-3"
+      v-model="showAlert"
+      header="Send an Alert"
+      :disabled="!this.selectedProtocol"
+    >
+      <div class="flex sm12 mb-3">
         <div class="row pt-2">
           <va-select
             class="flex sm12"
             label="Type of Alert"
-            v-model="newType"
-            :options="subGeneralTypes"
-            value-by="type"
+            v-model="alertCategory"
+            :options="subCategories"
             text-by="name"
             :rules="[
-              (subGeneralType) => subGeneralType != null || 'Select a type',
+              (alertCategory) => alertCategory != null || 'Select a type',
             ]"
           />
         </div>
         <div class="row pt-2">
           <va-input
-            class="mb-4"
+            class="mb-1"
             v-model="newContent"
             type="textarea"
             label="Enter Alert Content"
           />
         </div>
-        <div class="row">
+        <div class="row mb-2">
           <va-button
-            class="flex sm2"
-            center
+            style="margin-left: 20px"
+            class="flex sm4"
             :disabled="!validSubmit"
             @click.prevent="add"
             color="danger"
             icon-right="create"
-            size="large"
+            size="medium"
             >Send Alert</va-button
           >
           <va-alert
@@ -77,131 +85,208 @@
         </div>
       </div>
     </va-collapse>
-    <div class="pt-4">
-      <va-collapse v-model="showProtocol" header="Manage Protocol Alerts">
-        <div>
-          <h3>Coming Soon</h3>
+    <va-collapse
+      class="pb-3"
+      v-model="showProtocol"
+      header="Configure General Alerts"
+      :disabled="!this.selectedProtocol"
+    >
+      <div class="row ml-4">
+        <div v-if="!this.selectedProtocol">
+          <h3>Select a Protocol first</h3>
         </div>
-      </va-collapse>
-    </div>
-    <div class="pt-4">
-      <va-collapse v-model="showHistory" header="Alert History">
-        <div>
-          <va-data-table
-            :items="sentAlerts"
-            v-model:sort-by="sortBy"
-            v-model:sorting-order="sortingOrder"
-            :columns="columns"
-          >
-            <template #header(date)>Date</template>
-            <template #header(content)>Content</template>
-          </va-data-table>
+        <div
+          class="flex sm12 md6 lg4 mr-2 pb-3"
+          v-bind:key="category.id"
+          v-for="category in subCategories"
+        >
+          <EditCategory
+            :category="category"
+            @update:name="updateCategoryName"
+            @update:description="updateCategoryDescription"
+            @deactivated="deactivateCategory"
+          ></EditCategory>
         </div>
-      </va-collapse>
-    </div>
+        <div v-if="this.selectedProtocol" class="flex sm12 md6 lg4 mr-2 pb-3">
+          <va-card class="flex">
+            <va-card-title>Add a Category</va-card-title>
+            <div>
+              <va-form>
+                <va-input
+                  class="pb-1"
+                  placeholder="Category Name"
+                  v-model="newCategory.name"
+                  label="Name"
+                >
+                </va-input>
+                <va-input
+                  class="pb-1"
+                  placeholder="Type identifier"
+                  v-model="newCategory.type"
+                  label="Identifier"
+                >
+                </va-input>
+                <va-input
+                  type="textarea"
+                  :min-rows="3"
+                  :max-rows="5"
+                  v-model="newCategory.description"
+                  label="Description"
+                >
+                </va-input>
+              </va-form>
+            </div>
+            <va-card-actions align="between">
+              <va-button
+                size="medium"
+                :disabled="!allowAddCategory"
+                @click="addNewCategory"
+                >Add</va-button
+              >
+            </va-card-actions>
+          </va-card>
+        </div>
+      </div>
+    </va-collapse>
+    <va-collapse
+      class="pb-3"
+      v-model="showHistory"
+      header="General Alert History"
+      :disabled="!this.selectedProtocol"
+    >
+      <div>
+        <va-data-table
+          :items="alerts"
+          v-model:sort-by="sortBy"
+          v-model:sorting-order="sortingOrder"
+          :columns="columns"
+        >
+          <template #header(date)>Date</template>
+          <template #header(content)>Content</template>
+          <template #cell(type)="{ source: type }">
+            {{ getCategoryName(type) }}
+          </template>
+        </va-data-table>
+      </div>
+    </va-collapse>
+    <va-collapse
+      class="pb-3"
+      v-model="showTransactional"
+      header="Configure Transactional Alerts"
+      :disabled="!this.selectedProtocol"
+    >
+      <h1>Coming Soon</h1>
+    </va-collapse>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { Alert } from "@/models/Alert";
+import { Alert, AlertTypes } from "@/models/Alert";
 import { alertsModule } from "@/store/alerts";
-import { SubscriptionType } from "@/models/Subscription";
+import {
+  SubscriptionType,
+  SubscriptionTypeStatus,
+} from "@/models/SubscriptionType";
 import { Protocol } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
 import Moralis from "moralis";
-
-interface protocolInfo {
-  name: string;
-  iconURL: string;
-  protocol: Protocol;
-}
-
-interface subGeneralTypeInfo {
-  type: string;
-  name: string;
-}
-let sgti: subGeneralTypeInfo[] = [];
-
-let prot: Protocol | undefined = undefined;
+import EditCategory from "./EditCategory.vue";
 
 export default defineComponent({
   name: "Alerter",
-  components: {},
+  components: { EditCategory },
   data() {
     const columns = [
-      { key: "date", label: "Date", sortable: true },
+      { key: "shortDateTime", label: "Date", sortable: true },
       { key: "type", label: "Alert Type", sortable: true },
       { key: "content", label: "Content", sortable: true },
     ];
     return {
-      newType: "",
+      alertCategory: undefined as SubscriptionType | undefined,
       newContent: "",
       columns: columns,
-      showAlert: true,
+      showProtocolSelect: true,
+      showAlert: false,
       showProtocol: false,
       showHistory: false,
+      showTransactional: false,
       showSuccess: false,
       sortBy: "date",
       sortingOrder: "desc",
-      selectedProtocol: prot,
-      subGeneralTypes: sgti,
+      selectedProtocol: undefined as Protocol | undefined,
+      subCategories: [] as SubscriptionType[],
+      newCategory: { name: "", type: "", description: "" },
     };
   },
   watch: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    selectedProtocol(newProtocol: string, oldProtocol: string) {
-      this.newType = "";
-      this.fetchSubGeneralTypes();
+    async selectedProtocol(newProtocol: string, oldProtocol: string) {
+      this.alertCategory = undefined;
+      this.showProtocolSelect = false;
+      this.showAlert = true;
+      await this.fetchsubCategories();
+      alertsModule.SET_PROTOCOL(this.selectedProtocol);
     },
   },
   computed: {
     validSubmit(): boolean {
-      return this.newType != "" && this.newContent != "";
+      return this.alertCategory != undefined && this.newContent != "";
     },
-    protocols(): protocolInfo[] {
-      return protocolsModule.myAdminProtocols.map((e: Protocol) => {
-        return {
-          name: e.get("name"),
-          iconURL: e.get("iconURL"),
-          id: e.id,
-          protocol: e,
-        };
-      });
+    protocols(): Protocol[] {
+      return protocolsModule.myAdminProtocols;
     },
-    sentAlerts(): Record<string, string | number | null | Alert>[] {
-      return alertsModule.sentAlerts.map((v) => {
-        return {
-          date: v.get("createdAt"),
-          protocol: v.get("protocol"),
-          content: v.get("content"),
-          type: v.get("type"),
-          id: v.id,
-          record: v,
-        };
-      });
+    alerts(): Alert[] {
+      return alertsModule.sentAlerts;
+    },
+    allowAddCategory(): boolean {
+      return (
+        this.newCategory.name.length > 3 && this.newCategory.type.length > 3
+      );
     },
   },
   methods: {
-    async fetchSubGeneralTypes(): Promise<void> {
-      const q = new Moralis.Query("GeneralSubscriptionTypes");
+    getCategoryName(type: string): string {
+      const cat = this.subCategories.find((sg) => sg.type == type);
+      console.log(`GetCategoryName: ${type}`);
+      return cat?.name || "";
+    },
+    async addNewCategory(): Promise<void> {
       if (this.selectedProtocol) {
-        q.equalTo("protocol", this.selectedProtocol.get("name"));
+        let st = await SubscriptionType.spawn(
+          this.selectedProtocol,
+          this.newCategory.name,
+          this.newCategory.type,
+          this.newCategory.description
+        );
+        st.save();
+        this.newCategory = { name: "", type: "", description: "" };
+        this.fetchsubCategories();
+      }
+    },
+    async fetchsubCategories(): Promise<void> {
+      const q = new Moralis.Query(SubscriptionType);
+      if (this.selectedProtocol) {
+        q.equalTo("protocol", this.selectedProtocol);
+        q.equalTo("status", SubscriptionTypeStatus.active);
         const res = await q.find();
-        this.subGeneralTypes = res.map((e: SubscriptionType) => {
-          return {
-            type: e.get("type"),
-            name: e.get("name"),
-          };
-        });
-        if (this.subGeneralTypes.length == 1) {
-          this.newType = this.subGeneralTypes[0].type;
+        this.subCategories = res;
+        if (this.subCategories.length == 1) {
+          this.alertCategory = this.subCategories[0];
         }
       }
     },
     async add(): Promise<void> {
       console.log(`Add Alert`);
-      const c = Alert.spawn(this.newType, this.newContent);
+      if (this.alertCategory == undefined) {
+        alert("Select a category");
+        return;
+      }
+      const c = Alert.spawn(
+        this.alertCategory?.name,
+        this.newContent,
+        this.selectedProtocol
+      );
       c.save().then(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (uc: Alert) => {
@@ -217,6 +302,28 @@ export default defineComponent({
           );
         }
       );
+    },
+    async updateCategoryName(
+      cat: SubscriptionType,
+      newName: string
+    ): Promise<void> {
+      cat.set("name", newName);
+      //cat.set("description", cat.description);
+      cat = await cat.save();
+      await this.fetchsubCategories();
+    },
+    async updateCategoryDescription(
+      cat: SubscriptionType,
+      newDesc: string
+    ): Promise<void> {
+      cat.set("description", newDesc);
+      cat = await cat.save();
+      await this.fetchsubCategories();
+    },
+    async deactivateCategory(cat: SubscriptionType): Promise<void> {
+      cat.set("status", SubscriptionTypeStatus.inactive);
+      await cat.save();
+      this.fetchsubCategories();
     },
   },
 });

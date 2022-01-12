@@ -8,8 +8,10 @@ async function processSmartContractSubscriptions(transaction, activity) {
   addrQuery.equalTo("contractAddress", addr);
   const subs = await addrQuery.find();
   for (let i = 0; i < subs.length; i++) {
-    let msg = `Smart Contract Subscription match on '${subs[i]}'`;
+    logger.info(`Smart Contract sub hit ${subs[i].id}`);
+    let msg = `Smart Contract Subscription match on '${subs[i].name}'`;
     data.address = addr;
+    data.subscriptionName = subs[i].name;
     processSmartContractHit(subs[i], transaction, activity, msg, data);
   }
 }

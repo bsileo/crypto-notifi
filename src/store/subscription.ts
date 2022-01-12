@@ -7,7 +7,8 @@ import {
 import { store } from ".";
 
 import Moralis from "@/config/moralis";
-import { Subscription, SubscriptionType } from "@/models/Subscription";
+import { Subscription } from "@/models/Subscription";
+import { SubscriptionType } from "@/models/SubscriptionType";
 
 @Module({
   dynamic: true,
@@ -16,16 +17,17 @@ import { Subscription, SubscriptionType } from "@/models/Subscription";
   name: "Subscriptions",
 })
 export class SubscriptionsModule extends VuexModule {
-  SUBSCRPTIONS: Array<Subscription> = [];
+  SUBSCRIPTIONS: Array<Subscription> = [];
   SUBSCRIPTIONTYPES: Array<SubscriptionType> = [];
 
   get mySubscriptions(): Array<Subscription> {
-    return this.SUBSCRPTIONS;
+    return this.SUBSCRIPTIONS;
   }
 
   @Mutation
   public AddSubscription(sub: Subscription): void {
-    this.SUBSCRPTIONS.push(sub);
+    this.SUBSCRIPTIONS.push(sub);
+    sub.initialize();
   }
 
   @Mutation
@@ -35,7 +37,10 @@ export class SubscriptionsModule extends VuexModule {
 
   @Mutation
   public SetMySubscriptions(subs: Subscription[]): void {
-    this.SUBSCRPTIONS = subs;
+    this.SUBSCRIPTIONS = subs;
+    subs.forEach((s: Subscription) => {
+      s.initialize();
+    });
   }
   @Mutation
   public SetMySubscriptionTypes(subs: SubscriptionType[]): void {
@@ -45,7 +50,7 @@ export class SubscriptionsModule extends VuexModule {
 
 export const subscriptionsModule = getModule(SubscriptionsModule);
 
-const setupMySubscriptionsSub = async () => {
+export const setupMySubscriptionsSub = async (): Promise<void> => {
   const query = new Moralis.Query(Subscription);
   const subscription = await query.subscribe();
 
@@ -53,8 +58,8 @@ const setupMySubscriptionsSub = async () => {
   subscriptionsModule.SetMySubscriptionTypes(await query2.find());
 
   const refresh = (): void => {
-    query.find().then((results: Array<Subscription>) => {
-      console.log("Initial objects created");
+    query.find().then(async (results: Array<Subscription>) => {
+      console.log("Initial Subscription objects created");
       subscriptionsModule.SetMySubscriptions(results);
     });
   };
@@ -63,9 +68,11 @@ const setupMySubscriptionsSub = async () => {
       subscriptionsModule.SetMySubscriptions(results);
     });
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("create", (object: Subscription) => {
     //console.log("object created");
-    subscriptionsModule.AddSubscription(object);
+    //subscriptionsModule.AddSubscription(object);
+    refresh();
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("update", (object: Subscription) => {
@@ -88,7 +95,7 @@ const setupMySubscriptionsSub = async () => {
     refresh();
   });
   subscription.on("close", () => {
-    console.log("subscription closed");
+    console.log("Subscriptions subscription closed");
   });
 };
 setupMySubscriptionsSub();
