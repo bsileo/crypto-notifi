@@ -155,7 +155,8 @@
           <template #header(shortDateTime)>Date</template>
           <template #header(content)>Content</template>
           <template #cell(shortDateTime)="{ source: shortDateTime }">
-            <col class="dateCol">{{ shortDateTime }}
+            <col class="dateCol" />
+            {{ shortDateTime }}
           </template>
           <template #cell(type)="{ source: type }">
             {{ getCategoryName(type) }}

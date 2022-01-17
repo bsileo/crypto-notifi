@@ -209,7 +209,7 @@ import { ActivityType, ContractActivity } from "@/models/ContractActivity";
 import Moralis from "moralis";
 import { UserChannel } from "@/models/Channel";
 import { contractsModule } from "@/store/contracts";
-import { Contract, Chain, ContractStatus } from "@/models/Contract";
+import { Contract, Chain } from "@/models/Contract";
 import { UserModel } from "@/models/User";
 import { AlertTypes } from "@/models/Alert";
 
@@ -585,13 +585,11 @@ export default defineComponent({
         c.set("protocol", this.selectedProtocol);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         c.save().then((c: Contract) => {
-          this.showToast(
-            {
-              message:
-                "This Contract was added in 'Requested Status'. Complete your Subscription to be alerted when it is enabled for alerts.",
-              color: "warning",
-            }
-          );
+          this.showToast({
+            message:
+              "This Contract was added in 'Requested Status'. Complete your Subscription to be alerted when it is enabled for alerts.",
+            color: "warning",
+          });
         });
       } else {
         console.log("INVALID Contract Address");
