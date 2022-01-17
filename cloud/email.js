@@ -12,9 +12,13 @@ async function sendEmailAlert(channel, content) {
     ],
     from: { email: "brad@sileo.name", name: "Crypto Notifi" },
     subject: "CryptoNotifi Alert",
-    content: [{ type: "text/plain", value: content }],
+    content: [{ type: "text/plain", value: content.plain },
+      { type: "text/html", value: content.rich },
+    ],
   };
-  logger.info(`SendGrid Key-${SENDGRID_API_KEY}`);
+  logger.info(`[SendEmailAlert] Content-Plain=${content.plain}`);
+  logger.info(`[SendEmailAlert] Content-Rich=${content.rich}`);
+  logger.info(`[SendEmailAlert] SendGrid Key-${SENDGRID_API_KEY}`);
   Moralis.Cloud.httpRequest({
     method: "POST",
     url: "https://api.sendgrid.com/v3/mail/send",

@@ -57,13 +57,37 @@ export type Chain =
   | LocalDevChain;
 
 export class Contract extends Moralis.Object {
-  public status!: ContractStatus;
-  public name!: string;
-  public address!: number;
-  public chain!: Chain;
-  public protocol?: Protocol | undefined;
-  public type!: ContractType;
-  public events!: Array<ContractActivity>;
+  get status(): ContractStatus {
+    return this.get("Contractstatus");
+  }
+  get name(): string{
+    return this.get("name");
+  }
+  get address(): string {
+    return this.get("address");
+  }
+  get short_address(): string {
+    return (
+      this.address.slice(1, 6) +
+      "..." +
+      this.address.substring(this.address.length - 4)
+    );
+  }
+  get description(): string {
+    return `${this.name} (${this.short_address})`;
+  }
+  get chain(): Chain {
+    return this.get("chain");
+  }
+  get protocol(): Protocol | undefined {
+    return this.get("protocol");
+  };
+  get type(): ContractType {
+    return this.get("type");
+  }
+  get events(): Array<ContractActivity> {
+    return this.get("events");
+  }
 
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor

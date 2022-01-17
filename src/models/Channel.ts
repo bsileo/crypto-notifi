@@ -27,7 +27,6 @@ export class UserChannel extends Moralis.Object {
 
   get subscriptionCount(): number | undefined {
     if (this.subscriptionCounter == undefined) {
-
       this.fetchSubscriptionCount();
     }
     return this.subscriptionCounter;

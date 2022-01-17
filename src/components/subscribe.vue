@@ -52,7 +52,7 @@
       <div class="row pt-2" v-if="showSubGeneral">
         <va-select
           class="flex sm12"
-          label="Update Category"
+          label="Subscription Category"
           v-model="subGeneralType"
           :options="subGeneralTypes"
           value-by="type"
@@ -67,17 +67,17 @@
           class="flex sm2"
           label="Chain"
           v-model="chain"
-          :options="chains"
+          :options="protocolChains"
           :rules="[this.chain != undefined || 'Select a chain']"
         />
         <va-select
-          class="flex sm5"
+          class="flex sm6"
           label="Contract Address"
           v-model="contractAddress"
           :options="contracts"
           :track-by="(option) => option.id"
           value-by="id"
-          text-by="short_address"
+          text-by="description"
           allowCreate
           @create-new="addNewContract"
           :rules="[this.validContract || 'Enter a valid contract address']"
@@ -85,17 +85,12 @@
         <va-select
           class="flex sm3"
           label="Contract Actvity"
-          v-model="contractActivityInfoID"
+          v-model="contractActivityID"
           :options="contractActivities"
           track-by="id"
           value-by="id"
-          text-by="name"
+          :text-by="(option) => option.name || option.get('name')"
           searchable
-        />
-        <va-avatar
-          v-if="contractIcon != null"
-          class="flex sm1"
-          :src="contractIcon"
         />
       </div>
       <div class="row pt-2" v-if="showFrom">
@@ -203,10 +198,13 @@ import { defineComponent, inject, getCurrentInstance } from "vue";
 import { channelsModule } from "../store/channels";
 import { userModule } from "@/store/user";
 import { Subscription } from "@/models/Subscription";
-import { SubscriptionType } from "@/models/SubscriptionType";
+import {
+  SubscriptionType,
+  SubscriptionTypeStatus,
+} from "@/models/SubscriptionType";
 import { Protocol, ProtocolLevel } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
-import { ContractActivity } from "@/models/ContractActivity";
+import { ActivityType, ContractActivity } from "@/models/ContractActivity";
 
 import Moralis from "moralis";
 import { UserChannel } from "@/models/Channel";
@@ -232,26 +230,18 @@ interface protocolInfo {
   protocol: Protocol;
 }
 
-interface ContractActivityInfo {
-  id: string;
-  name: string;
-  type: "Event" | "Transaction";
-  activity: ContractActivity | undefined;
-}
-
 interface subGeneralTypeInfo {
   type: string;
   name: string;
 }
-let sgti: subGeneralTypeInfo[] = [];
 
-interface ContractInfo {
-  id: string;
-  address: string;
-  short_address?: string;
-  contract: Contract;
-  status?: ContractStatus;
+interface ContractTXActivity {
+  name: string;
+  type: "Transaction";
+  id: "tx";
 }
+
+type ContractActivitiesSet = ContractTXActivity | ContractActivity;
 
 interface TokenBalance {
   balance: number;
@@ -281,14 +271,17 @@ export default defineComponent({
     subscription: Subscription,
   },
   data() {
+    const app = getCurrentInstance();
+    const vaToast = app?.appContext.config.globalProperties.$vaToast;
     return {
+      showToast: vaToast?.init,
       selectedProtocolName: "",
       selectedProtocol: prot,
       subName: "My Subscription",
       subType: subType,
       subTypes: allSubTypes,
       subGeneralType: "",
-      subGeneralTypes: sgti,
+      subGeneralTypes: [] as subGeneralTypeInfo[],
       newChannelIDs: channelIDs,
       chain: "avalanche" as Chain,
       validation: null,
@@ -308,8 +301,8 @@ export default defineComponent({
       contractAddress: "",
       contractIcon: "" as string | undefined,
       chkContract: false,
-      contractActivities: [] as Array<ContractActivityInfo>,
-      contractActivityInfoID: undefined as string | undefined,
+      contractActivities: [] as Array<ContractActivitiesSet>,
+      contractActivityID: undefined as string | undefined,
     };
   },
   setup() {
@@ -330,7 +323,8 @@ export default defineComponent({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     selectedProtocol(newProtocol: string, oldProtocol: string) {
       this.contractAddress = "";
-      this.contractActivityInfoID = "";
+      this.contractActivityID = "";
+      this.chain = this.protocolChains[0];
       this.fetchSubGeneralTypes();
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -351,46 +345,28 @@ export default defineComponent({
       return (
         this.subType == AlertTypes.wallet ||
         (this.subType == AlertTypes.contract &&
-          this.selectedContractActivityInfo?.type == "Transaction")
+          this.selectedContractActivity?.type == "Transaction")
       );
-    },
-    cardColor(aProtocolName: string): string {
-      if (aProtocolName == this.selectedProtocolName) {
-        return "primary";
-      } else {
-        return "dark";
-      }
     },
     showContracts(): boolean {
       return this.subType == AlertTypes.contract;
     },
-    selectedContractInfo(): ContractInfo | undefined {
+    selectedContract(): Contract | undefined {
       return this.contracts.find((e) => e.id == this.contractAddress);
     },
-    selectedContractActivityInfo(): ContractActivityInfo | undefined {
+    selectedContractActivity(): ContractActivitiesSet | undefined {
       return this.contractActivities.find(
-        (e) => e.id == this.contractActivityInfoID
+        (e) => e.id == this.contractActivityID
       );
     },
     validContract(): boolean {
       return true;
     },
-    contracts(): ContractInfo[] {
+    contracts(): Contract[] {
       if (this.selectedProtocol) {
-        return contractsModule.allContracts
-          .filter((c) => c.get("protocol").id == this.selectedProtocol?.id)
-          .map((elem) => {
-            const addr = elem.get("address");
-            const sh_address =
-              addr.slice(1, 6) + "..." + addr.substring(addr.length - 4);
-            return {
-              id: elem.id,
-              address: addr,
-              short_address: sh_address,
-              contract: elem,
-              status: elem.status,
-            };
-          });
+        return contractsModule.allContracts.filter(
+          (c) => c.get("protocol").id == this.selectedProtocol?.id
+        );
       }
       return [];
     },
@@ -409,6 +385,19 @@ export default defineComponent({
           protocol: e,
         };
       });
+    },
+    protocolChains(): Chain[] {
+      const res = [] as Chain[];
+      if (this.selectedProtocol) {
+        const chainNames: string[] = this.selectedProtocol.get("chains");
+        chainNames.forEach((cn) => {
+          const aChain = this.chains.find((c) => c == cn);
+          if (aChain) {
+            res.push(aChain);
+          }
+        });
+      }
+      return res;
     },
     chains(): Chain[] {
       return contractsModule.CHAINS;
@@ -480,15 +469,17 @@ export default defineComponent({
       }
       if (this.subType === AlertTypes.contract) {
         msg = `${msg} which triggers on`;
-        if (this.selectedContractActivityInfo?.type == "Transaction") {
+        if (this.selectedContractActivity?.type == "Transaction") {
           msg = `${msg} transactions`;
-        } else if (this.selectedContractActivityInfo?.type == "Event") {
-          msg = `${msg} the event <strong>${this.selectedContractActivityInfo.name}</strong>`;
+        } else if (this.selectedContractActivity?.type == ActivityType.event) {
+          msg = `${msg} the event <strong>${this.selectedContractActivity.get(
+            "name"
+          )}</strong>`;
         } else {
           msg = `${msg} <strong>[Select an Activity]</strong>`;
         }
-        if (this.selectedContractInfo) {
-          msg = `${msg} for the contract ${this.selectedContractInfo.address}`;
+        if (this.selectedContract) {
+          msg = `${msg} for the contract ${this.selectedContract.address}`;
         }
       } else if (this.subType === AlertTypes.protocol) {
         msg = `${msg} for Protocol Alerts about <strong>${
@@ -554,11 +545,13 @@ export default defineComponent({
       }
     },
     async fetchSubGeneralTypes(): Promise<void> {
-      const q = new Moralis.Query("GeneralSubscriptionTypes");
-      q.equalTo("protocol", this.selectedProtocolName);
+      const q = new Moralis.Query(SubscriptionType);
+      q.equalTo("protocol", this.selectedProtocol);
+      q.equalTo("status", SubscriptionTypeStatus.active);
       console.log("Fetch Genaral Subtypes");
       const res = await q.find();
-      this.selectedSubGeneralTypeName = "";
+      console.log(res);
+      this.subGeneralType = "";
       this.subGeneralTypes = res.map((e: SubscriptionType) => {
         return {
           type: e.get("type"),
@@ -567,27 +560,22 @@ export default defineComponent({
       });
     },
     async fetchContractActivities(): Promise<void> {
-      const tx: ContractActivityInfo = {
+      const tx: ContractTXActivity = {
         name: "Transaction",
-        activity: undefined,
         type: "Transaction",
         id: "tx",
       };
-      const res = [tx];
-      const ci = this.selectedContractInfo;
+      const res: ContractActivitiesSet[] = [tx];
+      const ci = this.selectedContract;
+      console.log("Get Acts for ", ci);
       if (ci) {
-        const actsRel = ci.contract.relation("ContractActivities");
-        const acts = await actsRel.query().find();
+        const actsRel = ci.relation("ContractActivities");
+        const acts: ContractActivity[] = await actsRel.query().find();
         for (let i = 0; i < acts.length; i = i + 1) {
-          res.push({
-            name: acts[i].get("name"),
-            activity: acts[i],
-            type: "Event",
-            id: acts[i].id,
-          });
+          res.push(acts[i]);
         }
       }
-      this.selectedContractActivityInfo = undefined;
+      this.contractActivityID = undefined;
       this.contractActivities = res;
     },
     addNewContract(address: string): boolean {
@@ -597,7 +585,7 @@ export default defineComponent({
         c.set("protocol", this.selectedProtocol);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         c.save().then((c: Contract) => {
-          getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init(
+          this.showToast(
             {
               message:
                 "This Contract was added in 'Requested Status'. Complete your Subscription to be alerted when it is enabled for alerts.",
@@ -606,10 +594,10 @@ export default defineComponent({
           );
         });
       } else {
-        console.log("INVALID");
-        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
+        console.log("INVALID Contract Address");
+        this.showToast({
           message: "Enter a valid contract address.",
-          color: "error",
+          color: "danger",
         });
         return false;
       }
@@ -641,17 +629,14 @@ export default defineComponent({
       if (this.subGeneralType) {
         c.set("generalType", this.subGeneralType);
       }
-      if (this.selectedContractInfo) {
-        c.set("contract", this.selectedContractInfo.contract);
-        c.set(
-          "contractAddress",
-          this.selectedContractInfo.contract.get("address")
-        );
-        c.set("contractChain", this.selectedContractInfo.contract.get("chain"));
+      if (this.selectedContract) {
+        c.set("contract", this.selectedContract);
+        c.set("contractAddress", this.selectedContract.address);
+        c.set("contractChain", this.selectedContract.get("chain"));
       }
-      if (this.selectedContractActivityInfo) {
-        if (this.selectedContractActivityInfo.type == "Event")
-          c.set("contractActivity", this.selectedContractActivityInfo.activity);
+      if (this.selectedContractActivity) {
+        if (this.selectedContractActivity.type == "Event")
+          c.set("contractActivity", this.selectedContractActivity);
       }
       c.save().then(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

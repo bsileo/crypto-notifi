@@ -7,9 +7,9 @@ async function sendTwilioAlert(channel, content) {
   const auth = await getAPIKey("TWILIO_AUTH");
   let buff = new Buffer(`${SID}:${auth}`);
   let authCode = buff.toString("base64");
-  logger.info(`Twilio authCode ${authCode}`);
+  //logger.info(`Twilio authCode ${authCode}`);
   let data = {
-    Body: content,
+    Body: content.plain,
     MessagingServiceSid: "MG9b664aec58995086004ee6def5c8b333",
     To: channel.get("providerData").to,
   };

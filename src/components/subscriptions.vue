@@ -46,6 +46,7 @@
           icon-right="add"
           size="small"
           class="mr-4"
+          color="success"
         ></va-button>
       </div>
     </va-card-content>

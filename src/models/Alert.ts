@@ -1,3 +1,4 @@
+import { SubscriptionType, SubscriptionTypeStatus } from './SubscriptionType';
 import Moralis from "moralis";
 import { Protocol } from "./Protocol";
 
@@ -37,6 +38,14 @@ export class Alert extends Moralis.Object {
     return this.get("content");
   }
 
+  get richContent(): string {
+    let con: null | string = this.get("richContent");
+    if (!con) {
+      con = this.content;
+    }
+    return con;
+  }
+
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor
     super("Alert");
@@ -44,15 +53,16 @@ export class Alert extends Moralis.Object {
   }
 
   static spawn(
-    type: string,
+    subType: SubscriptionType,
     content: string,
     protocol?: Protocol | undefined
   ): Alert {
     const a = new Alert();
-    a.set("type", type);
+    a.set("type", subType.get("type"));
     a.set("content", content);
     if (protocol) {
       a.set("protocol", protocol);
+      a.set("protocolID", protocol.id);
     }
     return a;
   }

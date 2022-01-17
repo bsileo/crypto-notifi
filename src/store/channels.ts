@@ -50,7 +50,7 @@ export class ChannelsModule extends VuexModule {
 export const channelsModule = getModule(ChannelsModule);
 
 const setupMyChannelsSub = async (): Promise<void> => {
-  const query = new Moralis.Query(UserChannel);
+  const query = new Moralis.Query("UserChannel");
   const subscription = await query.subscribe();
   const refresh = (): void => {
     query.find().then((results: Array<UserChannel>) => {

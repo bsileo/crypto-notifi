@@ -1,47 +1,51 @@
 <template>
   <div class="container p-3 gutter--md">
-    <div class="row pb-4">
-      <div class="flex md4">
-        <img
-          alt="logo"
-          src="https://app.snowball.network/_next/image?url=%2Fassets%2Fimages%2Flogo-dark-label.svg&w=640&q=75"
-        />
-        <h3>Logged In as {{ user.id }}</h3>
-      </div>
-      <div class="flex md8 float-end">
-        <va-button color="danger" class="float-end" @click.prevent="logout">
-          Logout
-        </va-button>
-        <va-button
-          color="warning"
-          class="flex float-end"
-          @click.prevent="showAlerter = true"
-        >
-          Manage
-        </va-button>
-      </div>
-    </div>
-    <div class="row" style="max-height: 35%; align-items: stretch">
-      <div class="flex md9 sm12">
+    <va-navbar color="primary" shape class="mb-2">
+      <template #left>
+        <va-navbar-item>
+          <va-image class="logo" alt="logo" src="/logo.png">
+            <template #error> Logo </template>
+          </va-image>
+        </va-navbar-item>
+      </template>
+      <template #center>
+        <va-navbar-item></va-navbar-item>
+      </template>
+      <template #right>
+        <va-navbar-item>
+          <va-button color="danger" class="float-end" @click.prevent="logout">
+            Logout
+          </va-button>
+          <va-button
+            color="warning"
+            class="flex float-end pl-2"
+            @click.prevent="showAlerter = true"
+          >
+            Manage
+          </va-button>
+          <va-button
+            color="secondary"
+            class="flex float-end pl-2"
+            @click.prevent="showChannels = true"
+          >
+            My Channels
+          </va-button>
+        </va-navbar-item>
+      </template>
+    </va-navbar>
+    <div class="row pb-3">
+      <div class="flex sm12">
         <Subscriptions @subscribe="doSubscribe"></Subscriptions>
       </div>
-      <div class="flex md3 sm12">
-        <va-card color="primary" gradient style="align-items: stretch">
-          <va-card-title>My Channels</va-card-title>
-          <va-card-content>
-            <Channels></Channels>
-          </va-card-content>
-        </va-card>
-      </div>
     </div>
-    <div class="row p-3" style="max-height: 50%">
+    <div v-if="false" class="row" style="max-height: 50%">
       <div class="flex md12 sm12">
         <va-collapse
           header="Transactions"
           color="primary"
           v-model="showTransactions"
         >
-          <va-card color="secondary" gradient>
+          <va-card gradient>
             <Transactions
               :showTX="this.showTransactions"
               @subscribe="doSubscribe"
@@ -51,6 +55,11 @@
         </va-collapse>
       </div>
     </div>
+    <va-modal v-model="showChannels" title="Configure your Channels">
+      <slot>
+        <Channels></Channels>
+      </slot>
+    </va-modal>
     <va-modal
       fullscreen
       hide-default-actions
@@ -66,7 +75,7 @@
     </va-modal>
     <va-modal hide-default-actions size="large" v-model="showAlerter">
       <slot>
-        <Alerter></Alerter>
+        <ProtocolManager></ProtocolManager>
       </slot>
     </va-modal>
   </div>
@@ -81,20 +90,29 @@ import Channels from "@/components/channels.vue";
 import Subscriptions from "@/components/subscriptions.vue";
 import Subscribe from "@/components/subscribe.vue";
 import Transactions from "@/components/transactions.vue";
-import Alerter from "@/components/alerter.vue";
+import ProtocolManager from "@/components/ProtocolManager.vue";
 import { computed } from "vue";
 
 let tx: Moralis.TransactionResult | null = null;
 
 export default defineComponent({
   name: "Home",
-  components: { Channels, Subscriptions, Transactions, Subscribe, Alerter },
+  components: {
+    Channels,
+    Subscriptions,
+    Transactions,
+    Subscribe,
+    ProtocolManager,
+  },
   data() {
     return {
       showSubscribe: false,
       subscribeTx: tx,
       showAlerter: false,
       showTransactions: false,
+      showCategories: true,
+      showSubscriptions: true,
+      showChannels: false,
     };
   },
   provide() {
@@ -124,3 +142,10 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+.logo {
+  height: 50px;
+  width: 80px;
+}
+</style>
