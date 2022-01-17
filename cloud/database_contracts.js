@@ -143,11 +143,32 @@ async function setupContracts() {
       ev.set("contract", c);
       ev = await ev.save();
       acts.push(ev);
-      options = {tableName: act.tableName, chainID: contractInfo.chainID,
-                address: contractInfo.address, topic: act.topic,
-                abi: act.abi, sync_historical: false}
+      options = {
+        tableName: act.tableName,
+        chainID: contractInfo.chainID,
+        address: contractInfo.address,
+        topic: act.topic,
+        abi: act.abi,
+        sync_historical: false,
+      };
+      logger.info("[databaseContracts] Options:");
       logger.info(options);
+      let unwatchOptions = { tableName: options.tableName };
+      Moralis.Cloud.run("unwatchContractEvent", unwatchOptions, { useMasterKey: true });
       Moralis.Cloud.run("watchContractEvent", options, { useMasterKey: true });
+      Moralis.Cloud.beforeConsume(options.tableName, (event) => {
+        return event && event.confirmed;
+      });
+      Moralis.Cloud.afterSave(options.tableName, async (request) => {
+        const logger = Moralis.Cloud.getLogger();
+        logger.info(`[afterSave:${options.tableName}] Event Received`);
+        const confirmed = request.object.get("confirmed");
+        if (confirmed) {
+          processSmartContractSubscriptions(request.object, act.name);
+        } else {
+          // handle unconfirmed case
+        }
+      });
     }
     relation = await contractInfo.contract.relation("ContractActivities");
     relation.add(acts);

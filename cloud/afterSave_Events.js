@@ -9,3 +9,7 @@ Moralis.Cloud.afterSave("UniswapPairCreated", async (request) => {
     // handle unconfirmed case
   }
 });
+
+Moralis.Cloud.beforeConsume("UniswapPairCreated", (event) => {
+  return event && event.confirmed;
+});
