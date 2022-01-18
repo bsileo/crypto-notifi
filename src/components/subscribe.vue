@@ -1,148 +1,172 @@
 <template>
   <div class="flex">
     <va-form type="form">
-      <div class="row pt-2">
+      <div class="row pt-2 pb-3">
         <va-select
-          class="flex sm12"
-          label="Subscription Type"
+          class="flex sm12 pt-1"
           v-model="subType"
+          label="Select Alert Type"
           :options="subTypes"
           :rules="[(subType) => subType != null || 'Select a type']"
         />
       </div>
-      <div v-if="showProtocols" class="row pt-3 pb-1">
-        <h2>Select a protocol:</h2>
-      </div>
-      <div v-if="showProtocols" class="row pt-2 pb-4">
-        <va-card
-          class="flex sm6 md4 lg3 mr-2"
-          :class="{ active: this.selectedProtocolName == protocolInfo.name }"
-          :dark="this.selectedProtocolName == protocolInfo.name"
-          :stripe="this.selectedProtocolName == protocolInfo.name"
-          stripe-color="success"
-          v-bind:key="protocolInfo.id"
-          v-for="protocolInfo in protocols"
-        >
-          <va-card-title>{{ protocolInfo.name }}</va-card-title>
-          <va-image contain :src="protocolInfo.iconURL">
-            <template #error> Image not found! :( </template>
-            <template #loader>
-              <va-progress-circle indeterminate />
-            </template>
-          </va-image>
-          <div>
-            Token:
-            <a :href="protocolInfo.protocol.tokenContractURL()" target="_frame">
-              {{ protocolInfo.protocol.get("tokenData")?.symbol }}</a
-            >
+      <va-collapse
+        v-model="showSectionProtocols"
+        v-if="showProtocols"
+        :header="selectProtocolHeader"
+        class="pb-3"
+      >
+        <div class="row pt-2 pb-4">
+          <va-card
+            class="flex sm6 md4 lg3 mr-2"
+            :class="{
+              active: this.selectedProtocolName == protocolInfo.name,
+            }"
+            :dark="this.selectedProtocolName == protocolInfo.name"
+            :stripe="this.selectedProtocolName == protocolInfo.name"
+            stripe-color="success"
+            v-bind:key="protocolInfo.id"
+            v-for="protocolInfo in protocols"
+          >
+            <va-card-title>{{ protocolInfo.name }}</va-card-title>
+            <va-image contain :src="protocolInfo.iconURL">
+              <template #error> Image not found! :( </template>
+              <template #loader>
+                <va-progress-circle indeterminate />
+              </template>
+            </va-image>
+            <div>
+              Token:
+              <a
+                :href="protocolInfo.protocol.tokenContractURL()"
+                target="_frame"
+              >
+                {{ protocolInfo.protocol.get("tokenData")?.symbol }}</a
+              >
+            </div>
+            <div>Balance: {{ getWalletBalance(protocolInfo.protocol) }}</div>
+            <div>Level: {{ getProtocolLevel(protocolInfo.protocol) }}</div>
+            <va-card-actions align="between">
+              <va-button
+                @click="
+                  selectedProtocolName = protocolInfo.name;
+                  selectedProtocol = protocolInfo.protocol;
+                "
+                >Select</va-button
+              >
+            </va-card-actions>
+          </va-card>
+        </div>
+      </va-collapse>
+      <div>
+        <div v-if="showSubGeneral" class="row pt-2">
+          <va-select
+            class="flex sm12"
+            label="Subscription Category"
+            v-model="subGeneralTypeID"
+            :options="subGeneralTypes"
+            value-by="id"
+            text-by="name"
+            :rules="[
+              (subGeneralTypeID) =>
+                subGeneralTypeID != null || 'Select an alert category',
+            ]"
+          />
+          <div
+            v-if="this.selectedSubGeneralTypeDescription"
+            class="flex sm12 pt-2 pl-4"
+          >
+            <va-card :bordered="false">
+              <va-card-title></va-card-title>
+              <va-card-content>
+                <span v-html="this.selectedSubGeneralTypeDescription"></span>
+              </va-card-content>
+            </va-card>
           </div>
-          <div>Balance: {{ getWalletBalance(protocolInfo.protocol) }}</div>
-          <div>Level: {{ getProtocolLevel(protocolInfo.protocol) }}</div>
-          <va-card-actions align="between">
-            <va-button
-              @click="
-                selectedProtocolName = protocolInfo.name;
-                selectedProtocol = protocolInfo.protocol;
-              "
-              >Select</va-button
-            >
-          </va-card-actions>
-        </va-card>
-      </div>
-      <div class="row pt-2" v-if="showSubGeneral">
-        <va-select
-          class="flex sm12"
-          label="Subscription Category"
-          v-model="subGeneralType"
-          :options="subGeneralTypes"
-          value-by="type"
-          text-by="name"
-          :rules="[
-            (subGeneralType) => subGeneralType != null || 'Select a type',
-          ]"
-        />
-      </div>
-      <div class="row pt-2" v-if="showContracts">
-        <va-select
-          class="flex sm2"
-          label="Chain"
-          v-model="chain"
-          :options="protocolChains"
-          :rules="[this.chain != undefined || 'Select a chain']"
-        />
-        <va-select
-          class="flex sm6"
-          label="Contract Address"
-          v-model="contractAddress"
-          :options="contracts"
-          :track-by="(option) => option.id"
-          value-by="id"
-          text-by="description"
-          allowCreate
-          @create-new="addNewContract"
-          :rules="[this.validContract || 'Enter a valid contract address']"
-        />
-        <va-select
-          class="flex sm3"
-          label="Contract Actvity"
-          v-model="contractActivityID"
-          :options="contractActivities"
-          track-by="id"
-          value-by="id"
-          :text-by="(option) => option.name || option.get('name')"
-          searchable
-        />
-      </div>
-      <div class="row pt-2" v-if="showFrom">
-        <va-switch
-          class="flex sm1 pr-3"
-          color="primary"
-          :disabled="!validFrom"
-          v-model="chkFrom"
-        />
-        <va-input
-          class="flex sm10"
-          label="From Address"
-          v-model="from_address"
-          :rules="[this.validFrom || 'Enter a valid contract/wallet address']"
-        />
-        <va-avatar v-if="fromIcon != null" class="flex sm1" :src="fromIcon" />
-      </div>
-      <div class="row pt-2" v-if="showTo">
-        <va-switch
-          class="flex sm1 pr-3"
-          color="primary"
-          :disabled="!validTo"
-          v-model="chkTo"
-        />
-        <va-input
-          class="flex sm10"
-          label="To Address"
-          v-model="to_address"
-          :rules="[this.validTo || 'Enter a valid contract/wallet address']"
-        />
-        <va-avatar
-          v-if="this.validTo && toIcon != null"
-          class="flex sm1"
-          :src="toIcon"
-        />
-      </div>
-      <div class="row pt-2" v-if="showValue">
-        <va-switch
-          class="flex sm2"
-          color="primary"
-          :disabled="!allowValue"
-          v-model="chkValue"
-        />
-        <va-select
-          class="flex sm3"
-          label="Transaction value is"
-          v-model="valueOp"
-          :options="valueOperators"
-        />
-        <va-input class="flex sm5" label="This Value" v-model="value" />
+        </div>
+        <div class="row pt-2" v-if="showContracts">
+          <va-select
+            class="flex sm2"
+            label="Chain"
+            v-model="chain"
+            :options="protocolChains"
+            :rules="[this.chain != undefined || 'Select a chain']"
+          />
+          <va-select
+            class="flex sm6"
+            label="Contract Address"
+            v-model="contractAddress"
+            :options="contracts"
+            :track-by="(option) => option.id"
+            value-by="id"
+            text-by="description"
+            allowCreate
+            @create-new="addNewContract"
+            :rules="[this.validContract || 'Enter a valid contract address']"
+          />
+          <va-select
+            class="flex sm3"
+            label="Contract Activity"
+            v-model="contractActivityID"
+            :options="contractActivities"
+            track-by="id"
+            value-by="id"
+            :text-by="(option) => option.name || option.get('name')"
+            searchable
+          />
+        </div>
+        <div class="row pt-2" v-if="showFrom">
+          <va-switch
+            class="flex sm1 pr-3"
+            color="primary"
+            :disabled="!validFrom"
+            v-model="chkFrom"
+          />
+          <va-input
+            class="flex sm10"
+            label="From Address"
+            v-model="from_address"
+            :rules="[this.validFrom || 'Enter a valid contract/wallet address']"
+          />
+          <va-avatar v-if="fromIcon != null" class="flex sm1" :src="fromIcon" />
+        </div>
+        <div class="row pt-2" v-if="showTo">
+          <va-switch
+            class="flex sm1 pr-3"
+            color="primary"
+            :disabled="!validTo"
+            v-model="chkTo"
+          />
+          <va-input
+            class="flex sm10"
+            label="To Address"
+            v-model="to_address"
+            :rules="[this.validTo || 'Enter a valid contract/wallet address']"
+          />
+          <va-avatar
+            v-if="this.validTo && toIcon != null"
+            class="flex sm1"
+            :src="toIcon"
+          />
+        </div>
+        <div class="row pt-2" v-if="showValue">
+          <va-switch
+            class="flex sm2"
+            color="primary"
+            :disabled="!allowValue"
+            v-model="chkValue"
+          />
+          <va-select
+            class="flex sm3"
+            label="Transaction value is"
+            v-model="valueOp"
+            :options="valueOperators"
+          />
+          <va-input class="flex sm5" label="This Value" v-model="value" />
+        </div>
       </div>
       <div class="row pt-2">
+        <va-divider inset />
         <va-input
           class="flex sm11"
           label="Subscription Name"
@@ -188,7 +212,6 @@
         </div>
       </div>
     </va-form>
-    <VAToast></VAToast>
   </div>
 </template>
 
@@ -230,11 +253,6 @@ interface protocolInfo {
   protocol: Protocol;
 }
 
-interface subGeneralTypeInfo {
-  type: string;
-  name: string;
-}
-
 interface ContractTXActivity {
   name: string;
   type: "Transaction";
@@ -261,7 +279,6 @@ let allSubTypes: AlertTypes[] = [
   AlertTypes.contract,
 ];
 let subType: AlertTypes = AlertTypes.protocol;
-let prot: Protocol | undefined = undefined;
 
 export default defineComponent({
   name: "Subscribe",
@@ -274,14 +291,15 @@ export default defineComponent({
     const app = getCurrentInstance();
     const vaToast = app?.appContext.config.globalProperties.$vaToast;
     return {
+      showSectionProtocolsVal: false,
       showToast: vaToast?.init,
       selectedProtocolName: "",
-      selectedProtocol: prot,
+      intSelectedProtocol: undefined as Protocol | undefined,
       subName: "My Subscription",
       subType: subType,
       subTypes: allSubTypes,
-      subGeneralType: "",
-      subGeneralTypes: [] as subGeneralTypeInfo[],
+      subGeneralTypeID: "",
+      subGeneralTypes: [] as SubscriptionType[],
       newChannelIDs: channelIDs,
       chain: "avalanche" as Chain,
       validation: null,
@@ -336,6 +354,30 @@ export default defineComponent({
     this.getMyTokens();
   },
   computed: {
+    showSectionProtocols: {
+      get() {
+        return this.showSectionProtocolsVal;
+      },
+      set(newValue: boolean) {
+        this.showSectionProtocolsVal = newValue;
+      },
+    },
+    selectProtocolHeader(): string {
+      if (this.selectedProtocol) {
+        return `Protocol: ${this.selectedProtocolName}`;
+      } else {
+        return "Select a Protocol";
+      }
+    },
+    selectedProtocol: {
+      get() {
+        return this.intSelectedProtocol;
+      },
+      set(val: Protocol) {
+        this.intSelectedProtocol = val;
+        this.showSectionProtocols = false;
+      },
+    },
     // Should we enable the Value on/off slider?
     allowValue(): boolean {
       return this.value > 0 && this.valueOp != null;
@@ -406,10 +448,18 @@ export default defineComponent({
       return this.subType == AlertTypes.protocol;
     },
     selectedSubGeneralTypeName(): string | undefined {
-      const t = this.subGeneralTypes.find(
-        (e) => e.type === this.subGeneralType
-      );
+      const t = this.selectedSubGeneralType;
       return t?.name;
+    },
+    selectedSubGeneralTypeDescription(): string | undefined {
+      const t = this.selectedSubGeneralType;
+      return t?.description;
+    },
+    selectedSubGeneralType(): SubscriptionType | undefined {
+      const t = this.subGeneralTypes.find(
+        (e) => e.id === this.subGeneralTypeID
+      );
+      return t;
     },
     myChannels(): channelInfo[] {
       return channelsModule.myChannels.map((v) => {
@@ -465,21 +515,19 @@ export default defineComponent({
     message(): string {
       let msg = "";
       if (this.selectedProtocolName) {
-        msg = `Create an alert for the <strong>${this.selectedProtocolName} Protocol</strong> called <strong>${this.subName}</strong>`;
+        msg = `Send an alert for the <strong>${this.selectedProtocolName} Protocol</strong> called <strong>${this.subName}</strong>`;
       }
       if (this.subType === AlertTypes.contract) {
         msg = `${msg} which triggers on`;
         if (this.selectedContractActivity?.type == "Transaction") {
           msg = `${msg} transactions`;
         } else if (this.selectedContractActivity?.type == ActivityType.event) {
-          msg = `${msg} the event <strong>${this.selectedContractActivity.get(
-            "name"
-          )}</strong>`;
+          msg = `${msg} the event <strong>${this.selectedContractActivity.name}</strong>`;
         } else {
           msg = `${msg} <strong>[Select an Activity]</strong>`;
         }
         if (this.selectedContract) {
-          msg = `${msg} for the contract ${this.selectedContract.address}`;
+          msg = `${msg} for the contract <strong>${this.selectedContract.description}</strong>`;
         }
       } else if (this.subType === AlertTypes.protocol) {
         msg = `${msg} for Protocol Alerts about <strong>${
@@ -529,7 +577,7 @@ export default defineComponent({
       return (
         this.selectedProtocolName != "" &&
         this.validName &&
-        this.subGeneralType != "" &&
+        this.subGeneralTypeID != "" &&
         this.newChannels?.length > 0
       );
     },
@@ -551,13 +599,8 @@ export default defineComponent({
       console.log("Fetch Genaral Subtypes");
       const res = await q.find();
       console.log(res);
-      this.subGeneralType = "";
-      this.subGeneralTypes = res.map((e: SubscriptionType) => {
-        return {
-          type: e.get("type"),
-          name: e.get("name"),
-        };
-      });
+      this.subGeneralTypeID = "";
+      this.subGeneralTypes = res;
     },
     async fetchContractActivities(): Promise<void> {
       const tx: ContractTXActivity = {
@@ -624,8 +667,8 @@ export default defineComponent({
         c.set("value", this.value);
         c.set("valueOperator", this.valueOp);
       }
-      if (this.subGeneralType) {
-        c.set("generalType", this.subGeneralType);
+      if (this.selectedSubGeneralType) {
+        c.set("generalType", this.selectedSubGeneralType.type);
       }
       if (this.selectedContract) {
         c.set("contract", this.selectedContract);
