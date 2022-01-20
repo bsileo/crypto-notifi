@@ -4,6 +4,10 @@ async function sendEmailAlert(channel, content) {
   const logger = Moralis.Cloud.getLogger();
   logger.info(`Email send ${content} to ${channel.get("providerData").email}`);
   const SENDGRID_API_KEY = await getAPIKey("SENDGRID_API_KEY");
+  const sendgridContent = [{ type: "text/plain", value: content.plain }] 
+  if (content.rich) {
+    sendgridContent.push({ type: "text/html", value: content.rich });
+  }
   const data = {
     personalizations: [
       {
@@ -12,13 +16,11 @@ async function sendEmailAlert(channel, content) {
     ],
     from: { email: "brad@sileo.name", name: "Crypto Notifi" },
     subject: "CryptoNotifi Alert",
-    content: [{ type: "text/plain", value: content.plain },
-      { type: "text/html", value: content.rich },
-    ],
+    content: sendgridContent,
   };
-  logger.info(`[SendEmailAlert] Content-Plain=${content.plain}`);
-  logger.info(`[SendEmailAlert] Content-Rich=${content.rich}`);
-  logger.info(`[SendEmailAlert] SendGrid Key-${SENDGRID_API_KEY}`);
+  logger.info(`[SendEmailAlert] Content-Plain="${content.plain}"`);
+  logger.info(`[SendEmailAlert] Content-Rich="${content.rich}"`);
+  logger.info(`[SendEmailAlert] SendGrid Key-"${SENDGRID_API_KEY}"`);
   Moralis.Cloud.httpRequest({
     method: "POST",
     url: "https://api.sendgrid.com/v3/mail/send",
@@ -30,12 +32,12 @@ async function sendEmailAlert(channel, content) {
   }).then(
     function (httpResp) {
       logger.info(
-        `Email sent - response= (${httpResp.status})-${httpResp.text}`
+        `[SendEmailAlert] Email sent - response= (${httpResp.status})-${httpResp.text}`
       );
     },
     function (httpResp) {
       logger.error(
-        "SendGrid Email Send Request failed with response code " +
+        "[SendEmailAlert] Request failed with response code " +
           httpResp.status +
           "::" +
           httpResp.text

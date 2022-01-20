@@ -15,11 +15,12 @@ async function setupContracts() {
         {
           name: "PairCreated",
           chain: "eth",
-          type: "event",
+          type: "Event",
           topic: "PairCreated(address, address, address, uint)",
           tableName: "UniswapV2PairCreated",
           abi: {
             anonymous: false,
+            type: "event",
             inputs: [
               {indexed: true, internalType: "address", name: "token0", type: "address"},
               {indexed: true, internalType: "address", name: "token1", type: "address"},
@@ -38,11 +39,12 @@ async function setupContracts() {
         { name: "Transfer",
         chain: "avalanche",
         chainID: "0xa86a",
-        type: "event",
+        type: "Event",
         topic: "Transfer(address, address, uint)",
         tableName: "SnowCompBenqiQITransfer",
         abi: {
           anonymous: false,
+          type: "event",
           inputs: [
             { indexed: true, internalType: "address", name: "from", type: "address"},
             { indexed: true, internalType: "address", name: "to", type: "address"},
@@ -50,11 +52,15 @@ async function setupContracts() {
           ],
           },
         },
-        { name: "Approval", chain: "avalanche", chainID: "0xa86a", type: "event",
+        { name: "Approval",
+        chain: "avalanche",
+        chainID: "0xa86a",
+        type: "Event",
         topic: "Approval(address, address, uint)",
         tableName: "SnowCompBenqiQIApproval",
         abi: {
           anonymous: false,
+          type: "event",
           inputs: [
             { indexed: true, internalType: "address", name: "owner", type: "address"},
             { indexed: true, internalType: "address", name: "spender", type: "address"},
@@ -71,11 +77,15 @@ async function setupContracts() {
       chain: "avalanche",
       chainID: "0xa86a",
       activities: [
-        { name: "Transfer", chain: "avalanche", chainID: "0xa86a", type: "event",
+        { name: "Transfer",
+        chain: "avalanche",
+        chainID: "0xa86a",
         topic: "Transfer(address, address, uint)",
+        type: "Event",
         tableName: "SnowCompBenqiDAITransfer",
         abi: {
           anonymous: false,
+          type: "event",
           inputs: [
             { indexed: true, internalType: "address", name: "from", type: "address"},
             { indexed: true, internalType: "address", name: "to", type: "address"},
@@ -83,16 +93,45 @@ async function setupContracts() {
           ],
           },
         },
-        { name: "Approval", chain: "avalanche", chainID: "0xa86a", type: "event",
+        { name: "Approval",
+        chain: "avalanche",
+        chainID: "0xa86a",
         topic: "Approval(address, address, uint)",
+        type: "Event",
         tableName: "SnowCompBenqiDAIApproval",
         abi: {
           anonymous: false,
+          type: "event",
           inputs: [
             { indexed: true, internalType: "address", name: "owner", type: "address"},
             { indexed: true, internalType: "address", name: "spender", type: "address"},
             { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
           ],
+          },
+        },
+      ],
+    },
+    {
+      protocolName: "Snowball",
+      contractName: "SNOB Token",
+      address: "0xC38f41A296A4493Ff429F1238e030924A1542e50",
+      chain: "avalanche",
+      chainID: "0xa86a",
+      activities: [
+        { name: "Transfer",
+          chain: "avalanche",
+          chainID: "0xa86a",
+          topic: "Transfer(address, address, uint256)",
+          type: "Event",
+          tableName: "SnowTokenSNOBTransfer",
+          abi: {
+            anonymous: false,
+            type: "event",
+            inputs: [
+            { indexed: true, internalType: "address", name: "from", type: "address"},
+            { indexed: true, internalType: "address", name: "to", type: "address"},
+            { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
+            ],
           },
         },
       ],
@@ -154,25 +193,75 @@ async function setupContracts() {
       logger.info("[databaseContracts] Options:");
       logger.info(options);
       let unwatchOptions = { tableName: options.tableName };
-      Moralis.Cloud.run("unwatchContractEvent", unwatchOptions, { useMasterKey: true });
-      Moralis.Cloud.run("watchContractEvent", options, { useMasterKey: true });
+      await Moralis.Cloud.run("unwatchContractEvent", unwatchOptions, { useMasterKey: true });
+      const wceResult = await Moralis.Cloud.run("watchContractEvent", options, { useMasterKey: true });
+      logger.info(`[databaseContract] run watchContractEvent--${wceResult}`);
       Moralis.Cloud.beforeConsume(options.tableName, (event) => {
         return event && event.confirmed;
       });
       Moralis.Cloud.afterSave(options.tableName, async (request) => {
         const logger = Moralis.Cloud.getLogger();
-        logger.info(`[afterSave:${options.tableName}] Event Received`);
+        logger.info(`[afterSave:${request.object}] Event Received`);
         const confirmed = request.object.get("confirmed");
         if (confirmed) {
+          logger.info(`[afterSave:${request.object}] Confirmed Event Received`);
           processSmartContractSubscriptions(request.object, act.name);
         } else {
           // handle unconfirmed case
         }
       });
+      logger.info("[databaseContracts] Actvity Finished");
     }
     relation = await contractInfo.contract.relation("ContractActivities");
     relation.add(acts);
     contractInfo.contract.save();
+    logger.info("[databaseContracts] ContractInfo saved");
+
   }
   return true;
 }
+
+
+
+/*  New contract descriptor template
+{
+      protocolName: "Snowball",
+      contractName: "Compounding-Benqi/Dai.e",
+      address: "0x7b2525a502800e496d2e656e5b1188723e547012",
+      chain: "avalanche",
+      chainID: "0xa86a",
+      activities: [
+        { name: "Transfer",
+        chain: "avalanche",
+        chainID: "0xa86a",
+        topic: "Transfer(address, address, uint)",
+        type: "Event",
+        tableName: "SnowCompBenqiDAITransfer",
+        abi: {
+          anonymous: false,
+          inputs: [
+            { indexed: true, internalType: "address", name: "from", type: "address"},
+            { indexed: true, internalType: "address", name: "to", type: "address"},
+            { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
+          ],
+          },
+        },
+        { name: "Approval",
+        chain: "avalanche",
+        chainID: "0xa86a",
+        topic: "Approval(address, address, uint)",
+        type: "Event",
+        tableName: "SnowCompBenqiDAIApproval",
+        abi: {
+          anonymous: false,
+          inputs: [
+            { indexed: true, internalType: "address", name: "owner", type: "address"},
+            { indexed: true, internalType: "address", name: "spender", type: "address"},
+            { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
+          ],
+          },
+        },
+      ],
+    },
+
+    */

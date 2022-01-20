@@ -13,6 +13,11 @@ export enum ActivityStatus {
   "none" = "None",
 }
 
+export interface DataParameter {
+  name: string;
+  type: string;
+  source: "system" | "event";
+}
 export class ContractActivity extends Moralis.Object {
   get status(): ActivityStatus {
     return this.get("status");
@@ -20,6 +25,10 @@ export class ContractActivity extends Moralis.Object {
   get name(): string {
     return this.get("name");
   }
+  set name(val: string) {
+    this.set("name", val);
+  }
+
   get chain(): Chain {
     return this.get("chain");
   }
@@ -29,8 +38,43 @@ export class ContractActivity extends Moralis.Object {
   get ABI(): string {
     return this.get("ABI");
   }
+  set ABI(newVal: string) {
+    this.set("ABI", newVal);
+  }
   get contract(): Array<Contract> {
     return this.get("contract");
+  }
+  get topic(): string {
+    return this.get("topic");
+  }
+  set topic(newVal: string) {
+    this.set("topic", newVal);
+  }
+  get description(): string {
+    return this.get("description");
+  }
+  set description(newVal: string) {
+    this.set("description", newVal);
+  }
+
+  get template(): string {
+    return this.get("template");
+  }
+  set template(newVal: string) {
+    this.set("template", newVal);
+  }
+
+  get dataParameters(): DataParameter[] {
+    const params = this.getSystemDataParameters();
+    return params;
+  }
+
+  getSystemDataParameters(): DataParameter[] {
+    return [
+      { name: "username", type: "string", source: "system" },
+      { name: "contractName", type: "string", source: "system" },
+      { name: "subscriptionName", type: "string", source: "system" },
+    ];
   }
 
   constructor() {

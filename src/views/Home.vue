@@ -16,13 +16,16 @@
           <va-button color="danger" class="float-end" @click.prevent="logout">
             Logout
           </va-button>
-          <va-button
+          <va-switch
+            true-inner-label="Manager"
+            false-inner-label="User"
+            true-value="manager"
+            false-value="user"
             color="warning"
             class="flex float-end pl-2"
-            @click.prevent="showAlerter = true"
+            v-model="userMode"
           >
-            Manage
-          </va-button>
+          </va-switch>
           <va-button
             color="secondary"
             class="flex float-end pl-2"
@@ -33,7 +36,7 @@
         </va-navbar-item>
       </template>
     </va-navbar>
-    <div class="row pb-3">
+    <div v-if="showSubscriptions" class="row pb-3">
       <div class="flex sm12">
         <Subscriptions @subscribe="doSubscribe"></Subscriptions>
       </div>
@@ -73,11 +76,9 @@
         ></Subscribe>
       </slot>
     </va-modal>
-    <va-modal hide-default-actions size="large" v-model="showAlerter">
-      <slot>
-        <ProtocolManager></ProtocolManager>
-      </slot>
-    </va-modal>
+    <div v-if="showManager">
+      <ProtocolManager></ProtocolManager>
+    </div>
   </div>
 </template>
 
@@ -106,12 +107,11 @@ export default defineComponent({
   },
   data() {
     return {
-      showSubscribe: false,
+      userMode: "user" as "user" | "manager",
       subscribeTx: tx,
-      showAlerter: false,
       showTransactions: false,
       showCategories: true,
-      showSubscriptions: true,
+      showSubscribe: false,
       showChannels: false,
     };
   },
@@ -121,6 +121,12 @@ export default defineComponent({
     };
   },
   computed: {
+    showSubscriptions(): boolean {
+      return this.userMode == "user";
+    },
+    showManager(): boolean {
+      return this.userMode == "manager";
+    },
     user(): UserModel {
       return userModule.user as UserModel;
     },

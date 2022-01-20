@@ -30,7 +30,7 @@ async function setupProtocols() {
   p.set("tokenData", {
     symbol: "xSNOB",
     contractAddress: "0x83952E7ab4aca74ca96217D6F8f7591BEaD6D64E",
-    chain: "Avalanche",
+    chain: "avalanche",
     basicQuantity: 100,
     goldQuantity: 1000,
   });
@@ -53,7 +53,7 @@ async function setupProtocols() {
   p.set("tokenData", {
     symbol: "AXIAL",
     contractAddress: "0xcF8419A615c57511807236751c0AF38Db4ba3351",
-    chain: "Avalanche",
+    chain: "avalanche",
     basicQuantity: 2500,
     goldQuantity: 10000,
   });
@@ -73,11 +73,11 @@ async function setupProtocols() {
     "iconURL",
     "https://upload.wikimedia.org/wikipedia/commons/e/e7/Uniswap_Logo.svg"
   );
-  p.set("chains", ["Ethereum"]);
+  p.set("chains", ["eth"]);
   p.set("tokenData", {
     symbol: "UNI-V2",
     contractAddress: "0x59f96b8571e3b11f859a09eaf5a790a138fc64d0",
-    chain: "Ethereum",
+    chain: "eth",
     basicQuantity: 2500,
     goldQuantity: 10000,
   });

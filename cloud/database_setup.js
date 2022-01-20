@@ -6,7 +6,10 @@
 //
 // Safe to run on an existing database to update/reset it to the starting state for all configurations
 //
+// Show server logs
 //  moralis-admin-cli get-logs --moralisApiKey XXXXXXXXXXXX --moralisApiSecret XXXXXXXXXXXXXXX
+//
+// 
 //
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -63,8 +63,15 @@ export class Contract extends Moralis.Object {
   get name(): string{
     return this.get("name");
   }
+  set name(newVal: string) {
+    this.set("name", newVal);
+  }
+
   get address(): string {
     return this.get("address");
+  }
+  set address(newVal: string) {
+    this.set("address", newVal);
   }
   get short_address(): string {
     return (
@@ -76,9 +83,16 @@ export class Contract extends Moralis.Object {
   get description(): string {
     return `${this.name} (${this.short_address})`;
   }
+  set description(newVal: string) {
+    this.set("description", newVal);
+  }
   get chain(): Chain {
     return this.get("chain");
   }
+  set chain(newVal: Chain) {
+    this.set("chain", newVal);
+  }
+
   get protocol(): Protocol | undefined {
     return this.get("protocol");
   };

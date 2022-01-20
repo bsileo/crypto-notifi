@@ -16,47 +16,11 @@
         :header="selectProtocolHeader"
         class="pb-3"
       >
-        <div class="row pt-2 pb-4">
-          <va-card
-            class="flex sm6 md4 lg3 mr-2"
-            :class="{
-              active: this.selectedProtocolName == protocolInfo.name,
-            }"
-            :dark="this.selectedProtocolName == protocolInfo.name"
-            :stripe="this.selectedProtocolName == protocolInfo.name"
-            stripe-color="success"
-            v-bind:key="protocolInfo.id"
-            v-for="protocolInfo in protocols"
-          >
-            <va-card-title>{{ protocolInfo.name }}</va-card-title>
-            <va-image contain :src="protocolInfo.iconURL">
-              <template #error> Image not found! :( </template>
-              <template #loader>
-                <va-progress-circle indeterminate />
-              </template>
-            </va-image>
-            <div>
-              Token:
-              <a
-                :href="protocolInfo.protocol.tokenContractURL()"
-                target="_frame"
-              >
-                {{ protocolInfo.protocol.get("tokenData")?.symbol }}</a
-              >
-            </div>
-            <div>Balance: {{ getWalletBalance(protocolInfo.protocol) }}</div>
-            <div>Level: {{ getProtocolLevel(protocolInfo.protocol) }}</div>
-            <va-card-actions align="between">
-              <va-button
-                @click="
-                  selectedProtocolName = protocolInfo.name;
-                  selectedProtocol = protocolInfo.protocol;
-                "
-                >Select</va-button
-              >
-            </va-card-actions>
-          </va-card>
-        </div>
+        <ProtocolSelector
+          :showSearch="true"
+          :showUserInfo="true"
+          @selection="selectProtocol"
+        ></ProtocolSelector>
       </va-collapse>
       <div>
         <div v-if="showSubGeneral" class="row pt-2">
@@ -94,18 +58,17 @@
           />
           <va-select
             class="flex sm6"
-            label="Contract Address"
+            label="Contract Name"
             v-model="contractAddress"
             :options="contracts"
             :track-by="(option) => option.id"
             value-by="id"
             text-by="description"
-            allowCreate
-            @create-new="addNewContract"
+            searchable
             :rules="[this.validContract || 'Enter a valid contract address']"
           />
           <va-select
-            class="flex sm3"
+            class="flex sm4"
             label="Contract Activity"
             v-model="contractActivityID"
             :options="contractActivities"
@@ -170,7 +133,6 @@
         <va-input
           class="flex sm11"
           label="Subscription Name"
-          size="large"
           v-model="subName"
           :rules="[this.validName || 'Enter a valid name']"
         />
@@ -225,7 +187,7 @@ import {
   SubscriptionType,
   SubscriptionTypeStatus,
 } from "@/models/SubscriptionType";
-import { Protocol, ProtocolLevel } from "@/models/Protocol";
+import { Protocol } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
 import { ActivityType, ContractActivity } from "@/models/ContractActivity";
 
@@ -235,6 +197,7 @@ import { contractsModule } from "@/store/contracts";
 import { Contract, Chain } from "@/models/Contract";
 import { UserModel } from "@/models/User";
 import { AlertTypes } from "@/models/Alert";
+import ProtocolSelector from "./ProtocolSelector.vue";
 
 //import Moralis from "moralis/types";
 // let tx: Moralis.TransactionResult | null = null;
@@ -282,7 +245,7 @@ let subType: AlertTypes = AlertTypes.protocol;
 
 export default defineComponent({
   name: "Subscribe",
-  components: {},
+  components: { ProtocolSelector },
   props: {
     transaction: tx,
     subscription: Subscription,
@@ -349,9 +312,6 @@ export default defineComponent({
     contractAddress(newAddress: string, oldAddress: string) {
       this.fetchContractActivities();
     },
-  },
-  mounted() {
-    this.getMyTokens();
   },
   computed: {
     showSectionProtocols: {
@@ -515,12 +475,14 @@ export default defineComponent({
     message(): string {
       let msg = "";
       if (this.selectedProtocolName) {
-        msg = `Send an alert for the <strong>${this.selectedProtocolName} Protocol</strong> called <strong>${this.subName}</strong>`;
+        msg = `Send alerts for the <strong>${this.selectedProtocolName} Protocol</strong>`;
+      } else {
+        msg = `Send alerts `;
       }
       if (this.subType === AlertTypes.contract) {
-        msg = `${msg} which triggers on`;
+        msg = `${msg} which trigger on`;
         if (this.selectedContractActivity?.type == "Transaction") {
-          msg = `${msg} transactions`;
+          msg = `${msg} <strong>Transactions</strong>`;
         } else if (this.selectedContractActivity?.type == ActivityType.event) {
           msg = `${msg} the event <strong>${this.selectedContractActivity.name}</strong>`;
         } else {
@@ -543,11 +505,16 @@ export default defineComponent({
         msg = `${msg} sent to ${this.to_address}`;
       }
       if (this.chkValue) {
-        msg = `${msg} whose value is ${this.valueOp} ${this.value}`;
+        msg = `${msg} whose <strong>Value is ${this.valueOp} ${this.value}</strong>`;
       }
-      if (this.chain != undefined && msg != "") {
+      if (
+        this.subType != AlertTypes.protocol &&
+        this.chain != undefined &&
+        msg != ""
+      ) {
         msg = `${msg} on the <strong>${this.chain} blockchain</strong>`;
       }
+      msg = `${msg}<br/>Name this subscription <strong>${this.subName}</strong>`;
 
       return msg;
     },
@@ -728,37 +695,9 @@ export default defineComponent({
       );
       return tokenMetadata[0]?.thumbnail;
     },
-    getProtocolLevel(p: Protocol): ProtocolLevel {
-      const bal = this.getWalletBalance(p);
-      if (bal > p.get("tokenData").goldQuantity) {
-        return ProtocolLevel.Gold;
-      } else if (bal > p.get("tokenData").basicQuantity) {
-        return ProtocolLevel.Basic;
-      } else {
-        return ProtocolLevel.Free;
-      }
-    },
-    getWalletBalance(p: Protocol): number | string {
-      let token = undefined;
-      if (p.get("tokenData")) {
-        token = this.myTokens.find(
-          (e) => e?.symbol == p.get("tokenData").symbol
-        );
-      }
-      if (token) {
-        return (token.balance / 10 ** token.decimals).toFixed(2);
-      }
-      return 0;
-    },
-    async getMyTokens(): Promise<void> {
-      // eslint-disable-next-line prettier/prettier
-      console.log(userModule.user);
-      const options = {
-        chain: "avalanche",
-        address: this.user?.get("accounts")[0],
-      };
-      const balances = await Moralis.Web3API.account.getTokenBalances(options);
-      this.myTokens = balances;
+    selectProtocol(prot: Protocol) {
+      this.selectedProtocolName = prot.name;
+      this.selectedProtocol = prot;
     },
   },
 });

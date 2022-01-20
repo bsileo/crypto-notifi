@@ -8540,6 +8540,11 @@
   dependencies:
     "wrappy" "1"
 
+"onesignal-vue@^1.0.0-beta3":
+  "integrity" "sha512-6FD1FyQlxjQ61HNvMZ/KUeDBeEG4vl2OSqHlY9GWTJXT+JFWdH21JS1TvKRn+eziFQPrbQ1J+XD32zLkw37+Xw=="
+  "resolved" "https://registry.npmjs.org/onesignal-vue/-/onesignal-vue-1.0.0-beta3.tgz"
+  "version" "1.0.0-beta3"
+
 "onetime@^2.0.0":
   "integrity" "sha1-BnQoIw/WdEOyeUsiu6UotoZ5YtQ="
   "resolved" "https://registry.npmjs.org/onetime/-/onetime-2.0.1.tgz"

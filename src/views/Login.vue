@@ -23,7 +23,7 @@ export default class Login extends Vue {
       });
       const user: UserModel = await this.$moralis.Web3.authenticate();
       userModule.SET_USER(user);
-      console.log(user);
+      //console.log(user);
       this.$router.push({ name: "Home" });
     } catch (error) {
       console.log({ error });

@@ -16,6 +16,10 @@ export class Subscription extends Moralis.Object {
   get name(): string {
     return this.get("name");
   }
+  set name(val: string) {
+    this.set("name", val);
+  }
+
   get subscriptionType(): string {
     return this.get("subscriptionType");
   }
@@ -43,6 +47,9 @@ export class Subscription extends Moralis.Object {
   }
   get description(): string {
     return this.get("description");
+  }
+  set description(val: string) {
+    this.set("description", val);
   }
   get contract(): Contract {
     return this.get("contract");

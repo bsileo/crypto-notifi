@@ -168,6 +168,7 @@ export default defineComponent({
     protocol(newPro: Protocol, oldProt: Protocol) {
       this.fetchsubCategories();
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     newContent(newCont: string, oldCont: string) {
       if (this.editor && this.newRichContent == "") {
         this.editor.commands.setContent(`<p>${newCont}</p>`);
@@ -200,10 +201,12 @@ export default defineComponent({
 
       // Hack fix because the result of the selection does not have correct bahavior
       const cat: SubscriptionType | undefined = this.subCategories.find(
-        (e) => e.id == this.newCategory!.id
+        (e) => e.id == this.newCategory?.id
       );
-
-      const c = Alert.spawn(cat!, this.newContent, this.protocol);
+      if (!cat) {
+        return;
+      }
+      const c = Alert.spawn(cat, this.newContent, this.protocol);
       if (this.newRichContent != null) {
         c.set("richContent", this.newRichContent);
       }
@@ -271,7 +274,6 @@ div.editor {
   //transform: translateY(-100%);
   transform-origin: top left;
   white-space: nowrap;
-
 }
 /* Basic editor styles */
 .ProseMirror {

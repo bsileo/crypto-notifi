@@ -33,36 +33,11 @@
           </div>
         </div>
       </template>
-      <div class="row pt-2 pb-2">
-        <va-card
-          class="flex sm6 md4 lg3 mr-2"
-          :class="{
-            active: this.selectedProtocol?.get('name') == protocol.name,
-          }"
-          :dark="this.selectedProtocol?.get('name') == protocol.name"
-          :stripe="this.selectedProtocol?.get('name') == protocol.name"
-          stripe-color="success"
-          v-bind:key="protocol.id"
-          v-for="protocol in protocols"
-        >
-          <va-card-title>{{ protocol.name }}</va-card-title>
-          <va-image contain :src="protocol.iconURL">
-            <template #error> Image not found! :( </template>
-            <template #loader>
-              <va-progress-circle indeterminate />
-            </template>
-          </va-image>
-          <div>
-            Token:
-            <a :href="protocol.tokenContractURL()" target="_frame">
-              {{ protocol.tokenData.symbol }}</a
-            >
-          </div>
-          <va-card-actions align="between">
-            <va-button @click="selectedProtocol = protocol">Select</va-button>
-          </va-card-actions>
-        </va-card>
-      </div>
+      <ProtocolSelector
+        :showSearch="false"
+        :showUserInfo="false"
+        @selection="selectProtocol"
+      ></ProtocolSelector>
     </va-collapse>
     <va-collapse
       class="pb-3"
@@ -73,6 +48,18 @@
     >
       <SendAlert @alert:sent="alertSent" :protocol="selectedProtocol">
       </SendAlert>
+    </va-collapse>
+    <va-collapse
+      class="pb-3"
+      v-model="showProtocolSetup"
+      header="ProtocolSettings"
+      :disabled="!this.selectedProtocol"
+      icon="settings"
+    >
+      <ProtocolSettings
+        :protocol="selectedProtocol"
+        @protocolUpdate="protocolUpdate"
+      ></ProtocolSettings>
     </va-collapse>
     <va-collapse
       class="pb-3"
@@ -174,8 +161,42 @@
       icon="alt_route"
       :disabled="!this.selectedProtocol"
     >
-      <h1>Coming Soon</h1>
+      <div class="row ml-2">
+        <va-card
+          square
+          outlined
+          class="flex sm12 md4 lg3 mr-1"
+          v-bind:key="contract.id"
+          v-for="contract in contracts"
+        >
+          <va-card-title>{{ contract.name }}</va-card-title>
+          <div>
+            <va-chip outline>{{ contract.chain }}</va-chip>
+            {{ contract.short_address }}
+          </div>
+          <va-card-actions align="stretch">
+            <va-button
+              @click="
+                this.selectedContract = contract;
+                showAddContract = true;
+              "
+              icon="edit"
+            ></va-button>
+          </va-card-actions>
+        </va-card>
+      </div>
+      <div class="ml-2 mt-2">
+        <va-button @click="startAddContract" icon="add">Add Contract</va-button>
+      </div>
     </va-collapse>
+    <va-modal fullscreen hide-default-actions v-model="showAddContract">
+      <EditContract
+        @contractSaved="contractSaved"
+        @cancel="showAddContract = false"
+        :contract="this.selectedContract"
+        :protocol="this.selectedProtocol"
+      ></EditContract>
+    </va-modal>
   </div>
 </template>
 
@@ -192,10 +213,20 @@ import { protocolsModule } from "@/store/protocol";
 import Moralis from "moralis";
 import EditCategory from "./EditCategory.vue";
 import SendAlert from "./SendAlert.vue";
+import EditContract from "./EditContract.vue";
+import ProtocolSelector from "./ProtocolSelector.vue";
+import ProtocolSettings from "./ProtocolSettings.vue";
+import { Contract } from "@/models/Contract";
 
 export default defineComponent({
   name: "ProtocolManager",
-  components: { EditCategory, SendAlert },
+  components: {
+    EditCategory,
+    SendAlert,
+    EditContract,
+    ProtocolSelector,
+    ProtocolSettings,
+  },
   data() {
     const columns = [
       { key: "shortDateTime", label: "Date", sortable: true },
@@ -209,14 +240,18 @@ export default defineComponent({
       showProtocolSelect: true,
       showAlert: false,
       showProtocol: false,
+      showProtocolSetup: false,
       showHistory: false,
       showTransactional: false,
       showSuccess: false,
+      showAddContract: false,
       sortBy: "shortDateTime",
       sortingOrder: "desc",
       selectedProtocol: undefined as Protocol | undefined,
       subCategories: [] as SubscriptionType[],
       newCategory: { name: "", type: "", description: "" },
+      contracts: [] as Contract[],
+      selectedContract: undefined as Contract | undefined,
     };
   },
   watch: {
@@ -227,6 +262,7 @@ export default defineComponent({
       this.showAlert = true;
       alertsModule.SET_PROTOCOL(this.selectedProtocol);
       await this.fetchsubCategories();
+      await this.fetchContracts();
     },
   },
   computed: {
@@ -243,6 +279,12 @@ export default defineComponent({
     },
   },
   methods: {
+    selectProtocol(aProtocol: Protocol): void {
+      this.selectedProtocol = aProtocol;
+    },
+    async protocolUpdate(aProtocol: Protocol): Promise<void> {
+      aProtocol.save();
+    },
     getCategoryName(type: string): string {
       const cat = this.subCategories.find((sg) => sg.type == type);
       console.log(`GetCategoryName: ${type}=${cat}`);
@@ -272,6 +314,23 @@ export default defineComponent({
           this.alertCategory = this.subCategories[0];
         }
       }
+    },
+    startAddContract() {
+      this.selectedContract = new Contract();
+      this.showAddContract = true;
+    },
+    contractSaved() {
+      this.showAddContract = false;
+      this.fetchContracts();
+    },
+    async fetchContracts(): Promise<Contract[]> {
+      if (this.selectedProtocol) {
+        const cons = await this.selectedProtocol.contracts();
+        this.contracts = cons;
+      } else {
+        this.contracts = [];
+      }
+      return this.contracts;
     },
     alertSent() {
       console.log("Alert Sent!");

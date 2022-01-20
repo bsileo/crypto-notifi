@@ -21,6 +21,22 @@
         href="https://fonts.googleapis.com/icon?family=Material+Icons"
         rel="stylesheet"
       >
+
+      <!-- OneSignal Custom Code Integration -->
+      <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+      <script>
+        window.OneSignal = window.OneSignal || [];
+        OneSignal.push(function() {
+          OneSignal.init({
+            appId: "9f5f56fb-b593-433f-992d-abcf3c5b6145",
+            safari_web_id: "",
+            notifyButton: {
+              enable: true,
+            },
+            allowLocalhostAsSecureOrigin: true,
+          });
+        });
+</script>
   </head>
   <body>
     <noscript>

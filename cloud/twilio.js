@@ -2,7 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 async function sendTwilioAlert(channel, content) {
   const logger = Moralis.Cloud.getLogger();
-  logger.info(`Twilio send ${content} to ${channel}`);
+  logger.info(
+    `Twilio send "${content.plain}" to ${channel.get("providerData").to}`
+  );
   const SID = await getAPIKey("TWILIO_SID");
   const auth = await getAPIKey("TWILIO_AUTH");
   let buff = new Buffer(`${SID}:${auth}`);
@@ -26,7 +28,7 @@ async function sendTwilioAlert(channel, content) {
     },
     function (httpResp) {
       logger.error(
-        "Request failed with response code " +
+        "[Twilio] Request failed with response code " +
           httpResp.status +
           "::" +
           httpResp.text

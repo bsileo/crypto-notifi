@@ -13,3 +13,12 @@ Moralis.Cloud.afterSave("UniswapPairCreated", async (request) => {
 Moralis.Cloud.beforeConsume("UniswapPairCreated", (event) => {
   return event && event.confirmed;
 });
+
+Moralis.Cloud.afterSave("SnowTokenSNOB", (event) => {
+  const logger = Moralis.Cloud.getLogger();
+  logger.info("SnowTokenSNOB Event");
+  const confirmed = request.object.get("confirmed");
+  if (confirmed) {
+    processSmartContractSubscriptions(request.object, "Transfer");
+  }
+});

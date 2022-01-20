@@ -3,32 +3,31 @@
 async function processSmartContractSubscriptions(transaction, activity) {
   const logger = Moralis.Cloud.getLogger();
   const addr = transaction.get("address");
-  logger.info(`Check for Smart Contract subs ${addr}`);
+  logger.info(`[processSmartContractSubscriptions] Check for Smart Contract subs ${addr} - ${activity}`);
   const addrQuery = new Moralis.Query("Subscription");
   addrQuery.equalTo("contractAddress", addr);
   const subs = await addrQuery.find();
   for (let i = 0; i < subs.length; i++) {
-    logger.info(`Smart Contract sub hit ${subs[i].id}`);
-    let msg = `Smart Contract Subscription match on '${subs[i].name}'`;
-    data.address = addr;
-    data.subscriptionName = subs[i].name;
+    logger.info(`[processSmartContractSubscriptions] Smart Contract sub hit ${subs[i].id}`);
+    let msg = `Smart Contract Subscription match on '${subs[i].get("name")}'`;
+    data = {
+      address: addr,
+      subscriptionName: subs[i].get("name"),
+      activity: activity.get("name"),
+    };
+    logger.info(`[processSmartContractSubscriptions] Process hit ${data}`);
     processSmartContractHit(subs[i], transaction, activity, msg, data);
   }
 }
 
-async function processSmartContractHit(
-  subscription,
-  transaction,
-  activity,
-  msg,
-  data
-) {
+// eslint-disable-next-line prettier/prettier
+async function processSmartContractHit(subscription, transaction, activity, msg, data ) {
   const logger = Moralis.Cloud.getLogger();
   logger.info(
-    `Contract Subscription Hit ${subscription.id} on TX ${transaction.id}`
+    `[processSmartContractHit] Contract Subscription Hit ${subscription.id} on TX ${transaction.id}`
   );
   let hit = true;
-  if (subscription.subActivity) {
+  if (subscription.contractActivity) {
     // This is an Event Subscription
     const subActivity = await subscription.contractActivity.fetch();
     hit == hit && subActivity.name == activity;
@@ -58,6 +57,7 @@ async function processSmartContractHit(
     }
   }
   if (hit) {
-    sendAlert(subscription, msg, data);
+    const content = { plain: msg, rich: msg };
+    sendAlert(subscription, content, data);
   }
 }
