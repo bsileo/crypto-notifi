@@ -3,13 +3,19 @@
     <va-card-title>
       <div class="flex md8">{{ name }}</div>
       <div class="flex md4">
-        <va-button
-          @click.prevent="this.togglePause()"
-          :icon-right="pauseToggleIcon"
-          class="mr-1"
-          size="small"
-          color="success"
-        ></va-button>
+        <va-popover
+          :message="pausePopoverText"
+          placement="top"
+          :hover-over-timeout="1"
+        >
+          <va-button
+            @click.prevent="this.togglePause()"
+            :icon-right="pauseToggleIcon"
+            class="mr-1"
+            size="small"
+            color="warning"
+          ></va-button>
+        </va-popover>
         <va-button
           @click.prevent="this.destroy()"
           icon-right="delete"
@@ -17,6 +23,11 @@
           class="mr-1"
           color="danger"
         ></va-button>
+        <va-popover
+          message="Coming Soon"
+          placement="top"
+          :hover-over-timeout="1"
+        >
         <va-button
           @click.prevent="this.edit()"
           icon-right="edit"
@@ -24,6 +35,7 @@
           color="success"
           :disabled="true"
         ></va-button>
+        </va-popover>
       </div>
     </va-card-title>
     <div class="row ml-2">
@@ -39,6 +51,10 @@
       <div class="flex sm9">
         <a target="_frame" :href="contractURL">{{ contractDescription }}</a>
       </div>
+    </div>
+    <div v-if="contractActivity" class="row ml-2">
+      <div class="flex sm3"><strong>Activity:</strong></div>
+      <div class="flex sm9">{{ contractActivity }}</div>
     </div>
     <div class="row ml-2">
       <div class="flex sm3"><strong>Channels:</strong></div>
@@ -86,6 +102,10 @@ export default defineComponent({
     contractDescription(): any {
       return this.currentSubscription.contract?.description;
     },
+    contractActivity(): string {
+      const act = this.currentSubscription.get("contractActivity");
+      return act?.name || "";
+    },
     contractURL(): string {
       if (this.currentSubscription.contract) {
         return this.currentSubscription.contract.contractURL;
@@ -118,7 +138,11 @@ export default defineComponent({
     pauseToggleIcon(): string {
       if (this.paused) return "play_arrow";
       else return "pause";
-    }
+    },
+    pausePopoverText(): string {
+      if (this.paused) return "Subscription paused. Click to resume";
+      else return "Pause alerts from this subscription";
+    },
   },
   methods: {
     async destroy(): Promise<void> {
