@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 async function sendEmailAlert(channel, content) {
-  const logger = Moralis.Cloud.getLogger();
+  const logger = getLogger();
   logger.info(`Email send ${content} to ${channel.get("providerData").email}`);
   const SENDGRID_API_KEY = await getAPIKey("SENDGRID_API_KEY");
   const sendgridContent = [{ type: "text/plain", value: content.plain }] 
