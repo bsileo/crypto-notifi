@@ -127,7 +127,11 @@ export default defineComponent({
     },
     contractChain: {
       get(): Chain {
-        return this.activeContract.chain;
+        if (this.activeContract.chain) {
+          return this.activeContract.chain;
+        } else {
+          return this.protocolChains[0];
+        }
       },
       set(newChain: Chain): void {
         this.activeContract.chain = newChain;
@@ -141,15 +145,17 @@ export default defineComponent({
       this.fetchContractActivities();
     },
     async fetchContractActivities(): Promise<ContractActivity[]> {
-      const rel = this.activeContract.get("ContractActivities");
+      const rel = this.activeContract.relation("ContractActivities");
       const q = rel.query();
       this.contractActivities = await q.find();
       return this.contractActivities;
     },
-    addActivity(aActivity: ContractActivity): void {
-      const rel = this.activeContract.get("ContractActivities");
-      rel.add(aActivity);
-      // No need to add the aActivity.contract relation here - it gets added in Save
+    async addActivity(aActivity: ContractActivity): Promise<void> {
+      const rel = this.activeContract.relation("ContractActivities");
+      aActivity.set("contract", this.activeContract);
+      const act = await aActivity.save();
+      rel.add(act);
+      this.activeContract.save();
     },
     cancel(): void {
       this.$emit("cancel");
@@ -159,6 +165,8 @@ export default defineComponent({
       // Is it s new one?
       if (!cont.id) {
         cont.set("status", "Requested");
+        cont.set("protocol", this.protocol);
+        cont.set("chain", this.contractChain);
       }
       cont = await cont.save();
       if (cont) {

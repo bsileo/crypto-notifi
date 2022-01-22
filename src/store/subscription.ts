@@ -52,8 +52,11 @@ export const subscriptionsModule = getModule(SubscriptionsModule);
 
 export const setupMySubscriptionsSub = async (): Promise<void> => {
   const query = new Moralis.Query(Subscription);
+  query.include("contract");
+  query.include("contractActivity");
+  query.include("UserChannel");
   const subscription = await query.subscribe();
-
+  
   const query2 = new Moralis.Query("GeneralSubscriptionTypes");
   subscriptionsModule.SetMySubscriptionTypes(await query2.find());
 

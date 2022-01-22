@@ -15,10 +15,17 @@
   </va-alert>
   <div class="row pb-1">
     <va-input
-      class="flex sm12"
-      label="Search Subscriptions"
+      class="flex sm4"
+      label="Search Names"
       v-model="search"
     ></va-input>
+    <div class="flex sm6">
+      <ProtocolSelector
+        :simpleList="true"
+        :simpleMulti="true"
+        @selection="setSearchProtocols"
+      ></ProtocolSelector>
+    </div>
   </div>
   <div class="layout gutter--md">
     <div class="row">
@@ -53,10 +60,12 @@ import { Subscription } from "@/models/Subscription";
 import { subscriptionsModule } from "@/store/subscription";
 import Subscribe from "@/components/subscribe.vue";
 import SubscriptionCard from "./Subscription.vue";
+import ProtocolSelector from "./ProtocolSelector.vue";
+import { Protocol } from "@/models/Protocol";
 
 export default defineComponent({
   name: "Subscriptions",
-  components: { Subscribe, SubscriptionCard },
+  components: { Subscribe, SubscriptionCard, ProtocolSelector },
   props: {
     showAdd: Boolean,
   },
@@ -75,6 +84,7 @@ export default defineComponent({
       selected: subs,
       showSubscribe: false,
       search: "",
+      searchProtocols: [] as Protocol[],
     };
   },
   mounted() {
@@ -83,11 +93,18 @@ export default defineComponent({
   emits: ["subscribe"],
   computed: {
     subscriptions(): Subscription[] {
-      const subs = subscriptionsModule.mySubscriptions;
-      return subs.filter((s) => {
+      let subs = subscriptionsModule.mySubscriptions;
+      subs = subs.filter((s) => {
         const idx = s.name.indexOf(this.search);
         return idx != -1;
       });
+      if (this.searchProtocols.length > 0) {
+        const prots = this.searchProtocols.map((e) => e.name);
+        subs = subs.filter((s) => {
+          return prots.includes(s.get("protocol"));
+        });
+      }
+      return subs;
     },
     selectedSubscription(): Subscription | null {
       if (this.selected.length == 0) return null;
@@ -101,6 +118,10 @@ export default defineComponent({
     },
   },
   methods: {
+    setSearchProtocols(prots: Protocol[]): void {
+      console.log(prots);
+      this.searchProtocols = prots;
+    },
     edit(id: string): void {
       console.log(`Edit ${id}`);
       this.showSubscribe = true;

@@ -41,7 +41,7 @@ export class ContractActivity extends Moralis.Object {
   set ABI(newVal: string) {
     this.set("ABI", newVal);
   }
-  get contract(): Array<Contract> {
+  get contract(): Contract {
     return this.get("contract");
   }
   get topic(): string {
@@ -66,12 +66,32 @@ export class ContractActivity extends Moralis.Object {
 
   get dataParameters(): DataParameter[] {
     const params = this.getSystemDataParameters();
+    params.push(...this.getABIParameters());
     return params;
   }
 
+  getABIParameters(): DataParameter[] {
+    const res: DataParameter[] = [];
+    try {
+      const raw = eval("(" + this.ABI + ")");
+      console.log(raw);
+      const inputs = raw.inputs;
+      inputs.forEach((element: DataParameter) => {
+        res.push({
+          name: element.name,
+          type: element.type,
+          source: "event",
+        });
+      });
+    } catch (error) {
+      console.log(`Failed to parse ABI for ${this.id}`);
+    }
+    return res;
+  }
   getSystemDataParameters(): DataParameter[] {
     return [
-      { name: "username", type: "string", source: "system" },
+      { name: "address", type: "string", source: "system" },
+      { name: "activityName", type: "string", source: "system" },
       { name: "contractName", type: "string", source: "system" },
       { name: "subscriptionName", type: "string", source: "system" },
       { name: "transactionValue", type: "number", source: "system" },

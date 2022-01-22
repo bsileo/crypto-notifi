@@ -68,7 +68,7 @@ export class Contract extends Moralis.Object {
   }
 
   get address(): string {
-    return this.get("address");
+    return this.get("address") || `<missing address ${this.id}>`;
   }
   set address(newVal: string) {
     this.set("address", newVal);
