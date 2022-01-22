@@ -10,6 +10,7 @@ async function processSmartContractSubscriptions(transaction, activityName) {
   addrQuery.include("contractActivity");
   addrQuery.include("contract");
   addrQuery.equalTo("contractAddress", addr);
+  addrQuery.equalTo("status", "active");
   const subs = await addrQuery.find();
   for (let i = 0; i < subs.length; i++) {
     logger.info(

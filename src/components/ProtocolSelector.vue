@@ -8,6 +8,7 @@
         text-by="name"
         v-model="selectedProtocols"
         :multiple="simpleMulti"
+        clearable
         @update:modelValue="selectionChange"
       >
         <template #content="{ value }">
@@ -35,7 +36,7 @@
       </div>
       <div class="row pt-2 pb-4">
         <va-card
-          class="flex sm6 md4 lg3 mr-2"
+          class="flex sm5 md3 lg2 mr-2 mb-1"
           :class="{
             active: this.selectedProtocol?.get('name') == protocol.name,
           }"

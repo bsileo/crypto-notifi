@@ -29,7 +29,6 @@
           label="Chain"
           v-model="contractChain"
           :options="protocolChains"
-          :disabled="protocolChains.length <= 1"
           :rules="[this.contractChain != undefined || 'Select a chain']"
         />
       </div>

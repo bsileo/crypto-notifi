@@ -4,6 +4,13 @@
       <div class="flex md8">{{ name }}</div>
       <div class="flex md4">
         <va-button
+          @click.prevent="this.togglePause()"
+          :icon-right="pauseToggleIcon"
+          class="mr-1"
+          size="small"
+          color="success"
+        ></va-button>
+        <va-button
           @click.prevent="this.destroy()"
           icon-right="delete"
           size="small"
@@ -105,6 +112,13 @@ export default defineComponent({
         this.currentSubscription.description = val;
       },
     },
+    paused(): boolean {
+      return this.currentSubscription.status == "paused";
+    },
+    pauseToggleIcon(): string {
+      if (this.paused) return "play_arrow";
+      else return "pause";
+    }
   },
   methods: {
     async destroy(): Promise<void> {
@@ -116,6 +130,14 @@ export default defineComponent({
     async fetchChannelsDescription() {
       this.channelsDescription = await this.currentSubscription.channelsDescription();
     },
+    async togglePause(): Promise<void> {
+      if (this.paused) {
+        this.currentSubscription.set("status", "active");
+      } else {
+        this.currentSubscription.set("status", "paused");
+      }
+      this.currentSubscription.save();
+    }
   },
 });
 </script>

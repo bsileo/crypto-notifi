@@ -6,6 +6,10 @@ import { Contract } from "./Contract";
 import { ContractActivity } from "./ContractActivity";
 import { Protocol } from "./Protocol";
 
+export enum SubscriptionStatus {
+  "active" = "active",
+  "paused" = "paused"
+}
 export class Subscription extends Moralis.Object {
   get protocol(): Protocol {
     return this.get("protocol");
@@ -64,6 +68,10 @@ export class Subscription extends Moralis.Object {
 
   get contractActivity(): ContractActivity {
     return this.get("contractActvity");
+  }
+
+  get status(): SubscriptionStatus {
+    return this.get("status");
   }
 
   async channelCount(): Promise<number> {
