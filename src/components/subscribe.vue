@@ -41,7 +41,7 @@
             class="flex sm12 pt-2 pl-4"
           >
             <va-card :bordered="false">
-              <va-card-title></va-card-title>
+              <va-card-title>About these Alerts:</va-card-title>
               <va-card-content>
                 <span v-html="this.selectedSubGeneralTypeDescription"></span>
               </va-card-content>
@@ -77,6 +77,22 @@
             :text-by="(option) => option.name || option.get('name')"
             searchable
           />
+        </div>
+        <div class="row pt-2" v-if="showContracts">
+          <div class="flex sm-3"></div>
+          <div class="flex sm-9 mb-2 justify-self--end">
+          <va-alert
+            icon="psychology"
+            color="info"
+            border-color="success"
+            border="top"
+          >
+            <template v-slot:title>Activity:</template>
+            <template v-slot:default
+              ><span v-html="activityDescription"></span
+            ></template>
+          </va-alert>
+          </div>
         </div>
         <div class="row pt-2" v-if="showFrom">
           <va-switch
@@ -254,7 +270,7 @@ export default defineComponent({
     const app = getCurrentInstance();
     const vaToast = app?.appContext.config.globalProperties.$vaToast;
     return {
-      showSectionProtocolsVal: false,
+      showSectionProtocolsVal: true,
       showToast: vaToast?.init,
       selectedProtocolName: "",
       intSelectedProtocol: undefined as Protocol | undefined,
@@ -360,6 +376,18 @@ export default defineComponent({
       return this.contractActivities.find(
         (e) => e.id == this.contractActivityID
       );
+    },
+    activityDescription(): string {
+      const act = this.selectedContractActivity;
+      if (act) {
+        if ((act as ContractActivity).description) {
+          return (act as ContractActivity).description;
+        } else {
+          return "Any tranasaction which occours on this contract";
+        }
+      } else {
+        return "";
+      }
     },
     validContract(): boolean {
       return true;

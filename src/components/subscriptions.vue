@@ -1,56 +1,36 @@
 <template>
-  <va-card color="primary" gradient style="align-items: stretch">
-    <va-card-title>
-      <div class="container">
-        <div class="flex md-4">
-          <h2>Subscriptions</h2>
-        </div>
-      </div>
-    </va-card-title>
-    <va-card-content>
-      <va-data-table
-        :items="subscriptions"
-        :columns="columns"
-        v-model="selected"
-      >
-        <template #header(name)>Name</template>
-        <template #header(id)></template>
-        <template #header(subscriptionType)>Type</template>
-        <template #header(channels)>Channels</template>
-        <template #header(description)>Summary</template>
-        <template #cell(description)="{ source: description }">
-          <span
-            style="width: 50px; overflow: hidden; text-overflow: ellipsis"
-            v-html="description"
-          ></span>
-        </template>
-        <template #cell(id)="{ source: id }">
-          <va-button
-            @click.prevent="remove(id)"
-            icon-right="delete"
-            size="small"
-            class="mr-1"
-          ></va-button
-          ><va-button
-            @click.prevent="edit(id)"
-            v-if="false"
-            icon-right="edit"
-            size="small"
-            class="mr-2"
-          ></va-button
-        ></template>
-      </va-data-table>
-      <div class="flex pl-2 pt-3">
+  <va-alert color="primary" title="My Subscriptions" center class="mb-1">
+    <div class="top-right">
+      <va-popover message="Add a new Subscription">
         <va-button
           @click.prevent="this.$emit('subscribe')"
           icon-right="add"
           size="small"
           class="mr-4"
           color="success"
-        ></va-button>
+        >
+        </va-button>
+      </va-popover>
+    </div>
+  </va-alert>
+  <div class="row pb-1">
+    <va-input
+      class="flex sm12"
+      label="Search Subscriptions"
+      v-model="search"
+    ></va-input>
+  </div>
+  <div class="layout gutter--md">
+    <div class="row">
+      <div
+        class="flex sm6 md4 lg4"
+        v-for="subscription in subscriptions"
+        v-bind:key="subscription.id"
+      >
+        <SubscriptionCard :subscription="subscription"></SubscriptionCard>
       </div>
-    </va-card-content>
-  </va-card>
+    </div>
+  </div>
   <va-modal
     fullscreen
     hide-default-actions
@@ -72,10 +52,11 @@ import { defineComponent } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { subscriptionsModule } from "@/store/subscription";
 import Subscribe from "@/components/subscribe.vue";
+import SubscriptionCard from "./Subscription.vue";
 
 export default defineComponent({
   name: "Subscriptions",
-  components: { Subscribe },
+  components: { Subscribe, SubscriptionCard },
   props: {
     showAdd: Boolean,
   },
@@ -93,6 +74,7 @@ export default defineComponent({
       columns: columns,
       selected: subs,
       showSubscribe: false,
+      search: "",
     };
   },
   mounted() {
@@ -101,7 +83,11 @@ export default defineComponent({
   emits: ["subscribe"],
   computed: {
     subscriptions(): Subscription[] {
-      return subscriptionsModule.mySubscriptions;
+      const subs = subscriptionsModule.mySubscriptions;
+      return subs.filter((s) => {
+        const idx = s.name.indexOf(this.search);
+        return idx != -1;
+      });
     },
     selectedSubscription(): Subscription | null {
       if (this.selected.length == 0) return null;
@@ -132,4 +118,9 @@ export default defineComponent({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.top-right {
+  position: absolute;
+  right: 0;
+}
+</style>

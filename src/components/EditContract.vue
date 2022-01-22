@@ -112,7 +112,7 @@ export default defineComponent({
         return this.activeContract.address;
       },
       set(newAddress: string): void {
-        this.activeContract.address = newAddress;
+        this.activeContract.address = newAddress.toLowerCase();
         this.$emit("contractUpdate", this.activeContract);
       },
     },

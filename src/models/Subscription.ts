@@ -66,12 +66,17 @@ export class Subscription extends Moralis.Object {
     return this.get("contractActvity");
   }
 
-  myChannelNames = "";
-  get channels(): UserChannel[] {
-    return [];
+  async channelCount(): Promise<number> {
+    return await this.get("UserChannel").query().count();
   }
-  get channelNames(): string {
-    return "";
+  async channels(): Promise<UserChannel[]> {
+    const q = this.get("UserChannel").query();
+    return await q.find();
+  }
+  async channelsDescription(): Promise<string> {
+    const c = await this.channels();
+    const names = c.map((elem) => elem.name);
+    return names.toString();
   }
 
   constructor() {

@@ -74,6 +74,8 @@ export class ContractActivity extends Moralis.Object {
       { name: "username", type: "string", source: "system" },
       { name: "contractName", type: "string", source: "system" },
       { name: "subscriptionName", type: "string", source: "system" },
+      { name: "transactionValue", type: "number", source: "system" },
+      { name: "subscriptionValue", type: "string", source: "system" },
     ];
   }
 

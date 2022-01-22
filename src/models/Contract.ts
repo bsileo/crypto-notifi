@@ -60,7 +60,7 @@ export class Contract extends Moralis.Object {
   get status(): ContractStatus {
     return this.get("Contractstatus");
   }
-  get name(): string{
+  get name(): string {
     return this.get("name");
   }
   set name(newVal: string) {
@@ -95,7 +95,7 @@ export class Contract extends Moralis.Object {
 
   get protocol(): Protocol | undefined {
     return this.get("protocol");
-  };
+  }
   get type(): ContractType {
     return this.get("type");
   }
@@ -127,6 +127,16 @@ export class Contract extends Moralis.Object {
     }
     this.events.push(ev);
     return true;
+  }
+
+  get contractURL(): string {
+    const chain = this.chain as Chain;
+    if (chain == "avalanche") {
+      return `https://snowtrace.io/token/${this.address}`;
+    } else if (chain == "eth") {
+      return `https://etherscan.io/address/${this.address}`;
+    } else
+      throw `Chain not configured in protocol.tokenContractURL() for ${this.id}`;
   }
 }
 

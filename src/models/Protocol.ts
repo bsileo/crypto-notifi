@@ -79,6 +79,10 @@ export class Protocol extends Moralis.Object {
   // return the current Users wallet ba;ance for my toekn
   getWalletBalance(): number | string {
     let token = undefined;
+    const tokens = userModule.tokens;
+    if (!tokens) {
+      return "";
+    }
     if (this.get("tokenData")) {
       token = userModule.tokens.find(
         (e: any) => e?.symbol == this.get("tokenData").symbol
