@@ -22,3 +22,14 @@ Moralis.Cloud.afterSave("SnowTokenSNOB", (event) => {
     processSmartContractSubscriptions(request.object, "Transfer");
   }
 });
+
+Moralis.Cloud.afterSave("SnowballTransfer", async (request) => {
+  const logger = Moralis.Cloud.getLogger();
+  logger.info("SnowballTransfer Event");
+  const confirmed = request.object.get("confirmed");
+  if (confirmed) {
+    processSmartContractSubscriptions(request.object, "Transfer");
+  } else {
+    // handle unconfirmed case
+  }
+});
