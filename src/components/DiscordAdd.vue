@@ -10,6 +10,7 @@
         placeholder="@DiscordDude"
       />
     </div>
+    <div><h3>Coming Soon</h3></div>
   </div>
 </template>
 
@@ -30,7 +31,8 @@ export default defineComponent({
       return this.discordUser != "" && this.discordUser.length > 3;
     },
     valid(): boolean {
-      return this.validUser;
+       console.log(`Cleanup valid in Discord to enable this channel`);
+      return this.validUser && false;
     },
     providerdata(): Record<string, string | undefined> {
       return {

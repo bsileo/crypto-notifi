@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <div v-if="simpleList">
       <va-select
         :options="protocols"
@@ -16,7 +16,7 @@
             v-for="chip in value"
             :key="chip"
             size="small"
-            class="mr-1 my-1"
+            class="mr-1 ml-1"
             closeable
             @update:modelValue="unselect(chip)"
           >
@@ -36,7 +36,7 @@
       </div>
       <div class="row pt-2 pb-4">
         <va-card
-          class="flex sm5 md3 lg2 mr-2 mb-1"
+          class="flex sm5 md3 lg3 mr-1 mb-1"
           :class="{
             active: this.selectedProtocol?.get('name') == protocol.name,
           }"
@@ -64,7 +64,7 @@
           <div>
             <slot name="protocol"></slot>
           </div>
-          <div>
+          <div v-if="protocol.tokenData" class="pt-2">
             Token:
             <a :href="protocol.tokenContractURL()" target="_frame">
               {{ protocol.tokenData.symbol }}</a
@@ -73,9 +73,13 @@
           <div v-if="showUserInfo">
             Balance: {{ protocol.getWalletBalance() }}
           </div>
-          <div v-if="showUserInfo">Level: {{ protocol.getUserLevel() }}</div>
+          <div v-if="showUserInfo">
+            Level:<strong>{{ protocol.getUserLevel() }}</strong>
+          </div>
           <va-card-actions align="between">
-            <va-button @click="this.select(protocol)">Select</va-button>
+            <va-button v-if="allowSelect" @click="this.select(protocol)"
+              >Select</va-button
+            >
           </va-card-actions>
         </va-card>
       </div>
@@ -85,9 +89,11 @@
 
 <script lang="ts">
 import { Protocol } from "@/models/Protocol";
+import { UserModel } from "@/models/User";
 import { protocolsModule } from "@/store/protocol";
 import { userModule } from "@/store/user";
-import { defineComponent } from "vue";
+import Moralis from "moralis";
+import { defineComponent, inject } from "vue";
 
 export default defineComponent({
   name: "ProtocolSelector",
@@ -98,20 +104,36 @@ export default defineComponent({
     showUserInfo: { type: Boolean, required: false, default: false },
     simpleList: { type: Boolean, required: false, default: false },
     simpleMulti: { type: Boolean, required: false, default: true },
+    allowSelect: { type: Boolean, required: false, default: true },
+    manager: { type: Boolean, required: false, default: false },
   },
   data() {
     return {
       search: "",
       selectedProtocol: undefined as Protocol | undefined,
       selectedProtocols: [] as Protocol[],
+      managerQuery: undefined as any,
+      query: undefined as any,
+      rawProtocols: [] as Protocol[],
     };
   },
-  mounted() {
+  setup() {
+    const user: UserModel | undefined = inject("user");
+    return {
+      user,
+    };
+  },
+  async mounted() {
     userModule.fetchUserTokens();
+    this.query = await Protocol.setupSubscription(
+      this.refreshProtocols,
+      this.manager
+    );
+    this.refreshProtocols();
   },
   computed: {
     protocols(): Protocol[] {
-      const prots = protocolsModule.allProtocols;
+      let prots = this.rawProtocols;
       if (this.search) {
         const result = prots.filter((e: Protocol) => {
           const idx = e.name.toLowerCase().indexOf(this.search.toLowerCase());
@@ -137,6 +159,26 @@ export default defineComponent({
         return v.id !== prot.id;
       });
       this.selectionChange();
+    },
+    async refreshProtocols(obj?: any): Promise<void> {
+      let prots = await this.query.find();
+      // temporary code until we can make the query do this for us!
+      if (this.manager) {
+        const res = [] as Protocol[];
+        for (let i = 0; i < prots.length; i++) {
+          let man = await prots[i].managerOf();
+          if (man) {
+            res.push(prots[i]);
+          }
+        }
+        console.log(res);
+        this.rawProtocols.length = 0;
+        this.rawProtocols.push(...res);
+      } else {
+        console.log(prots);
+        this.rawProtocols.length = 0;
+        this.rawProtocols.push(...prots);
+      }
     },
   },
 });

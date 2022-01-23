@@ -1,16 +1,6 @@
 <template>
-  <div class="container p-3 gutter--md">
-    <va-navbar color="primary" shape class="mb-2">
-      <template #left>
-        <va-navbar-item>
-          <va-image class="logo" alt="logo" src="/logo.png">
-            <template #error> Logo </template>
-          </va-image>
-        </va-navbar-item>
-      </template>
-      <template #center>
-        <va-navbar-item></va-navbar-item>
-      </template>
+  <div class="container gutter--md">
+    <Header>
       <template #right>
         <va-navbar-item>
           <va-button color="danger" class="float-end" @click.prevent="logout">
@@ -24,6 +14,7 @@
             color="warning"
             class="flex float-end pl-2"
             v-model="userMode"
+            v-if="userIsManager"
           >
           </va-switch>
           <va-button
@@ -35,7 +26,7 @@
           </va-button>
         </va-navbar-item>
       </template>
-    </va-navbar>
+    </Header>
     <div v-if="showSubscriptions" class="row pb-3">
       <div class="flex sm12">
         <Subscriptions @subscribe="doSubscribe"></Subscriptions>
@@ -92,6 +83,7 @@ import Subscriptions from "@/components/subscriptions.vue";
 import Subscribe from "@/components/subscribe.vue";
 import Transactions from "@/components/transactions.vue";
 import ProtocolManager from "@/components/ProtocolManager.vue";
+import Header from "@/components/header.vue"
 import { computed } from "vue";
 
 let tx: Moralis.TransactionResult | null = null;
@@ -104,6 +96,7 @@ export default defineComponent({
     Transactions,
     Subscribe,
     ProtocolManager,
+    Header,
   },
   data() {
     return {
@@ -130,6 +123,9 @@ export default defineComponent({
     user(): UserModel {
       return userModule.user as UserModel;
     },
+    userIsManager(): boolean {
+      return this.user.get("ProtocolManager");
+    },
   },
   methods: {
     async fromWei(value: string): Promise<number> {
@@ -153,5 +149,11 @@ export default defineComponent({
 .logo {
   height: 50px;
   width: 80px;
+}
+.title {
+  font-size: 2em;
+  font-weight: bold;
+  align-self: center;
+  font-family: "Material Icons";
 }
 </style>

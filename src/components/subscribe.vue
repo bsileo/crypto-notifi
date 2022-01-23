@@ -674,6 +674,11 @@ export default defineComponent({
         if (this.selectedContractActivity.type == "Event")
           c.set("contractActivity", this.selectedContractActivity);
       }
+      var acl = new Moralis.ACL();
+      acl.setWriteAccess(Moralis.User.current().id, true);
+      acl.setRoleWriteAccess("admins", true);
+      acl.setRoleReadAccess("protocolManagers", true);
+      c.setACL(acl);
       c.save().then(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (uc: Subscription) => {

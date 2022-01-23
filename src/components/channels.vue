@@ -63,6 +63,7 @@ import { channelsModule } from "../store/channels";
 import Twilio from "@/components/TwilioAdd.vue";
 import Discord from "@/components/DiscordAdd.vue";
 import Email from "@/components/EmailAdd.vue";
+import Moralis from "moralis";
 
 //import { namespace } from "vuex-class";
 //const channels = namespace("channels");
@@ -146,6 +147,10 @@ export default defineComponent({
         this.newChannel
       );
       c.setProviderData(this.providerData);
+      var acl = new Moralis.ACL();
+      acl.setWriteAccess(Moralis.User.current().id, true);
+      acl.setRoleWriteAccess("admins", true);
+      c.setACL(acl);
       c.save().then(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (uc: UserChannel) => {

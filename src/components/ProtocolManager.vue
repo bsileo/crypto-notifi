@@ -36,6 +36,7 @@
       <ProtocolSelector
         :showSearch="false"
         :showUserInfo="false"
+        :manager="true"
         @selection="selectProtocol"
       ></ProtocolSelector>
     </va-collapse>
@@ -266,8 +267,8 @@ export default defineComponent({
     },
   },
   computed: {
-    protocols(): Protocol[] {
-      return protocolsModule.myAdminProtocols;
+    protocolsOld(): Protocol[] {
+      return protocolsModule.myManagerProtocols;
     },
     alerts(): Alert[] {
       return alertsModule.sentAlerts;

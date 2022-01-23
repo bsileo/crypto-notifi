@@ -71,6 +71,7 @@ import { defineComponent } from "vue";
 import { ContractActivity } from "@/models/ContractActivity";
 import EditContractActivity from "./EditContractActivity.vue";
 import { Chain, Contract } from "@/models/Contract";
+import Moralis from "moralis";
 
 export default defineComponent({
   name: "EditContract",
@@ -167,6 +168,11 @@ export default defineComponent({
         cont.set("protocol", this.protocol);
         cont.set("chain", this.contractChain);
       }
+      var acl = new Moralis.ACL();
+      acl.setWriteAccess(Moralis.User.current().id, true);
+      acl.setRoleWriteAccess("admins", true);
+      acl.setRoleWriteAccess(this.protocol.ACLName(), true);
+      cont.setACL(acl);
       cont = await cont.save();
       if (cont) {
         let newActs: ContractActivity[] = [];

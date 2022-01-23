@@ -16,6 +16,8 @@ export type TokenData = {
   basicQuantity: number;
   goldQuantity: number;
 };
+
+type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends Moralis.Object {
   get name(): string {
     return this.get("name");
@@ -104,6 +106,23 @@ export class Protocol extends Moralis.Object {
     }
   }
 
+  AClName(): string {
+    return `Protocol_${this.name}`;
+  }
+
+  // returns true if the current user is a manager of this protocol
+  async managerOf(): Promise<boolean> {
+    const mans = await this.relation("Managers").query().find();
+    const currentUser = Moralis.User.current();
+    console.log(mans);
+    for (let i=0; i < mans.length; i++) {
+      const man = mans[i];
+      console.log(man.id == currentUser?.id);
+      if (man.id == currentUser?.id) return true;
+    }
+    console.log(`Manager false for ${this.name}`);
+    return false;
+  }
   tokenContractURL(): string {
     if (this.get("tokenData")) {
       const chain = this.get("tokenData").chain as Chain;
@@ -120,6 +139,50 @@ export class Protocol extends Moralis.Object {
     } else {
       return "";
     }
+  }
+
+  public static async setupSubscription(
+    refresh: RefreshCallbackFunction,
+    manager?: boolean
+  ): Promise<any> {
+    const query = new Moralis.Query(Protocol);
+    if (manager == true) {
+      //const user = userModule._user;
+      //const uQuery = new Moralis.Query("User");
+      //uQuery.equalTo(user);
+      //query.matchesQuery("Managers", uQuery);
+    }
+    const sub = await query.subscribe();
+    sub.on("open", refresh);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sub.on("create", (object: Protocol) => {
+      console.log("Manager Protocols object created");
+      refresh(object);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sub.on("update", (object: Protocol) => {
+      console.log("Manager Protocols object updated");
+      refresh(object);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sub.on("enter", (object: Protocol) => {
+      console.log("Manager Protocols  object entered");
+      refresh(object);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sub.on("leave", (object: Protocol) => {
+      console.log("Manager Protocols object left");
+      refresh(object);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sub.on("delete", (object: Protocol) => {
+      console.log("Manager Protocols  object deleted");
+      refresh(object)
+    });
+    sub.on("close", () => {
+      console.log("Manager Protocol subscription closed");
+    });
+    return query;
   }
 }
 

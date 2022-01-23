@@ -8,6 +8,7 @@
           size="small"
           class="mr-4"
           color="success"
+          :disabled="!allowAdd"
         >
         </va-button>
       </va-popover>
@@ -116,6 +117,9 @@ export default defineComponent({
     allowRemove(): boolean {
       return this.selected.length > 0;
     },
+    allowAdd(): boolean {
+      return true;
+    }
   },
   methods: {
     setSearchProtocols(prots: Protocol[]): void {
