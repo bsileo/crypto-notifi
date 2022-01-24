@@ -235,6 +235,9 @@ export default defineComponent({
     },
   },
   computed: {
+    protocolsOld(): Protocol[] {
+      return protocolsModule.myManagerProtocols;
+    },
     alerts(): Alert[] {
       return alertsModule.sentAlerts;
     },
@@ -283,16 +286,16 @@ export default defineComponent({
     alertSent() {
       console.log("Alert Sent!");
     },
-    async updateCategoryName( cat: SubscriptionType, newName: string ): Promise<void> {
+    async updateCategoryName(): Promise<void> {
       this.fetchsubCategories();
     },
-    async updateCategoryDescription({
-      cat,
-      newDesc,
-    }: {
-      cat: SubscriptionType;
-      newDesc: string;
-    }): Promise<void> {
+    async updateCategoryDescription(): Promise<void> {
+      this.fetchsubCategories();
+    },
+    async addedCategory(): Promise<void> {
+      this.fetchsubCategories();
+    },
+    async deactivateCategory(): Promise<void> {
       this.fetchsubCategories();
     },
   },

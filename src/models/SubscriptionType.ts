@@ -21,6 +21,12 @@ export class SubscriptionType extends Moralis.Object {
   set description(newVal: string) {
     this.set("description", newVal);
   }
+  get level(): string {
+    return this.get("level");
+  }
+  set level(newVal: string) {
+    this.set("level", newVal);
+  }
   get protocol(): string {
     return this.get("protocol");
   }

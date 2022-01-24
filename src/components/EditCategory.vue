@@ -18,6 +18,7 @@
           label="Description"
         >
         </va-input>
+        <LevelSelector @changed="setLevel"></LevelSelector>
       </va-form>
     </div>
     <va-card-actions align="between">
@@ -43,10 +44,11 @@ import {
 } from "@/models/SubscriptionType";
 import Moralis from "moralis";
 import { defineComponent } from "vue";
+import LevelSelector from "./LevelSelector.vue"
 
 export default defineComponent({
   name: "EditCategory",
-  components: {},
+  components: { LevelSelector },
   props: {
     category: {
       type: SubscriptionType,
@@ -57,19 +59,16 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: [
-    "update:name",
-    "update:type",
-    "update:description",
-    "deactivated",
-    "added",
-  ],
+  emits: ["update:name", "update:description", "deactivated", "added"],
   data() {
     return {
       activeCategory: this.category || new SubscriptionType(),
     };
   },
   computed: {
+    levelOptions(): string[] {
+      return ["Free", "Basic", "Gold"];
+    },
     cardTitle(): string {
       if (this.newRecord) {
         return "Add a Category";
@@ -104,8 +103,19 @@ export default defineComponent({
         this.$emit("update:description", this.activeCategory, newVal);
       },
     },
+    level: {
+      get(): string {
+        return this.activeCategory.level;
+      },
+      set(newVal: string): void {
+        this.activeCategory.level = newVal;
+        if (!this.newRecord) {
+          this.activeCategory.save();
+        }
+      },
+    },
     allowAddCategory(): boolean {
-      return this.activeCategory.name?.length > 3;
+      return this.activeCategory.name?.length > 3 && this.level != "";
     },
   },
   methods: {
@@ -130,6 +140,10 @@ export default defineComponent({
         await this.activeCategory.save();
         this.$emit("deactivated", this.activeCategory);
       }
+    },
+    setLevel(aLevel: string): void {
+      console.log(aLevel);
+      this.level = aLevel;
     },
   },
 });
