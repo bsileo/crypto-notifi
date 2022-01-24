@@ -6,17 +6,20 @@ export enum SubscriptionTypeStatus {
   "inactive" = "Inactive",
 }
 export class SubscriptionType extends Moralis.Object {
-  get type(): string {
-    return this.get("type");
-  }
   get name(): string {
     return this.get("name");
+  }
+  set name(newVal: string) {
+    this.set("name", newVal);
   }
   get status(): SubscriptionTypeStatus {
     return this.get("status");
   }
   get description(): string {
     return this.get("description");
+  }
+  set description(newVal: string) {
+    this.set("description", newVal);
   }
   get protocol(): string {
     return this.get("protocol");
@@ -28,13 +31,11 @@ export class SubscriptionType extends Moralis.Object {
   static async spawn(
     protocol: Protocol,
     name: string,
-    type: string,
     description: string
   ): Promise<SubscriptionType> {
     let s = new SubscriptionType();
     s.set("protocol", protocol);
     s.set("name", name);
-    s.set("type", type);
     s.set("description", description);
     s.set("status", SubscriptionTypeStatus.active);
     s = await s.save();

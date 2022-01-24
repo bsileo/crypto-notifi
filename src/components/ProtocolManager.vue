@@ -80,49 +80,17 @@
         >
           <EditCategory
             :category="category"
+            :protocol="selectedProtocol"
             @update:name="updateCategoryName"
             @update:description="updateCategoryDescription"
             @deactivated="deactivateCategory"
           ></EditCategory>
         </div>
-        <div v-if="this.selectedProtocol" class="flex sm12 md6 lg4 mr-2 pb-3">
-          <va-card class="flex">
-            <va-card-title>Add a Category</va-card-title>
-            <div>
-              <va-form>
-                <va-input
-                  class="pb-1"
-                  placeholder="Category Name"
-                  v-model="newCategory.name"
-                  label="Name"
-                >
-                </va-input>
-                <va-input
-                  class="pb-1"
-                  placeholder="Type identifier"
-                  v-model="newCategory.type"
-                  label="Identifier"
-                >
-                </va-input>
-                <va-input
-                  type="textarea"
-                  :min-rows="3"
-                  :max-rows="5"
-                  v-model="newCategory.description"
-                  label="Description"
-                >
-                </va-input>
-              </va-form>
-            </div>
-            <va-card-actions align="between">
-              <va-button
-                size="medium"
-                :disabled="!allowAddCategory"
-                @click="addNewCategory"
-                >Add</va-button
-              >
-            </va-card-actions>
-          </va-card>
+        <div class="flex sm12 md6 lg4 mr-2 pb-3">
+          <EditCategory
+            :protocol="selectedProtocol"
+            @added="addedCategory"
+          ></EditCategory>
         </div>
       </div>
     </va-collapse>
@@ -267,16 +235,8 @@ export default defineComponent({
     },
   },
   computed: {
-    protocolsOld(): Protocol[] {
-      return protocolsModule.myManagerProtocols;
-    },
     alerts(): Alert[] {
       return alertsModule.sentAlerts;
-    },
-    allowAddCategory(): boolean {
-      return (
-        this.newCategory.name.length > 3 && this.newCategory.type.length > 3
-      );
     },
   },
   methods: {
@@ -290,19 +250,6 @@ export default defineComponent({
       const cat = this.subCategories.find((sg) => sg.type == type);
       console.log(`GetCategoryName: ${type}=${cat}`);
       return cat?.name || "";
-    },
-    async addNewCategory(): Promise<void> {
-      if (this.selectedProtocol) {
-        let st = await SubscriptionType.spawn(
-          this.selectedProtocol,
-          this.newCategory.name,
-          this.newCategory.type,
-          this.newCategory.description
-        );
-        st.save();
-        this.newCategory = { name: "", type: "", description: "" };
-        this.fetchsubCategories();
-      }
     },
     async fetchsubCategories(): Promise<void> {
       const q = new Moralis.Query(SubscriptionType);
@@ -336,26 +283,16 @@ export default defineComponent({
     alertSent() {
       console.log("Alert Sent!");
     },
-    async updateCategoryName(
-      cat: SubscriptionType,
-      newName: string
-    ): Promise<void> {
-      cat.set("name", newName);
-      //cat.set("description", cat.description);
-      cat = await cat.save();
-      await this.fetchsubCategories();
+    async updateCategoryName( cat: SubscriptionType, newName: string ): Promise<void> {
+      this.fetchsubCategories();
     },
-    async updateCategoryDescription(
-      cat: SubscriptionType,
-      newDesc: string
-    ): Promise<void> {
-      cat.set("description", newDesc);
-      cat = await cat.save();
-      await this.fetchsubCategories();
-    },
-    async deactivateCategory(cat: SubscriptionType): Promise<void> {
-      cat.set("status", SubscriptionTypeStatus.inactive);
-      await cat.save();
+    async updateCategoryDescription({
+      cat,
+      newDesc,
+    }: {
+      cat: SubscriptionType;
+      newDesc: string;
+    }): Promise<void> {
       this.fetchsubCategories();
     },
   },
