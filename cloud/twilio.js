@@ -25,14 +25,16 @@ async function sendTwilioAlert(channel, content) {
   }).then(
     function (httpResp) {
       logger.info(httpResp.text);
+      return { status: true };
     },
     function (httpResp) {
-      logger.error(
+      const msg =
         "[Twilio] Request failed with response code " +
-          httpResp.status +
-          "::" +
-          httpResp.text
-      );
+        httpResp.status +
+        "::" +
+        httpResp.text;
+      logger.error(msg);
+      return { status: false, message: msg };
     }
   );
 }

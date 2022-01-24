@@ -7,7 +7,7 @@
 async function sendAlert(subscription, content) {
   const logger = Moralis.Cloud.getLogger();
   const relChannels = subscription.relation("UserChannel");
-  const channels = await relChannels.query().find();
+  const channels = await relChannels.query().find({ useMasterKey: true });
   logger.info(`[SendAlert] Sending to ${channels.length} Channels`);
   for (let i = 0; i < channels.length; i++) {
     const chan = channels[i];

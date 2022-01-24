@@ -11,7 +11,7 @@ async function processSmartContractSubscriptions(transaction, activityName) {
   addrQuery.include("contract");
   addrQuery.equalTo("contractAddress", addr);
   addrQuery.equalTo("status", "active");
-  const subs = await addrQuery.find();
+  const subs = await addrQuery.find({ useMasterKey: true });
   for (let i = 0; i < subs.length; i++) {
     logger.info(
       `[processSmartContractSubscriptions] Smart Contract sub hit ${subs[i].id}`

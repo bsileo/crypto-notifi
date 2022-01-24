@@ -3,12 +3,9 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getAPIKey(name) {
   // const logger = Moralis.Cloud.getLogger();
-  const query = new Moralis.Query("API_Keys");
-  query.equalTo("keyName", name);
-  const res = await query.find();
-  for (let i = 0; i < res.length; i++) {
-    return await res[i].get("keyValue");
-  }
+  const config = await Moralis.Config.get({ useMasterKey: true });
+  const privateParam = config.get(name);
+  return privateParam;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -24,7 +21,7 @@ function getLogger() {
       errorLog.set("message", msg);
       errorLog.set("user", "cloud");
       errorLog.set("level", "error");
-      errorLog.save();
+      errorLog.save({ useMasterKey: true });
     },
   };
 }

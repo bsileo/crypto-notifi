@@ -180,7 +180,7 @@ async function setupContracts() {
       ev.set("chain", contractInfo.chain);
       ev.set("abi", act.ABI);
       ev.set("contract", c);
-      ev = await ev.save();
+      ev = await ev.save({ useMasterKey: true });
       acts.push(ev);
       options = {
         tableName: act.tableName,
@@ -214,14 +214,11 @@ async function setupContracts() {
     }
     relation = await contractInfo.contract.relation("ContractActivities");
     relation.add(acts);
-    contractInfo.contract.save();
+    contractInfo.contract.save({ useMasterKey: true });
     logger.info("[databaseContracts] ContractInfo saved");
-
   }
   return true;
 }
-
-
 
 /*  New contract descriptor template
 {

@@ -15,7 +15,7 @@ async function setupProtocols() {
   const query = new Moralis.Query(protocol);
   logger.info("Processing Snowball");
   query.equalTo("name", "Snowball");
-  let results = await query.find();
+  let results = await query.find({ useMasterKey: true });
   if (results.length > 0) {
     p = results[0];
   } else {
@@ -35,12 +35,11 @@ async function setupProtocols() {
     goldQuantity: 1000,
   });
   p.set("chains", ["avalanche"]);
-  p.set("managers", ["spEtYRcYSh2cCFqnnsOTBGRB"]);
-  p.save();
+  p.save({ useMasterKey: true });
   // Axial
   logger.info("Processing Axial");
   query.equalTo("name", "Axial");
-  results = await query.find();
+  results = await query.find({ useMasterKey: true });
   if (results.length > 0) {
     p = results[0];
   } else {
@@ -57,11 +56,10 @@ async function setupProtocols() {
     basicQuantity: 2500,
     goldQuantity: 10000,
   });
-  p.set("managers", ["spEtYRcYSh2cCFqnnsOTBGRB"]);
-  p.save();
+  p.save({ useMasterKey: true });
 
   query.equalTo("name", "Uniswap-V2");
-  results = await query.find();
+  results = await query.find({ useMasterKey: true });
   if (results.length > 0) {
     p = results[0];
   } else {
@@ -81,8 +79,7 @@ async function setupProtocols() {
     basicQuantity: 2500,
     goldQuantity: 10000,
   });
-  p.set("managers", ["spEtYRcYSh2cCFqnnsOTBGRB"]);
-  p.save();
+  p.save({ useMasterKey: true });
 
   return true;
 }
