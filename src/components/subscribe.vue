@@ -675,8 +675,10 @@ export default defineComponent({
           c.set("contractActivity", this.selectedContractActivity);
       }
       var acl = new Moralis.ACL();
+      acl.setReadAccess(Moralis.User.current().id, true);
       acl.setWriteAccess(Moralis.User.current().id, true);
       acl.setRoleWriteAccess("admins", true);
+      acl.setRoleReadAccess("admins", true);
       acl.setRoleReadAccess("protocolManagers", true);
       c.setACL(acl);
       c.save().then(

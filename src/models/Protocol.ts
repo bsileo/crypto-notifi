@@ -106,7 +106,7 @@ export class Protocol extends Moralis.Object {
     }
   }
 
-  AClName(): string {
+  ACLName(): string {
     return `Protocol_${this.name}`;
   }
 

@@ -230,7 +230,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 div.editor {
   min-height: 4em;
   padding-top: 5px;

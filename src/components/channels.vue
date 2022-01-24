@@ -148,7 +148,9 @@ export default defineComponent({
       );
       c.setProviderData(this.providerData);
       var acl = new Moralis.ACL();
+      acl.setReadAccess(Moralis.User.current().id, true);
       acl.setWriteAccess(Moralis.User.current().id, true);
+      acl.setRoleReadAccess("admins", true);
       acl.setRoleWriteAccess("admins", true);
       c.setACL(acl);
       c.save().then(

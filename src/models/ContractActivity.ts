@@ -64,6 +64,13 @@ export class ContractActivity extends Moralis.Object {
     this.set("template", newVal);
   }
 
+  get richTemplate(): string {
+    return this.get("richTemplate");
+  }
+  set richTemplate(newVal: string) {
+    this.set("richTemplate", newVal);
+  }
+
   get dataParameters(): DataParameter[] {
     const params = this.getSystemDataParameters();
     params.push(...this.getABIParameters());
