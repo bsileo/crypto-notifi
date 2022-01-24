@@ -1,3 +1,4 @@
+import { SubscriptionType } from '@/models/SubscriptionType';
 import { Chain } from "@/models/Contract";
 import { AlertTypes } from "./Alert";
 import Moralis from "moralis";
@@ -8,14 +9,19 @@ import { Protocol } from "./Protocol";
 
 export enum SubscriptionStatus {
   "active" = "active",
-  "paused" = "paused"
+  "paused" = "paused",
 }
 export class Subscription extends Moralis.Object {
   get protocol(): Protocol {
     return this.get("protocol");
   }
-  get generalType(): string {
-    return this.get("generalType");
+  get generalType(): SubscriptionType {
+    return this.get("GeneralSubType");
+  }
+  // Return the name of the Subscription Type I am associated with.
+  generalTypeName(): string {
+    const ty = this.generalType;
+    return ty?.get("name");
   }
   get name(): string {
     return this.get("name");

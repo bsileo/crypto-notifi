@@ -28,13 +28,13 @@
           placement="top"
           :hover-over-timeout="1"
         >
-        <va-button
-          @click.prevent="this.edit()"
-          icon-right="edit"
-          size="small"
-          color="success"
-          :disabled="true"
-        ></va-button>
+          <va-button
+            @click.prevent="this.edit()"
+            icon-right="edit"
+            size="small"
+            color="success"
+            :disabled="true"
+          ></va-button>
         </va-popover>
       </div>
     </va-card-title>
@@ -56,11 +56,15 @@
       <div class="flex sm3"><strong>Activity:</strong></div>
       <div class="flex sm9">{{ contractActivity }}</div>
     </div>
+    <div v-if="generalTypeName" class="row ml-2">
+      <div class="flex sm3"><strong>Category:</strong></div>
+      <div class="flex sm9">{{ generalTypeName }}</div>
+    </div>
     <div class="row ml-2">
       <div class="flex sm3"><strong>Channels:</strong></div>
       <div class="flex sm9">{{ channelsDescription }}</div>
     </div>
-    <div class="description row pb-1 mr-2 ml-2">
+    <div v-if="false" class="description row pb-1 mr-2 ml-2">
       <span v-html="description"></span>
     </div>
   </va-card>
@@ -105,6 +109,9 @@ export default defineComponent({
     contractActivity(): string {
       const act = this.currentSubscription.get("contractActivity");
       return act?.name || "";
+    },
+    generalTypeName(): string {
+      return this.currentSubscription.generalTypeName();
     },
     contractURL(): string {
       if (this.currentSubscription.contract) {
@@ -152,7 +159,8 @@ export default defineComponent({
       console.log("EDIT");
     },
     async fetchChannelsDescription() {
-      this.channelsDescription = await this.currentSubscription.channelsDescription();
+      this.channelsDescription =
+        await this.currentSubscription.channelsDescription();
     },
     async togglePause(): Promise<void> {
       if (this.paused) {
@@ -161,7 +169,7 @@ export default defineComponent({
         this.currentSubscription.set("status", "paused");
       }
       this.currentSubscription.save();
-    }
+    },
   },
 });
 </script>

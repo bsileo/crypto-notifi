@@ -81,17 +81,17 @@
         <div class="row pt-2" v-if="showContracts">
           <div class="flex sm-3"></div>
           <div class="flex sm-9 mb-2 justify-self--end">
-          <va-alert
-            icon="psychology"
-            color="info"
-            border-color="success"
-            border="top"
-          >
-            <template v-slot:title>Activity:</template>
-            <template v-slot:default
-              ><span v-html="activityDescription"></span
-            ></template>
-          </va-alert>
+            <va-alert
+              icon="psychology"
+              color="info"
+              border-color="success"
+              border="top"
+            >
+              <template v-slot:title>Activity:</template>
+              <template v-slot:default
+                ><span v-html="activityDescription"></span
+              ></template>
+            </va-alert>
           </div>
         </div>
         <div class="row pt-2" v-if="showFrom">
@@ -591,7 +591,7 @@ export default defineComponent({
       const q = new Moralis.Query(SubscriptionType);
       q.equalTo("protocol", this.selectedProtocol);
       q.equalTo("status", SubscriptionTypeStatus.active);
-      console.log("Fetch Genaral Subtypes");
+      console.log("Fetch General Subtypes");
       const res = await q.find();
       console.log(res);
       this.subGeneralTypeID = "";
@@ -663,7 +663,7 @@ export default defineComponent({
         c.set("valueOperator", this.valueOp);
       }
       if (this.selectedSubGeneralType) {
-        c.set("generalType", this.selectedSubGeneralType.type);
+        c.set("GeneralSubType", this.selectedSubGeneralType);
       }
       if (this.selectedContract) {
         c.set("contract", this.selectedContract);
