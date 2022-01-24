@@ -37,7 +37,7 @@
       <div class="row ml-3">
         <va-card
           bordered
-          class="flex sm12 md6 lg4 pb-3"
+          class="flex sm12 md6 lg6 pb-3"
           v-bind:key="contractActivity.id"
           v-for="contractActivity in contractActivities"
         >
@@ -47,7 +47,7 @@
           >
           </EditContractActivity>
         </va-card>
-        <va-card bordered class="flex sm12 md6 lg4 pb-3">
+        <va-card bordered class="flex sm12 md6 lg6 pb-3">
           <EditContractActivity
             @activityAdd="addActivity"
           ></EditContractActivity>
@@ -169,8 +169,11 @@ export default defineComponent({
         cont.set("chain", this.contractChain);
       }
       var acl = new Moralis.ACL();
+      acl.setReadAccess(Moralis.User.current().id, true);
       acl.setWriteAccess(Moralis.User.current().id, true);
+      acl.setRoleReadAccess("admins", true);
       acl.setRoleWriteAccess("admins", true);
+      acl.setRoleReadAccess(this.protocol.ACLName(), true);
       acl.setRoleWriteAccess(this.protocol.ACLName(), true);
       cont.setACL(acl);
       cont = await cont.save();
@@ -180,6 +183,7 @@ export default defineComponent({
         for (let i = 0; i < acts.length; i++) {
           let ca = acts[i];
           ca.set("contract", cont);
+          ca.setACL(acl);
           newActs.push(await ca.save());
         }
         const rel = cont.relation("ContractActivities");
