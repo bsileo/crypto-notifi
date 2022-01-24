@@ -10,7 +10,7 @@
     </va-radio>
     <va-popover
       placement="right"
-      message="Select the user level required to subscribe to this category"
+      message="Select the user level required to subscribe"
       ><va-icon class="mb-3" name="info" />
     </va-popover>
   </div>

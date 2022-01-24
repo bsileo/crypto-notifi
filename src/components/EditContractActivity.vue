@@ -41,6 +41,7 @@
         v-model="abi"
       ></va-input>
     </div>
+    <LevelSelector @changed="setLevel"></LevelSelector>
     <div class="row pb-1">
       <va-tabs v-model="textType">
         <template #tabs>
@@ -88,10 +89,11 @@ import { Editor, EditorContent, BubbleMenu, FloatingMenu } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
+import LevelSelector from "./LevelSelector.vue"
 
 export default defineComponent({
   name: "EditContractActivity",
-  components: { EditorContent},
+  components: { EditorContent, LevelSelector },
   emits: ["activityUpdate", "activityAdd", "activityDelete"],
   props: {
     contractActivity: { type: ContractActivity, required: false },
@@ -163,6 +165,17 @@ export default defineComponent({
         this.$emit("activityUpdate", this.activity);
       },
     },
+    level: {
+      get(): string {
+        return this.activity.level;
+      },
+      set(newVal: string): void {
+        this.activity.level = newVal;
+        if (!this.newRecord) {
+          this.activity.save();
+        }
+      },
+    },
     template: {
       get(): string {
         return this.activity.template;
@@ -222,6 +235,10 @@ export default defineComponent({
       console.log(`Click on ${param.name}`);
       const cur = this.activeActivity.template || "";
       this.template = `${cur}{{${param.name}}}`;
+    },
+    setLevel(aLevel: string): void {
+      console.log(aLevel);
+      this.level = aLevel;
     },
   },
 });

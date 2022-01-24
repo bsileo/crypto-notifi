@@ -56,6 +56,12 @@ export class ContractActivity extends Moralis.Object {
   set description(newVal: string) {
     this.set("description", newVal);
   }
+  get level(): string {
+    return this.get("level");
+  }
+  set level(newVal: string) {
+    this.set("level", newVal);
+  }
 
   get template(): string {
     return this.get("template");
