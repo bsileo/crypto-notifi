@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-undef */
 async function processWalletSubscriptions(transaction) {
-  const logger = Moralis.Cloud.getLogger();
+  const logger = getLogger();
   const from = transaction.from_address;
   const to = transaction.to_address;
   logger.info(`Check for wallet subs ${to} and from=${from}`);
@@ -9,12 +9,12 @@ async function processWalletSubscriptions(transaction) {
   toQuery.equalTo("toAddress", to);
   const fromQuery = new Moralis.Query("Subscription");
   fromQuery.equalTo("fromAddress", from);
-  const fromSubs = await fromQuery.find();
+  const fromSubs = await fromQuery.find({ useMasterKey: true });
   for (let i = 0; i < fromSubs.length; i++) {
     let content = `Wallet Subscription match on '${from}'`;
     processAddressHit(fromSubs[i], transaction, content);
   }
-  const toSubs = await toQuery.find();
+  const toSubs = await toQuery.find({ useMasterKey: true });
   for (let i = 0; i < toSubs.length; i++) {
     let content = `Wallet Subscription match on '${from}'`;
     processAddressHit(toSubs[i], transaction), content;
@@ -22,7 +22,7 @@ async function processWalletSubscriptions(transaction) {
 }
 
 function processAddressHit(subscription, transaction, content) {
-  const logger = Moralis.Cloud.getLogger();
+  const logger = getLogger();
   logger.info(`Address Hit on TX ${transaction.id}`);
   let hit = true;
   if (subscription.get("value")) {
