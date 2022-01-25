@@ -34,32 +34,35 @@
       </div>
       <va-divider></va-divider>
       <div class="row"><h3>Events</h3></div>
-      <div class="row ml-3">
-        <va-card
-          bordered
-          class="flex sm12 md6 lg6 pb-3"
-          v-bind:key="contractActivity.id"
-          v-for="contractActivity in contractActivities"
-        >
-          <EditContractActivity
-            :contractActivity="contractActivity"
-            @activityDelete="contractActivityDeleted"
+      <div class="layout gutter--md">
+        <div class="row ml-2">
+          <va-card
+            bordered
+            class="flex sm12 md6 lg6 mb-2"
+            v-bind:key="contractActivity.id"
+            v-for="contractActivity in contractActivities"
           >
-          </EditContractActivity>
-        </va-card>
-        <va-card bordered class="flex sm12 md6 lg6 pb-3">
-          <EditContractActivity
-            @activityAdd="addActivity"
-          ></EditContractActivity>
-        </va-card>
-      </div>
-      <div class="pt-3 pb-3">
-        <va-button size="medium" class="mr-4" icon="edit" @click="save"
-          >Save</va-button
-        >
-        <va-button size="medium" icon="cancel" @click="cancel"
-          >Cancel</va-button
-        >
+            <EditContractActivity
+              :contractActivity="contractActivity"
+              @activityDelete="contractActivityDeleted"
+            >
+            </EditContractActivity>
+          </va-card>
+          <va-card bordered class="flex sm12 md6 lg6">
+            <va-card-title>Add an Activity</va-card-title>
+            <EditContractActivity
+              @activityAdd="addActivity"
+            ></EditContractActivity>
+          </va-card>
+        </div>
+        <div class="pt-3 pb-3">
+          <va-button size="medium" class="mr-4" icon="edit" @click="save"
+            >Save</va-button
+          >
+          <va-button size="medium" icon="cancel" @click="cancel"
+            >Cancel</va-button
+          >
+        </div>
       </div>
     </va-form>
   </div>

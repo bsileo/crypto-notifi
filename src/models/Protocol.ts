@@ -1,3 +1,4 @@
+import { ContractActivity } from './ContractActivity';
 import { Chain, Contract } from "./Contract";
 import Moralis from "moralis";
 import { contractsModule } from "@/store/contracts";
@@ -48,8 +49,18 @@ export class Protocol extends Moralis.Object {
     return res;
   }
 
-  get tokenData(): Record<string, string | number> {
+  get tokenData(): TokenData {
     return this.get("tokenData");
+  }
+
+  get goldQuantity(): number {
+    const td = this.tokenData;
+    return td.goldQuantity;
+  }
+
+  get basicQuantity(): number {
+    const td = this.tokenData;
+    return td.basicQuantity;
   }
 
   get managers(): string {
@@ -104,6 +115,25 @@ export class Protocol extends Moralis.Object {
     } else {
       return ProtocolLevel.Free;
     }
+  }
+  // Returns True if the user is allowed to subscribe to aActivity
+  // based on the user and protocls current token balances
+  userSubscriptionAllowed(aActivity: ContractActivity): boolean {
+    const userLevel = this.getUserLevel();
+    const actLevel = aActivity.level as ProtocolLevel;
+    if (actLevel == ProtocolLevel.Free) {
+      return true;
+    }
+    if (actLevel == ProtocolLevel.Gold) {
+      if (userLevel == ProtocolLevel.Gold) {
+        return true;
+      }
+    } else if (actLevel == ProtocolLevel.Basic) {
+      if (userLevel == ProtocolLevel.Gold || userLevel == ProtocolLevel.Basic) {
+        return true;
+      }
+    }
+    return false;
   }
 
   ACLName(): string {

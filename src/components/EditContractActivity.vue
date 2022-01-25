@@ -41,7 +41,7 @@
         v-model="abi"
       ></va-input>
     </div>
-    <LevelSelector @changed="setLevel"></LevelSelector>
+    <LevelSelector @changed="setLevel" :startingLevel="level"></LevelSelector>
     <div class="row pb-1">
       <va-tabs v-model="textType">
         <template #tabs>
@@ -90,6 +90,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import LevelSelector from "./LevelSelector.vue"
+import { ProtocolLevel } from "@/models/Protocol";
 
 export default defineComponent({
   name: "EditContractActivity",
@@ -170,7 +171,7 @@ export default defineComponent({
         return this.activity.level;
       },
       set(newVal: string): void {
-        this.activity.level = newVal;
+        this.activity.level = newVal as ProtocolLevel;
         if (!this.newRecord) {
           this.activity.save();
         }
@@ -203,7 +204,8 @@ export default defineComponent({
         this.validDescription &&
         this.validTopic &&
         this.validABI &&
-        this.validTemplate
+        this.validTemplate &&
+        this.validLevel
       );
     },
     validName(): boolean {
@@ -211,6 +213,9 @@ export default defineComponent({
     },
     validTopic(): boolean {
       return (this.topic || "").length > 3;
+    },
+    validLevel(): boolean {
+      return this.level !== "";
     },
     validABI(): boolean {
       return true;

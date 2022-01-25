@@ -1,3 +1,4 @@
+import { ProtocolLevel } from './Protocol';
 import Moralis from "moralis";
 import { Chain, Contract } from "./Contract";
 
@@ -56,13 +57,16 @@ export class ContractActivity extends Moralis.Object {
   set description(newVal: string) {
     this.set("description", newVal);
   }
-  get level(): string {
+  get level(): ProtocolLevel {
     return this.get("level");
   }
-  set level(newVal: string) {
+  set level(newVal: ProtocolLevel) {
     this.set("level", newVal);
   }
 
+  get nameAndLevel(): string {
+    return `${this.name} (${this.level})`;
+  }
   get template(): string {
     return this.get("template");
   }

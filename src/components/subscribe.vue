@@ -74,7 +74,7 @@
             :options="contractActivities"
             track-by="id"
             value-by="id"
-            :text-by="(option) => option.name || option.get('name')"
+            :text-by="(option) => option.nameAndLevel"
             searchable
           />
         </div>
@@ -82,11 +82,15 @@
           <div class="flex sm-3"></div>
           <div class="flex sm-9 mb-2 justify-self--end">
             <va-alert
-              icon="psychology"
-              color="info"
-              border-color="success"
+              :border-color="activityAllowed ? 'success' : 'danger'"
               border="top"
             >
+              <template v-slot:icon>
+                <va-icon
+                  :name="activityAllowed ? 'psychology' : 'error'"
+                  :color="activityAllowed ? 'info' : 'danger'"
+                ></va-icon>
+              </template>
               <template v-slot:title>Activity:</template>
               <template v-slot:default
                 ><span v-html="activityDescription"></span
@@ -156,11 +160,16 @@
       <div class="pt-4">
         <va-alert
           class="mb-4"
-          icon="info"
           color="info"
-          border-color="success"
+          :border-color="validSubmit ? 'success' : 'danger'"
           border="top"
         >
+          <template v-slot:icon>
+            <va-icon
+              :name="validSubmit ? 'info' : 'error'"
+              :color="validSubmit ? 'primary' : 'danger'"
+            ></va-icon>
+          </template>
           <template v-slot:title>Subscription Definition:</template>
           <template v-slot:default><span v-html="message"></span></template>
         </va-alert>
@@ -203,7 +212,7 @@ import {
   SubscriptionType,
   SubscriptionTypeStatus,
 } from "@/models/SubscriptionType";
-import { Protocol } from "@/models/Protocol";
+import { Protocol, ProtocolLevel } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
 import { ActivityType, ContractActivity } from "@/models/ContractActivity";
 
@@ -231,14 +240,6 @@ interface protocolInfo {
   iconURL: string;
   protocol: Protocol;
 }
-
-interface ContractTXActivity {
-  name: string;
-  type: "Transaction";
-  id: "tx";
-}
-
-type ContractActivitiesSet = ContractTXActivity | ContractActivity;
 
 interface TokenBalance {
   balance: number;
@@ -298,7 +299,7 @@ export default defineComponent({
       contractAddress: "",
       contractIcon: "" as string | undefined,
       chkContract: false,
-      contractActivities: [] as Array<ContractActivitiesSet>,
+      contractActivities: [] as Array<ContractActivity>,
       contractActivityID: undefined as string | undefined,
     };
   },
@@ -372,22 +373,32 @@ export default defineComponent({
     selectedContract(): Contract | undefined {
       return this.contracts.find((e) => e.id == this.contractAddress);
     },
-    selectedContractActivity(): ContractActivitiesSet | undefined {
+    selectedContractActivity(): ContractActivity | undefined {
       return this.contractActivities.find(
         (e) => e.id == this.contractActivityID
       );
     },
     activityDescription(): string {
       const act = this.selectedContractActivity;
-      if (act) {
-        if ((act as ContractActivity).description) {
-          return (act as ContractActivity).description;
-        } else {
-          return "Any tranasaction which occours on this contract";
-        }
-      } else {
-        return "";
+      if (!act) return "";
+      let res = act.description;
+      if (!this.activityAllowed) {
+        const prot = this.selectedProtocol;
+        const actTokens = prot?.goldQuantity;
+        res =
+          res +
+          `<br/><br/>Warning: Requires protocol level <strong>${act.level}</strong>.  Stake at least ${actTokens} tokens to subscribe to this activity.`;
       }
+      return res;
+    },
+    // True if the current user is allowed to subscribe to the selected ContractActivity
+    activityAllowed(): boolean {
+      const act = this.selectedContractActivity;
+      const prot = this.selectedProtocol;
+      if (!prot || !act) {
+        return false;
+      }
+      return prot.userSubscriptionAllowed(act);
     },
     validContract(): boolean {
       return true;
@@ -558,6 +569,8 @@ export default defineComponent({
     validSubmit(): boolean {
       if (this.subType == AlertTypes.protocol) {
         return this.validGeneralSubmit;
+      } else if (this.subType == AlertTypes.contract) {
+        return this.validContractSubmit;
       } else {
         return (
           (!this.chkTo || this.validTo) &&
@@ -567,6 +580,16 @@ export default defineComponent({
           this.newChannels?.length > 0
         );
       }
+    },
+    validContractSubmit(): boolean {
+      return (
+        this.selectedProtocolName != "" &&
+        this.validName &&
+        this.selectedContract != undefined &&
+        this.selectedContractActivity != undefined &&
+        this.activityAllowed &&
+        this.newChannels?.length > 0
+      );
     },
     validGeneralSubmit(): boolean {
       return (
@@ -598,12 +621,7 @@ export default defineComponent({
       this.subGeneralTypes = res;
     },
     async fetchContractActivities(): Promise<void> {
-      const tx: ContractTXActivity = {
-        name: "Transaction",
-        type: "Transaction",
-        id: "tx",
-      };
-      const res: ContractActivitiesSet[] = [tx];
+      const res: ContractActivity[] = [];
       const ci = this.selectedContract;
       console.log("Get Acts for ", ci);
       if (ci) {

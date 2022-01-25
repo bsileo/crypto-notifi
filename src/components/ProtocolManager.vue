@@ -130,6 +130,9 @@
       icon="alt_route"
       :disabled="!this.selectedProtocol"
     >
+      <div class="ml-2 mt-2">
+        <va-button @click="startAddContract" icon="add">Add Contract</va-button>
+      </div>
       <div class="row ml-2">
         <va-card
           square
@@ -154,18 +157,18 @@
           </va-card-actions>
         </va-card>
       </div>
-      <div class="ml-2 mt-2">
-        <va-button @click="startAddContract" icon="add">Add Contract</va-button>
+      <div class="row">
+        <div v-if="showAddContract" class="pl-3">
+          <va-divider></va-divider>
+          <EditContract
+            @contractSaved="contractSaved"
+            @cancel="showAddContract = false"
+            :contract="this.selectedContract"
+            :protocol="this.selectedProtocol"
+          ></EditContract>
+        </div>
       </div>
     </va-collapse>
-    <va-modal fullscreen hide-default-actions v-model="showAddContract">
-      <EditContract
-        @contractSaved="contractSaved"
-        @cancel="showAddContract = false"
-        :contract="this.selectedContract"
-        :protocol="this.selectedProtocol"
-      ></EditContract>
-    </va-modal>
   </div>
 </template>
 
@@ -214,6 +217,7 @@ export default defineComponent({
       showTransactional: false,
       showSuccess: false,
       showAddContract: false,
+      showAddContract2: false,
       sortBy: "shortDateTime",
       sortingOrder: "desc",
       selectedProtocol: undefined as Protocol | undefined,

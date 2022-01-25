@@ -23,9 +23,16 @@ export default defineComponent({
   setup() {
     return { };
   },
+  props: {
+    startingLevel: {
+      type: String,
+      required: true,
+      default: "",
+    }
+  },
   data() {
     return {
-      intLevel: "",
+      intLevel: this.startingLevel,
     };
   },
   emits: ["changed"],
