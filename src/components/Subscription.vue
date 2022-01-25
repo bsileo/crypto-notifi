@@ -13,7 +13,7 @@
             :icon-right="pauseToggleIcon"
             class="mr-1"
             size="small"
-            color="warning"
+            :color="paused ? 'warning' : 'success' "
           ></va-button>
         </va-popover>
         <va-button
@@ -32,7 +32,7 @@
             @click.prevent="this.edit()"
             icon-right="edit"
             size="small"
-            color="success"
+            color="primary"
             :disabled="true"
           ></va-button>
         </va-popover>
@@ -143,12 +143,12 @@ export default defineComponent({
       return this.currentSubscription.status == "paused";
     },
     pauseToggleIcon(): string {
-      if (this.paused) return "play_arrow";
-      else return "pause";
+      if (this.paused) return "pause";
+      else return "play_arrow";
     },
     pausePopoverText(): string {
-      if (this.paused) return "Subscription paused. Click to resume";
-      else return "Pause alerts from this subscription";
+      if (this.paused) return "Paused : Click to Resume";
+      else return "Active : Click to Pause";
     },
   },
   methods: {
