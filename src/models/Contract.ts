@@ -130,13 +130,16 @@ export class Contract extends Moralis.Object {
   }
 
   get contractURL(): string {
-    const chain = this.chain as Chain;
-    if (chain == "avalanche") {
+    const chain = this.chain;
+    if (chain == "avalanche" ) {
       return `https://snowtrace.io/address/${this.address}`;
     } else if (chain == "eth") {
       return `https://etherscan.io/address/${this.address}`;
-    } else
-      throw `Chain not configured in protocol.tokenContractURL() for ${this.id}`;
+    } else {
+      //throw `Chain not configured in contract.contractURL() for ${this.id} = ${chain}`;
+      console.log(`Chain not configured in contract.contractURL() for ${this.id} = ${chain}`);
+    }
+    return "";
   }
 }
 

@@ -1,4 +1,4 @@
-import { ContractActivity } from './ContractActivity';
+import { ContractActivity } from "./ContractActivity";
 import { Chain, Contract } from "./Contract";
 import Moralis from "moralis";
 import { contractsModule } from "@/store/contracts";
@@ -145,7 +145,7 @@ export class Protocol extends Moralis.Object {
     const mans = await this.relation("Managers").query().find();
     const currentUser = Moralis.User.current();
     console.log(mans);
-    for (let i=0; i < mans.length; i++) {
+    for (let i = 0; i < mans.length; i++) {
       const man = mans[i];
       console.log(man.id == currentUser?.id);
       if (man.id == currentUser?.id) return true;
@@ -164,8 +164,13 @@ export class Protocol extends Moralis.Object {
         return `https://etherscan.io/address/${
           this.get("tokenData").contractAddress
         }`;
-      } else
-        throw `Chain not configured in protocol.tokenContractURL() for ${this.id}`;
+      } else {
+        // throw `Chain not configured in protocol.tokenContractURL() for ${this.id}`;
+        console.log(
+          `Chain not configured in protocol.tokenContractURL() for ${this.id}`
+        );
+        return "";
+      }
     } else {
       return "";
     }
@@ -207,7 +212,7 @@ export class Protocol extends Moralis.Object {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sub.on("delete", (object: Protocol) => {
       console.log("Manager Protocols  object deleted");
-      refresh(object)
+      refresh(object);
     });
     sub.on("close", () => {
       console.log("Manager Protocol subscription closed");

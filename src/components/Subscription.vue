@@ -1,7 +1,9 @@
 <template>
   <va-card class="subscription" color="#76b4e3" gradient>
     <va-card-title>
-      <div class="flex md7"><h3>{{ name }}</h3></div>
+      <div class="flex md7">
+        <h3>{{ name }}</h3>
+      </div>
       <div class="flex md5">
         <va-popover
           :message="pausePopoverText"
@@ -121,7 +123,8 @@ export default defineComponent({
       return subType == "Protocol Alerts" || subType == "Smart Contracts";
     },
     contractDescription(): string {
-      return this.currentSubscription.contract?.description;
+      const c = this.currentSubscription.contract;
+      return c?.description || "";
     },
     contractActivity(): string {
       const act = this.currentSubscription.get("contractActivity");
