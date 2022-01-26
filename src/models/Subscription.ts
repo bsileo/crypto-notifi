@@ -118,19 +118,20 @@ export class Subscription extends Moralis.Object {
   }
 
   static async spawn(
-    protocol: Protocol,
     name: string,
     userID: string,
-    subType: AlertTypes
+    subType: AlertTypes,
+    protocol?: Protocol,
   ): Promise<Subscription> {
     let s = new Subscription();
-    s.set("protocol", protocol.name);
-    s.set("Protocol", protocol);
+    if (protocol) {
+      s.set("protocol", protocol.name);
+      s.set("Protocol", protocol);
+    }
     s.set("name", name);
     s.set("userID", userID);
     s.set("subscriptionType", subType);
     s = await s.save();
-    s.setChannelNames();
     return s;
   }
 
@@ -154,7 +155,7 @@ export class Subscription extends Moralis.Object {
       (uc: Subscription) => {
         // Execute any logic that should take place after the object is saved.
         //uc.setUserChannels(userChans);
-        return true
+        return true;
       },
       (error: { message: string }) => {
         // Execute any logic that should take place if the save fails.
@@ -165,34 +166,14 @@ export class Subscription extends Moralis.Object {
     return true;
   }
 
-  public async initialize(): Promise<void> {
-    //await this.setChannelNames();
-  }
-
-  public async setChannelNames(): Promise<string | undefined> {
-    const rel = this.relation("UserChannel");
-    const q = rel.query();
-    let names = "";
-    q.find().then((myChans: UserChannel[]) => {
-      myChans.forEach((chan: UserChannel) => {
-        names = `${names}, ${chan.get("name")}`;
-      });
-      console.log("Names" + names);
-      this.myChannelNames = names.slice(2, names.length);
-    });
-    return this.channelNames;
-  }
-
   public async setUserChannels(channels: UserChannel[]): Promise<void> {
     const myChans = this.relation("UserChannel");
     channels.forEach(async (chan: UserChannel) => {
       if (chan) {
         myChans.add(chan);
         chan.relation("subscriptions").add(this);
-        chan.increment("SubscriptionCount");
         await chan.save();
         await this.save();
-        this.setChannelNames();
       }
     });
   }
