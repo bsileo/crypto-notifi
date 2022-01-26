@@ -1,7 +1,8 @@
 /* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 async function sendEmailAlert(channel, content) {
-  const logger = getLogger();
+  //const logger = getLogger();
+  const logger = Moralis.Cloud.getLogger();
   logger.info(`Email send ${content} to ${channel.get("providerData").email}`);
   const SENDGRID_API_KEY = await getAPIKey("SENDGRID_API_KEY");
   const sendgridContent = [{ type: "text/plain", value: content.plain }]
@@ -14,13 +15,12 @@ async function sendEmailAlert(channel, content) {
         to: [{ email: channel.get("providerData").email }],
       },
     ],
-    from: { email: "brad@sileo.name", name: "Crypto Notifi" },
+    from: { email: "no-reply@cryptonotifi.xyz", name: "Crypto Notifi" },
     subject: "CryptoNotifi Alert",
     content: sendgridContent,
   };
-  logger.info(`[SendEmailAlert] Content-Plain="${content.plain}"`);
-  logger.info(`[SendEmailAlert] Content-Rich="${content.rich}"`);
-  //logger.info(`[SendEmailAlert] SendGrid Key-"${SENDGRID_API_KEY}"`);
+  logger.debug(`[SendEmailAlert] Content-Plain="${content.plain}"`);
+  logger.debug(`[SendEmailAlert] Content-Rich="${content.rich}"`);
   Moralis.Cloud.httpRequest({
     method: "POST",
     url: "https://api.sendgrid.com/v3/mail/send",

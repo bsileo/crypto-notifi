@@ -9,9 +9,16 @@ async function getAPIKey(name) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getLogger() {
+async function getLogger() {
   const mlogger = Moralis.Cloud.getLogger();
+  const config = await Moralis.Config.get({ useMasterKey: true });
+  const debug = config.get("debug");
   return {
+    debug: (msg) => {
+      if (debug) {
+        mlogger.debug(msg);
+      }
+    },
     info: (msg) => {
       mlogger.info(msg);
     },
