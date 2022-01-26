@@ -47,6 +47,15 @@ export class SubscriptionType extends Moralis.Object {
     s = await s.save();
     return s;
   }
+
+  static async typesForProtocolID(id: string): Promise<SubscriptionType[]> {
+    const q = new Moralis.Query(SubscriptionType);
+    const p = new Protocol();
+    p.id = id;
+    q.equalTo("protocol", p);
+    const res = await q.find();
+    return res;
+  }
 }
 
 Moralis.Object.registerSubclass("SubscriptionType", SubscriptionType);

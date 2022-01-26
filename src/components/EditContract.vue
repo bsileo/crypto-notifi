@@ -1,61 +1,75 @@
 <template>
   <div>
-    <va-form>
+    <div class="row pb-3 pt-3">
+      <div class="flex lg9">
+        <h3>Contract Details</h3>
+      </div>
+      <div class="flex lg3">
+        <va-button size="medium" class="mr-4" icon="edit" @click="save"
+          >Save</va-button
+        >
+        <va-button size="medium" icon="cancel" @click="cancel"
+          >Cancel</va-button
+        >
+      </div>
+    </div>
+    <div class="container pl-3">
       <div class="row pb-1">
         <va-input
-          class="flex sm12"
+          class="flex sm4"
           label="Protocol"
           readonly
           v-model="protocolName"
         ></va-input>
-      </div>
-      <div class="row pb-1">
         <va-input
-          class="flex sm12"
+          class="flex sm8"
           label="Contract name"
           v-model="contractName"
         ></va-input>
       </div>
       <div class="row pb-1">
-        <va-input
-          class="flex sm12"
-          label="Contract Address"
-          v-model="contractAddress"
-        ></va-input>
-      </div>
-      <div class="row pb-1">
         <va-select
-          class="flex sm12"
+          class="flex sm4"
           label="Chain"
           v-model="contractChain"
           :options="protocolChains"
           :rules="[this.contractChain != undefined || 'Select a chain']"
         />
+        <va-input
+          class="flex sm8"
+          label="Contract Address"
+          v-model="contractAddress"
+        ></va-input>
       </div>
-      <va-divider></va-divider>
-      <div class="row"><h3>Events</h3></div>
-      <div class="layout gutter--md">
-        <div class="row ml-2">
-          <va-card
-            bordered
-            class="flex sm12 md6 lg6 mb-2"
-            v-bind:key="contractActivity.id"
-            v-for="contractActivity in contractActivities"
+    </div>
+    <va-divider></va-divider>
+    <div class="row"><h3>Events</h3></div>
+    <div class="layout pl-3">
+      <div class="row ml-2">
+        <va-card
+          bordered
+          class="flex sm12 md6 lg6 mb-2"
+          v-bind:key="contractActivity.id"
+          v-for="contractActivity in contractActivities"
+        >
+          <EditContractActivity
+            :contractActivity="contractActivity"
+            @activityDelete="contractActivityDeleted"
           >
-            <EditContractActivity
-              :contractActivity="contractActivity"
-              @activityDelete="contractActivityDeleted"
-            >
-            </EditContractActivity>
-          </va-card>
-          <va-card bordered class="flex sm12 md6 lg6">
-            <va-card-title>Add an Activity</va-card-title>
-            <EditContractActivity
-              @activityAdd="addActivity"
-            ></EditContractActivity>
-          </va-card>
-        </div>
-        <div class="pt-3 pb-3">
+          </EditContractActivity>
+        </va-card>
+        <va-card bordered class="flex sm12 md6 lg6">
+          <va-card-title>Add an Activity</va-card-title>
+          <EditContractActivity
+            @activityAdd="addActivity"
+          ></EditContractActivity>
+        </va-card>
+      </div>
+    </div>
+    <div class="pt-3 pb-3">
+      <div class="row">
+        <div class="flex lg9"></div>
+        <div class="flex lg3">
           <va-button size="medium" class="mr-4" icon="edit" @click="save"
             >Save</va-button
           >
@@ -64,7 +78,7 @@
           >
         </div>
       </div>
-    </va-form>
+    </div>
   </div>
 </template>
 
@@ -79,7 +93,7 @@ import Moralis from "moralis";
 export default defineComponent({
   name: "EditContract",
   components: { EditContractActivity },
-  emits: ["contractUpdate", "contractSaved", "cancel"],
+  emits: ["contractUpdate", "contractSaved", "cancel", "updated"],
   props: {
     protocol: { type: Protocol, required: true },
     contract: { type: Contract, required: false },
@@ -92,6 +106,9 @@ export default defineComponent({
   },
   mounted() {
     this.fetchContractActivities();
+  },
+  updated() {
+    this.$emit("updated");
   },
   computed: {
     protocolName(): string {

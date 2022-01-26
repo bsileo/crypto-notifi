@@ -23,6 +23,8 @@
         class="mb-1"
         v-model="newContent"
         type="textarea"
+        autosize
+        :min-rows="6"
         label="Enter Plain Text Alert Content"
       />
       <div class="editor" v-if="textType == 'rich'">
@@ -175,7 +177,8 @@ export default defineComponent({
 
       // Hack fix because the result of the selection does not have correct bahavior
       const cat: SubscriptionType | undefined = this.subCategories.find(
-        (e) => e.id == this.newCategory);
+        (e) => e.id == this.newCategory
+      );
       if (!cat) {
         return;
       }

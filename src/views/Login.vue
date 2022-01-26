@@ -17,9 +17,9 @@
           <strong class="pt-5 pb-5">Login now to get started for free!</strong>
           <va-divider></va-divider>
           <p>
-            Access alerts to help you perform better in DeFi all with no costs.
-            Simple stake tokens in these leading platforms for free access to
-            updates and contract alerts for participating protocols!
+            Proactive alerts help you keep ahead in DeFi! Simply stake tokens in
+            these leading platforms for free access to updates and contract
+            alerts for participating protocols!
           </p>
         </div>
         <div class="flex sm4">

@@ -83,7 +83,7 @@ import Subscriptions from "@/components/subscriptions.vue";
 import Subscribe from "@/components/subscribe.vue";
 import Transactions from "@/components/transactions.vue";
 import ProtocolManager from "@/components/ProtocolManager.vue";
-import Header from "@/components/header.vue"
+import Header from "@/components/header.vue";
 import { computed } from "vue";
 
 let tx: Moralis.TransactionResult | null = null;

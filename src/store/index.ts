@@ -1,6 +1,3 @@
-//import { channelModule } from "./channels";
-//import { userModule } from "./user";
-
 export interface State {
   state: Record<string, unknown>;
   mutations: Record<string, unknown>;

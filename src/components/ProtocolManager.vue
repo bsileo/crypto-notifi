@@ -147,22 +147,17 @@
             {{ contract.short_address }}
           </div>
           <va-card-actions align="stretch">
-            <va-button
-              @click="
-                this.selectedContract = contract;
-                showAddContract = true;
-              "
-              icon="edit"
-            ></va-button>
+            <va-button @click="editContract(contract)" icon="edit"></va-button>
           </va-card-actions>
         </va-card>
       </div>
       <div class="row">
-        <div v-if="showAddContract" class="pl-3">
+        <div ref="EditContract" v-if="showAddContract" class="pl-3">
           <va-divider></va-divider>
           <EditContract
             @contractSaved="contractSaved"
             @cancel="showAddContract = false"
+            @updated="scrollToContract"
             :contract="this.selectedContract"
             :protocol="this.selectedProtocol"
           ></EditContract>
@@ -181,7 +176,6 @@ import {
   SubscriptionTypeStatus,
 } from "@/models/SubscriptionType";
 import { Protocol } from "@/models/Protocol";
-import { protocolsModule } from "@/store/protocol";
 import Moralis from "moralis";
 import EditCategory from "./EditCategory.vue";
 import SendAlert from "./SendAlert.vue";
@@ -239,9 +233,6 @@ export default defineComponent({
     },
   },
   computed: {
-    protocolsOld(): Protocol[] {
-      return protocolsModule.myManagerProtocols;
-    },
     alerts(): Alert[] {
       return alertsModule.sentAlerts;
     },
@@ -273,10 +264,24 @@ export default defineComponent({
     startAddContract() {
       this.selectedContract = new Contract();
       this.showAddContract = true;
+      this.scrollToContract();
+    },
+    editContract(contract: Contract) {
+      this.selectedContract = contract;
+      this.showAddContract = true;
+      this.scrollToContract();
     },
     contractSaved() {
       this.showAddContract = false;
       this.fetchContracts();
+    },
+    scrollToContract(): void {
+      console.log("SCROLL");
+      const el: any = this.$refs["EditContract"];
+      if (el) {
+        var top = el.offsetTop;
+        window.scrollTo(0, top);
+      }
     },
     async fetchContracts(): Promise<Contract[]> {
       if (this.selectedProtocol) {

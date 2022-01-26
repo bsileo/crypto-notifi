@@ -347,7 +347,7 @@ export default defineComponent({
       }
     },
     selectedProtocol: {
-      get() {
+      get(): Protocol | undefined {
         return this.intSelectedProtocol;
       },
       set(val: Protocol) {
@@ -662,9 +662,11 @@ export default defineComponent({
       return web3.utils.isAddress(address);
     },
     async subscribe(): Promise<void> {
-      console.log("Create/Update subscription");
+      if (this.selectedProtocol == undefined) {
+        return;
+      }
       const c = await Subscription.spawn(
-        this.selectedProtocolName,
+        this.selectedProtocol,
         this.subName,
         this.userID(),
         this.subType
