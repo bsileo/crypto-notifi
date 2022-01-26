@@ -15,11 +15,7 @@
     </div>
   </va-alert>
   <div class="row pb-1">
-    <va-input
-      class="flex sm4"
-      label="Search Names"
-      v-model="search"
-    ></va-input>
+    <va-input class="flex sm4" label="Search Names" v-model="search"></va-input>
     <div class="flex sm6">
       <ProtocolSelector
         :simpleList="true"
@@ -27,17 +23,20 @@
         @selection="setSearchProtocols"
       ></ProtocolSelector>
     </div>
+    <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
   </div>
-  <div class="layout gutter--md">
-    <div class="row">
-      <div
-        class="flex sm6 md4 lg4"
-        v-for="subscription in subscriptions"
-        v-bind:key="subscription.id"
-      >
-        <SubscriptionCard :subscription="subscription"></SubscriptionCard>
+  <div class="layout gutter--sm">
+    <va-inner-loading :loading="subscriptionsLoading" :size="60">
+      <div class="row">
+        <div
+          class="flex sm6 md4 lg3"
+          v-for="subscription in subscriptions"
+          v-bind:key="subscription.id"
+        >
+          <SubscriptionCard :subscription="subscription"></SubscriptionCard>
+        </div>
       </div>
-    </div>
+    </va-inner-loading>
   </div>
   <va-modal
     fullscreen
@@ -58,7 +57,6 @@
 import Moralis from "moralis";
 import { defineComponent } from "vue";
 import { Subscription } from "@/models/Subscription";
-import { subscriptionsModule } from "@/store/subscription";
 import Subscribe from "@/components/subscribe.vue";
 import SubscriptionCard from "./Subscription.vue";
 import ProtocolSelector from "./ProtocolSelector.vue";
@@ -71,51 +69,52 @@ export default defineComponent({
     showAdd: Boolean,
   },
   data() {
-    const subs: Subscription[] = [];
     return {
       validation: null,
-      selected: subs,
       showSubscribe: false,
-      search: "",
+      intSearch: "",
       searchProtocols: [] as Protocol[],
+      rawSubscriptions: [] as Subscription[],
+      queryLimit: 25,
+      subscriptionsLoading: false,
     };
   },
-  mounted() {
-    //this.fetchSubscriptions();
+  async mounted() {
+    this.fetchSubscriptions();
   },
   emits: ["subscribe"],
   computed: {
     subscriptions(): Subscription[] {
-      let subs = subscriptionsModule.mySubscriptions;
+      let subs = this.rawSubscriptions;
+      /* Done inthe quesry now
       subs = subs.filter((s) => {
         const idx = s.name.indexOf(this.search);
         return idx != -1;
-      });
+      });*/
       if (this.searchProtocols.length > 0) {
         const prots = this.searchProtocols.map((e) => e.name);
         subs = subs.filter((s) => {
-          return prots.includes(s.get("protocol"));
+          return prots.includes(s.protocol.name);
         });
       }
       return subs;
     },
-    selectedSubscription(): Subscription | null {
-      if (this.selected.length == 0) return null;
-      return this.selected[0].subscription;
-    },
-    allowEdit(): boolean {
-      return this.selected.length == 1;
-    },
-    allowRemove(): boolean {
-      return this.selected.length > 0;
+    search: {
+      get(): string {
+        return this.intSearch;
+      },
+      set(newVal: string) {
+        this.intSearch = newVal;
+        this.rawSubscriptions.length = 0;
+        this.fetchSubscriptions();
+      },
     },
     allowAdd(): boolean {
       return true;
-    }
+    },
   },
   methods: {
     setSearchProtocols(prots: Protocol[]): void {
-      console.log(prots);
       this.searchProtocols = prots;
     },
     edit(id: string): void {
@@ -130,6 +129,26 @@ export default defineComponent({
           console.log(`Success remove ${oldS}`);
         });
       });
+    },
+    refresh() {
+      this.rawSubscriptions.length = 0;
+      this.fetchSubscriptions();
+    },
+    async appendSubscriptions(): Promise<void> {
+      //console.log("Append");
+      this.fetchSubscriptions();
+    },
+    async fetchSubscriptions(): Promise<void> {
+      this.subscriptionsLoading = true;
+      const query = new Moralis.Query(Subscription);
+      if (this.search) {
+        query.matches("name", this.search);
+      }
+      query.limit(this.queryLimit);
+      query.skip(this.rawSubscriptions.length);
+      let subs = await query.find();
+      this.rawSubscriptions.push(...subs);
+      this.subscriptionsLoading = false;
     },
   },
 });

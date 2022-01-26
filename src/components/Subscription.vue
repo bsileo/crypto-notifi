@@ -1,8 +1,8 @@
 <template>
   <va-card class="subscription" color="#76b4e3" gradient>
     <va-card-title>
-      <div class="flex md8">{{ name }}</div>
-      <div class="flex md4">
+      <div class="flex md7"><h3>{{ name }}</h3></div>
+      <div class="flex md5">
         <va-popover
           :message="pausePopoverText"
           placement="top"
@@ -13,7 +13,7 @@
             :icon-right="pauseToggleIcon"
             class="mr-1"
             size="small"
-            :color="paused ? 'warning' : 'success' "
+            :color="paused ? 'warning' : 'success'"
           ></va-button>
         </va-popover>
         <va-button
@@ -120,7 +120,7 @@ export default defineComponent({
       const subType = this.subscriptionType as unknown;
       return subType == "Protocol Alerts" || subType == "Smart Contracts";
     },
-    contractDescription(): any {
+    contractDescription(): string {
       return this.currentSubscription.contract?.description;
     },
     contractActivity(): string {
