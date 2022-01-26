@@ -6,8 +6,8 @@
         label="Type of Alert"
         v-model="newCategory"
         :options="subCategories"
-        track-by="id"
-        text-by="name"
+        value-by="id"
+        :text-by="(option) => option.name"
         :rules="[(newCategory) => newCategory != null || 'Select a category']"
       />
     </div>
@@ -26,70 +26,61 @@
         label="Enter Plain Text Alert Content"
       />
       <div class="editor" v-if="textType == 'rich'">
-        <label class="inputtitle va-input--labeled va-input__label"
-          >Enter Rich Text Alert Content</label
-        >
-        <EditorContent :editor="editor" />
-      </div>
-      <div v-if="editor">
-        <bubble-menu
-          class="bubble-menu"
-          :tippy-options="{ duration: 100 }"
-          :editor="editor"
-        >
-          <button
-            @click="editor.chain().focus().toggleBold().run()"
-            :class="{ 'is-active': editor.isActive('bold') }"
-          >
-            Bold
-          </button>
-          <button
-            @click="editor.chain().focus().toggleItalic().run()"
-            :class="{ 'is-active': editor.isActive('italic') }"
-          >
-            Italic
-          </button>
-          <button
-            @click="editor.chain().focus().toggleStrike().run()"
-            :class="{ 'is-active': editor.isActive('strike') }"
-          >
-            Strike
-          </button>
-        </bubble-menu>
-
-        <floating-menu
-          class="floating-menu"
-          :tippy-options="{ duration: 100 }"
-          :editor="editor"
-        >
-          <button
-            @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
-            :class="{
-              'is-active': editor.isActive('heading', { level: 1 }),
-            }"
-          >
-            H1
-          </button>
-          <button
-            @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
-            :class="{
-              'is-active': editor.isActive('heading', { level: 2 }),
-            }"
-          >
-            H2
-          </button>
-          <button
-            @click="editor.chain().focus().toggleBulletList().run()"
-            :class="{ 'is-active': editor.isActive('bulletList') }"
-          >
-            Bullet List
-          </button>
-        </floating-menu>
+        <editor
+          api-key="582k9lowpc19oacd180hsqwlq73pavp5uvuet95zgras454q"
+          v-model="newRichContent"
+          :init="{
+            height: 200,
+            menubar: true,
+            plugins: [
+              'advlist autolink lists link image charmap print preview anchor',
+              'searchreplace visualblocks code fullscreen',
+              'insertdatetime media table paste code help wordcount',
+            ],
+            toolbar:
+              'undo redo | formatselect | bold italic backcolor | \ alignleft aligncenter alignright alignjustify | \
+            bullist numlist outdent indent | removeformat | help',
+            menu: {
+              file: {
+                title: 'File',
+                items: 'newdocument restoredraft | preview ',
+              },
+              edit: {
+                title: 'Edit',
+                items: 'undo redo | cut copy paste | selectall | searchreplace',
+              },
+              view: {
+                title: 'View',
+                items:
+                  'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen',
+              },
+              insert: {
+                title: 'Insert',
+                items:
+                  'image link media template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor toc | insertdatetime',
+              },
+              format: {
+                title: 'Format',
+                items:
+                  'bold italic underline strikethrough superscript subscript codeformat | formats blockformats fontformats fontsizes align lineheight | forecolor backcolor | removeformat',
+              },
+              tools: {
+                title: 'Tools',
+                items: 'spellchecker spellcheckerlanguage | code wordcount',
+              },
+              table: {
+                title: 'Table',
+                items: 'inserttable | cell row column | tableprops deletetable',
+              },
+              help: { title: 'Help', items: 'help' },
+            },
+          }"
+        />
       </div>
     </div>
-    <div>
+    <div class="pt-3 pl-5">
       <va-button
-        style="margin-left: 50px"
+        style=""
         :disabled="!validSubmit"
         @click.prevent="send"
         color="danger"
@@ -110,7 +101,7 @@
 </template>
 
 <script lang="ts">
-import { Alert } from "@/models/Alert";
+import { Alert, AlertContent } from "@/models/Alert";
 import { Protocol } from "@/models/Protocol";
 import {
   SubscriptionType,
@@ -118,10 +109,7 @@ import {
 } from "@/models/SubscriptionType";
 import Moralis from "moralis";
 import { defineComponent } from "vue";
-import { Editor, EditorContent, BubbleMenu, FloatingMenu } from "@tiptap/vue-3";
-import StarterKit from "@tiptap/starter-kit";
-import TextAlign from "@tiptap/extension-text-align";
-import Highlight from "@tiptap/extension-highlight";
+import Editor from "@tinymce/tinymce-vue";
 
 export default defineComponent({
   name: "SendAlert",
@@ -131,37 +119,17 @@ export default defineComponent({
       required: false,
     },
   },
-  components: { EditorContent, BubbleMenu, FloatingMenu },
+  components: { Editor },
   emits: ["alert:sent"],
   data() {
     return {
-      newCategory: undefined as SubscriptionType | undefined,
+      newCategory: undefined as string | undefined,
       newContent: "",
       newRichContent: "",
       subCategories: [] as SubscriptionType[],
       showSuccess: false,
       textType: "plain",
-      editor: null as null | Editor,
     };
-  },
-  mounted() {
-    this.editor = new Editor({
-      content: this.newRichContent,
-      onUpdate: ({ editor }) => {
-        const html = editor.getHTML();
-        this.newRichContent = html;
-      },
-      extensions: [
-        StarterKit,
-        TextAlign.configure({
-          types: ["heading", "paragraph"],
-        }),
-        Highlight,
-      ],
-    });
-  },
-  beforeUnmount() {
-    this.editor?.destroy();
   },
   watch: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -170,14 +138,20 @@ export default defineComponent({
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     newContent(newCont: string, oldCont: string) {
-      if (this.editor && this.newRichContent == "") {
-        this.editor.commands.setContent(`<p>${newCont}</p>`);
+      if (this.newRichContent == "") {
+        console.log("Set Rich");
       }
     },
   },
   computed: {
     validSubmit(): boolean {
       return this.newCategory != undefined && this.newContent != "";
+    },
+    content(): AlertContent {
+      return {
+        plain: this.newContent,
+        rich: this.newRichContent,
+      };
     },
   },
   methods: {
@@ -189,7 +163,7 @@ export default defineComponent({
         const res = await q.find();
         this.subCategories = res;
         if (this.subCategories.length == 1) {
-          this.newCategory = this.subCategories[0];
+          this.newCategory = this.subCategories[0].id;
         }
       }
     },
@@ -201,12 +175,12 @@ export default defineComponent({
 
       // Hack fix because the result of the selection does not have correct bahavior
       const cat: SubscriptionType | undefined = this.subCategories.find(
-        (e) => e.id == this.newCategory?.id
-      );
+        (e) => e.id == this.newCategory);
       if (!cat) {
         return;
       }
-      const c = Alert.spawn(cat, this.newContent, this.protocol);
+
+      const c = Alert.spawn(cat, this.content, this.protocol);
       if (this.newRichContent != null) {
         c.set("richContent", this.newRichContent);
       }
@@ -230,109 +204,4 @@ export default defineComponent({
 });
 </script>
 
-<style scoped lang="scss">
-div.editor {
-  min-height: 4em;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  background-color: #f5f9fb;
-  border-style: none;
-  color: var(--va-input-text-color);
-  font-family: inherit;
-  font-size: var(--va-input-font-size);
-  font-stretch: var(--va-input-font-stretch);
-  font-style: var(--va-input-font-style);
-  font-weight: var(--va-input-font-weight);
-  letter-spacing: var(--va-input-letter-spacing);
-  line-height: var(--va-input-line-height);
-  outline: none;
-  scrollbar-color: var(--va-input-scroll-color) transparent;
-  scrollbar-width: thin;
-  transform: translateY(-1px);
-  width: 100%;
-}
-
-.inputtitle {
-  color: rgb(44, 130, 224);
-  display: block;
-  font-size: var(--va-input-container-label-font-size);
-  font-weight: var(--va-input-container-label-font-weight);
-  height: 12px;
-  left: 10;
-  letter-spacing: var(
-    --va-input-container-label-letter-spacing,
-    var(--va-letter-spacing)
-  );
-  line-height: var(--va-input-container-label-line-height);
-  max-width: var(--va-input-container-label-max-width);
-  overflow: hidden;
-  padding-top: 1px;
-  position: absolute;
-  text-overflow: ellipsis;
-  text-transform: var(--va-input-container-label-text-transform);
-  top: 0;
-  //transform: translateY(-100%);
-  transform-origin: top left;
-  white-space: nowrap;
-}
-/* Basic editor styles */
-.ProseMirror {
-  > * + * {
-    margin-top: 0.75em;
-    margin-bottom: 10px;
-  }
-
-  ul,
-  ol {
-    padding: 0 1rem;
-  }
-
-  blockquote {
-    padding-left: 1rem;
-    border-left: 2px solid rgba(#0d0d0d, 0.1);
-  }
-}
-
-.bubble-menu {
-  display: flex;
-  background-color: #0d0d0d;
-  padding: 0.2rem;
-  border-radius: 0.5rem;
-
-  button {
-    border: none;
-    background: none;
-    color: #fff;
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 0 0.2rem;
-    opacity: 0.6;
-
-    &:hover,
-    &.is-active {
-      opacity: 1;
-    }
-  }
-}
-
-.floating-menu {
-  display: flex;
-  background-color: #0d0d0d10;
-  padding: 0.2rem;
-  border-radius: 0.5rem;
-
-  button {
-    border: none;
-    background: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    padding: 0 0.2rem;
-    opacity: 0.6;
-
-    &:hover,
-    &.is-active {
-      opacity: 1;
-    }
-  }
-}
-</style>
+<style scoped lang="scss"></style>

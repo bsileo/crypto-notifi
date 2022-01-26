@@ -54,15 +54,62 @@
         class="flex sm12"
         label="Plain Message Template"
         type="textarea"
+        :min-rows="6"
         autosize
         v-model="template"
         placeholder="This is an alert for [[user]] triggered from [[contract]]"
       ></va-input>
       <div class="editor" v-if="textType == 'rich'">
-        <label class="inputtitle va-input--labeled va-input__label"
-          >Rich Message Template</label
-        >
-        <EditorContent :editor="editor" />
+        <editor
+          api-key="582k9lowpc19oacd180hsqwlq73pavp5uvuet95zgras454q"
+          v-model="richTemplate"
+          :init="{
+            height: 200,
+            menubar: true,
+            plugins: [
+              'advlist autolink lists link image charmap print preview anchor',
+              'searchreplace visualblocks code fullscreen',
+              'insertdatetime media table paste code help wordcount',
+            ],
+            toolbar:
+              'undo redo | formatselect | bold italic backcolor | \ alignleft aligncenter alignright alignjustify | \
+            bullist numlist outdent indent | removeformat | help',
+            menu: {
+              file: {
+                title: 'File',
+                items: 'newdocument restoredraft | preview ',
+              },
+              edit: {
+                title: 'Edit',
+                items: 'undo redo | cut copy paste | selectall | searchreplace',
+              },
+              view: {
+                title: 'View',
+                items:
+                  'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen',
+              },
+              insert: {
+                title: 'Insert',
+                items:
+                  'image link media template codesample inserttable | charmap emoticons hr | pagebreak nonbreaking anchor toc | insertdatetime',
+              },
+              format: {
+                title: 'Format',
+                items:
+                  'bold italic underline strikethrough superscript subscript codeformat | formats blockformats fontformats fontsizes align lineheight | forecolor backcolor | removeformat',
+              },
+              tools: {
+                title: 'Tools',
+                items: 'spellchecker spellcheckerlanguage | code wordcount',
+              },
+              table: {
+                title: 'Table',
+                items: 'inserttable | cell row column | tableprops deletetable',
+              },
+              help: { title: 'Help', items: 'help' },
+            },
+          }"
+        />
       </div>
     </div>
     <div class="row ml-1 pb-1">
@@ -85,16 +132,14 @@
 import { ContractActivity } from "@/models/ContractActivity";
 import { defineComponent, reactive } from "vue";
 import { DataParameter } from "@/models/ContractActivity";
-import { Editor, EditorContent, BubbleMenu, FloatingMenu } from "@tiptap/vue-3";
-import StarterKit from "@tiptap/starter-kit";
-import TextAlign from "@tiptap/extension-text-align";
-import Highlight from "@tiptap/extension-highlight";
+import Editor from "@tinymce/tinymce-vue";
 import LevelSelector from "./LevelSelector.vue"
 import { ProtocolLevel } from "@/models/Protocol";
 
+
 export default defineComponent({
   name: "EditContractActivity",
-  components: { EditorContent, LevelSelector },
+  components: { Editor, LevelSelector },
   emits: ["activityUpdate", "activityAdd", "activityDelete"],
   props: {
     contractActivity: { type: ContractActivity, required: false },
@@ -104,24 +149,7 @@ export default defineComponent({
       activity: this.contractActivity || new ContractActivity(),
       intName: undefined as undefined | string,
       textType: "plain" as "plain" | "rich",
-      editor: null as null | Editor,
     };
-  },
-  mounted() {
-    this.editor = new Editor({
-      content: this.richTemplate,
-      onUpdate: ({ editor }) => {
-        const html = editor.getHTML();
-        this.richTemplate = html;
-      },
-      extensions: [
-        StarterKit,
-        TextAlign.configure({
-          types: ["heading", "paragraph"],
-        }),
-        Highlight,
-      ],
-    });
   },
   computed: {
     activeActivity(): ContractActivity {

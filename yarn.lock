@@ -1240,6 +1240,13 @@
   dependencies:
     "defer-to-connect" "^1.0.1"
 
+"@tinymce/tinymce-vue@^4.0.5":
+  "integrity" "sha512-PutMhPVgR+NPeu20pvTmFBY+3zKwTJqK0JPDb6QuK8u1g6Av4RaiUVS58Rft6mhoxVE99tIofdr69wOH/X0swA=="
+  "resolved" "https://registry.npmjs.org/@tinymce/tinymce-vue/-/tinymce-vue-4.0.5.tgz"
+  "version" "4.0.5"
+  dependencies:
+    "tinymce" "^5.5.0"
+
 "@tiptap/core@^2.0.0-beta.1", "@tiptap/core@^2.0.0-beta.163":
   "integrity" "sha512-Rg2UaAhmb9z6eunQ5D6dSEO/e4zK2cfIuYJniB87o8nLogaNBNKkhy6Q2kZB1PpYLIpbl0C/DdHIQ7QYy92ZAg=="
   "resolved" "https://registry.npmjs.org/@tiptap/core/-/core-2.0.0-beta.163.tgz"
@@ -11054,6 +11061,11 @@
   "integrity" "sha1-QFQRqOfmM5/mTbmiNN4R3DHgK9Q="
   "resolved" "https://registry.npmjs.org/timsort/-/timsort-0.3.0.tgz"
   "version" "0.3.0"
+
+"tinymce@^5.5.0":
+  "integrity" "sha512-5QhnZ6c8F28fYucLLc00MM37fZoAZ4g7QCYzwIl38i5TwJR5xGqzOv6YMideyLM4tytCzLCRwJoQen2LI66p5A=="
+  "resolved" "https://registry.npmjs.org/tinymce/-/tinymce-5.10.2.tgz"
+  "version" "5.10.2"
 
 "tippy.js@^6.3.7":
   "integrity" "sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ=="

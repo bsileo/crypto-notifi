@@ -14,6 +14,11 @@ export interface AlertModel {
   content: string;
 }
 
+export interface AlertContent {
+  plain: string;
+  rich: string;
+}
+
 export class Alert extends Moralis.Object {
   get createdAt(): string {
     return this.get("createdAt");
@@ -54,12 +59,13 @@ export class Alert extends Moralis.Object {
 
   static spawn(
     subType: SubscriptionType,
-    content: string,
+    content: AlertContent,
     protocol?: Protocol | undefined
   ): Alert {
     const a = new Alert();
     a.set("type", subType.get("type"));
-    a.set("content", content);
+    a.set("content", content.plain);
+    a.set("richContent", content.rich);
     if (protocol) {
       a.set("protocol", protocol);
       a.set("protocolID", protocol.id);
