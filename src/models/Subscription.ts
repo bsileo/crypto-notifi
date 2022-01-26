@@ -7,7 +7,6 @@ import { UserChannel } from "./Channel";
 import { Contract } from "./Contract";
 import { ContractActivity } from "./ContractActivity";
 import { Protocol } from "./Protocol";
-import { getCurrentInstance } from "vue";
 
 export enum SubscriptionStatus {
   "active" = "active",
@@ -21,8 +20,12 @@ export enum SubscriptionTypes {
 
 export class Subscription extends Moralis.Object {
   get protocol(): Protocol {
-    return this.get("protocol");
+    return this.get("Protocol");
   }
+  set protocol(p: Protocol) {
+    this.set("Protocol", p);
+  }
+
   get generalType(): SubscriptionType {
     return this.get("GeneralSubType");
   }
@@ -38,16 +41,10 @@ export class Subscription extends Moralis.Object {
     this.set("name", val);
   }
 
-  get subscriptionType(): string {
-    return this.get("subscriptionType");
+  get subscriptionType(): SubscriptionTypes {
+    return this.get("subscriptionType") as SubscriptionTypes;
   }
-  get subscriptionDescriptor(): string {
-    const typ = this.subscriptionType;
-    if (typ === "General") {
-      return `${typ} (${this.generalType})`;
-    }
-    return typ;
-  }
+
   get userID(): string | undefined {
     return this.get("userID");
   }
@@ -125,7 +122,6 @@ export class Subscription extends Moralis.Object {
   ): Promise<Subscription> {
     let s = new Subscription();
     if (protocol) {
-      s.set("protocol", protocol.name);
       s.set("Protocol", protocol);
     }
     s.set("name", name);

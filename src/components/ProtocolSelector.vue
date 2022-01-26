@@ -71,7 +71,7 @@
             </div>
             <div v-if="protocol.tokenData" class="pt-2">
               Token:
-              <a :href="protocol.tokenContractURL()" target="_frame">
+              <a :href="protocol.tokenContractURL()" target="_blank">
                 {{ protocol.tokenData.symbol }}</a
               >
             </div>

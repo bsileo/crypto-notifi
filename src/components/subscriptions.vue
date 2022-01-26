@@ -71,17 +71,9 @@ export default defineComponent({
     showAdd: Boolean,
   },
   data() {
-    const columns = [
-      { key: "id", label: "", sortable: false },
-      { key: "name", label: "Name", sortable: true },
-      { key: "subscriptionDescriptor", label: "Type", sortable: true },
-      { key: "channelNames", label: "Channels", sortable: false },
-      { key: "description", label: "Description", sortable: false },
-    ];
     const subs: Subscription[] = [];
     return {
       validation: null,
-      columns: columns,
       selected: subs,
       showSubscribe: false,
       search: "",

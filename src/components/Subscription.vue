@@ -39,17 +39,21 @@
       </div>
     </va-card-title>
     <div class="row ml-2">
-      <div class="flex sm3"><strong>Protocol:</strong></div>
-      <div class="flex sm9">{{ protocolName }}</div>
-    </div>
-    <div class="row ml-2">
       <div class="flex sm3"><strong>Type:</strong></div>
       <div class="flex sm9">{{ subscriptionType }}</div>
+    </div>
+    <div v-if="showProtocol" class="row ml-2">
+      <div class="flex sm3"><strong>Protocol:</strong></div>
+      <div class="flex sm9">
+        <a :href="protocolWebsite" target="_blank">
+          {{ protocolName }}
+        </a>
+      </div>
     </div>
     <div v-if="contractDescription" class="row ml-2">
       <div class="flex sm3"><strong>Contract:</strong></div>
       <div class="flex sm9">
-        <a target="_frame" :href="contractURL">{{ contractDescription }}</a>
+        <a :href="contractURL" target="_blank">{{ contractDescription }}</a>
       </div>
     </div>
     <div v-if="contractActivity" class="row ml-2">
@@ -73,6 +77,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { Subscription } from "@/models/Subscription";
+import { SubscriptionTypes } from "@/models/Subscription";
 
 export default defineComponent({
   name: "SubscriptionCard",
@@ -100,8 +105,20 @@ export default defineComponent({
     },
   },
   computed: {
-    protocolName(): any {
-      return this.currentSubscription.protocol;
+    protocolName(): string {
+      const p = this.currentSubscription.protocol;
+      return p?.name;
+    },
+    protocolWebsite(): string {
+      const p = this.currentSubscription.protocol;
+      if (p) {
+        return p.website;
+      }
+      return "";
+    },
+    showProtocol(): boolean {
+      const subType = this.subscriptionType as unknown;
+      return subType == "Protocol Alerts" || subType == "Smart Contracts";
     },
     contractDescription(): any {
       return this.currentSubscription.contract?.description;
@@ -128,7 +145,7 @@ export default defineComponent({
         this.currentSubscription.name = val;
       },
     },
-    subscriptionType(): string {
+    subscriptionType(): SubscriptionTypes {
       return this.currentSubscription.subscriptionType;
     },
     description: {
