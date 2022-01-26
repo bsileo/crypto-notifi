@@ -132,7 +132,7 @@ export class Contract extends Moralis.Object {
   get contractURL(): string {
     const chain = this.chain as Chain;
     if (chain == "avalanche") {
-      return `https://snowtrace.io/token/${this.address}`;
+      return `https://snowtrace.io/address/${this.address}`;
     } else if (chain == "eth") {
       return `https://etherscan.io/address/${this.address}`;
     } else

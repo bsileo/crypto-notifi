@@ -1,5 +1,5 @@
 <template>
-  <va-card class="subscription" color="secondary" gradient>
+  <va-card class="subscription" color="#76b4e3" gradient>
     <va-card-title>
       <div class="flex md8">{{ name }}</div>
       <div class="flex md4">

@@ -108,9 +108,9 @@ export class Protocol extends Moralis.Object {
   }
   getUserLevel(): ProtocolLevel {
     const bal = this.getWalletBalance();
-    if (bal > this.tokenData.goldQuantity) {
+    if (bal >= this.tokenData.goldQuantity) {
       return ProtocolLevel.Gold;
-    } else if (bal > this.tokenData.basicQuantity) {
+    } else if (bal >= this.tokenData.basicQuantity) {
       return ProtocolLevel.Basic;
     } else {
       return ProtocolLevel.Free;
