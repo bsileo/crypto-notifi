@@ -7,11 +7,11 @@
           <p>
             Notifi allows you to create proactive alerts for all the best
             protocols in Web3. Ad hoc alerts keep you updated on the latest
-            happens in your favorite platforms, while transactional alerts allow
-            you to subscribe to individual events on the blockchain. Never miss
-            a key event again - you can get a text, email, or other alert
-            whenever a transfer happens, a vote occurs, or a new proposal is
-            approved on your favorite chains and protocols.
+            happenings in your favorite platforms, while transactional alerts
+            allow you to subscribe to individual events on the blockchain. Never
+            miss a key event again - you can get a text message, email, or other
+            alert whenever a transfer happens, a vote occurs, or a new proposal
+            is approved on your favorite chains and protocols.
           </p>
           <va-divider></va-divider>
           <strong class="pt-5 pb-5">Login now to get started for free!</strong>
@@ -19,7 +19,8 @@
           <p>
             Proactive alerts help you keep ahead in DeFi! Simply stake tokens in
             these leading platforms for free access to updates and contract
-            alerts for participating protocols!
+            alerts for participating protocols! Stake your tokens to get access
+            to proactive wallet alerts to keep an eye on your funds.
           </p>
         </div>
         <div class="flex sm4">
