@@ -15,7 +15,6 @@
     "dotenv": "^10.0.0",
     "env-var": "^7.0.1",
     "moralis": "^0.0.183",
-    "onesignal-vue": "^1.0.0-beta3",
     "vue": "^3.2.26",
     "vue-class-component": "^8.0.0-0",
     "vue-property-decorator": "^10.0.0-rc.3",
