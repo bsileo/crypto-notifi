@@ -119,7 +119,7 @@ export default defineComponent({
       return subs;
     },
     showNoSubscriptions(): boolean {
-      return this.rawSubscriptions.length == 0;
+      return this.rawSubscriptions.length == 0 && !this.subscriptionsLoading;
     },
     search: {
       get(): string {
