@@ -169,6 +169,8 @@ export default defineComponent({
       }
       query.limit(this.queryLimit);
       query.skip(this.rawSubscriptions.length);
+      query.include("contractActivity");
+      query.include("contract");
       let subs = await query.find();
       this.rawSubscriptions.push(...subs);
       this.subscriptionsLoading = false;

@@ -40,11 +40,13 @@
         </va-popover>
       </div>
     </va-card-title>
-    <div class="row ml-2">
+    <va-divider></va-divider>
+    <div class="row ml-2 pb-1">
       <div class="flex sm3"><strong>Type:</strong></div>
-      <div class="flex sm9">{{ subscriptionType }}</div>
+      <div class="flex sm6">{{ subscriptionType }}</div>
+      <va-icon class="flex sm2" :name="typeIcon"></va-icon>
     </div>
-    <div v-if="showProtocol" class="row ml-2">
+    <div v-if="showProtocol" class="row ml-2 pb-1">
       <div class="flex sm3"><strong>Protocol:</strong></div>
       <div class="flex sm9">
         <a :href="protocolWebsite" target="_blank">
@@ -52,21 +54,23 @@
         </a>
       </div>
     </div>
-    <div v-if="contractDescription" class="row ml-2">
+    <div v-if="contractDescription" class="row ml-2 pb-1">
       <div class="flex sm3"><strong>Contract:</strong></div>
       <div class="flex sm9">
         <a :href="contractURL" target="_blank">{{ contractDescription }}</a>
       </div>
     </div>
-    <div v-if="contractActivity" class="row ml-2">
-      <div class="flex sm3"><strong>Activity:</strong></div>
+    <div v-if="contractActivity" class="row ml-2 pb-1">
+      <div class="flex sm3">
+        <strong>{{ activityName }}:</strong>
+      </div>
       <div class="flex sm9">{{ contractActivity }}</div>
     </div>
-    <div v-if="generalTypeName" class="row ml-2">
+    <div v-if="generalTypeName" class="row ml-2 pb-1">
       <div class="flex sm3"><strong>Category:</strong></div>
       <div class="flex sm9">{{ generalTypeName }}</div>
     </div>
-    <div class="row ml-2">
+    <div class="row ml-2 pb-1">
       <div class="flex sm3"><strong>Channels:</strong></div>
       <div class="flex sm9">{{ channelsDescription }}</div>
     </div>
@@ -118,6 +122,17 @@ export default defineComponent({
       }
       return "";
     },
+    typeIcon(): string {
+      const t = this.currentSubscription.subscriptionType;
+      if (t == SubscriptionTypes.wallet) {
+        return "account_balance_wallet";
+      } else if (t == SubscriptionTypes.protocol) {
+        return "announcement";
+      } else if (t == SubscriptionTypes.contract) {
+        return "gavel";
+      }
+      return "";
+    },
     showProtocol(): boolean {
       const subType = this.subscriptionType as unknown;
       return subType == "Protocol Alerts" || subType == "Smart Contracts";
@@ -127,8 +142,12 @@ export default defineComponent({
       return c?.description || "";
     },
     contractActivity(): string {
-      const act = this.currentSubscription.get("contractActivity");
+      const act = this.currentSubscription.contractActivity;
       return act?.name || "";
+    },
+    activityName(): string {
+      const act = this.currentSubscription.contractActivity;
+      return act?.type == "Event" ? "Event" : "Activity" || "Activity";
     },
     generalTypeName(): string {
       return this.currentSubscription.generalTypeName();

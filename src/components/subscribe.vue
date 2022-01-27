@@ -242,12 +242,12 @@ import { defineComponent, inject, getCurrentInstance } from "vue";
 
 import { channelsModule } from "../store/channels";
 import { userModule } from "@/store/user";
-import { Subscription } from "@/models/Subscription";
+import { Subscription, SubscriptionTypes } from "@/models/Subscription";
 import {
   SubscriptionType,
   SubscriptionTypeStatus,
 } from "@/models/SubscriptionType";
-import { Protocol, ProtocolLevel } from "@/models/Protocol";
+import { Protocol } from "@/models/Protocol";
 import { protocolsModule } from "@/store/protocol";
 import { ActivityType, ContractActivity } from "@/models/ContractActivity";
 
@@ -256,7 +256,6 @@ import { UserChannel } from "@/models/Channel";
 import { contractsModule } from "@/store/contracts";
 import { Contract, Chain } from "@/models/Contract";
 import { UserModel } from "@/models/User";
-import { AlertTypes } from "@/models/Alert";
 import ProtocolSelector from "./ProtocolSelector.vue";
 
 //import Moralis from "moralis/types";
@@ -285,10 +284,10 @@ interface TokenBalance {
   token_address: string;
 }
 
-let allSubTypes: AlertTypes[] = [
-  AlertTypes.protocol,
-  AlertTypes.wallet,
-  AlertTypes.contract,
+let allSubTypes: SubscriptionTypes[] = [
+  SubscriptionTypes.protocol,
+  SubscriptionTypes.wallet,
+  SubscriptionTypes.contract,
 ];
 
 export default defineComponent({
@@ -307,7 +306,7 @@ export default defineComponent({
       selectedProtocolName: "",
       intSelectedProtocol: undefined as Protocol | undefined,
       subName: "My Subscription",
-      subType: AlertTypes.protocol as AlertTypes,
+      subType: SubscriptionTypes.protocol as SubscriptionTypes,
       subTypes: allSubTypes,
       subGeneralTypeID: "",
       subGeneralTypes: [] as SubscriptionType[],
@@ -396,18 +395,19 @@ export default defineComponent({
     // Are we allowed to enter a Value criteria for the current Subscription Type?
     showValue(): boolean {
       return (
-        this.subType == AlertTypes.wallet ||
-        (this.subType == AlertTypes.contract &&
+        this.subType == SubscriptionTypes.wallet ||
+        (this.subType == SubscriptionTypes.contract &&
           this.selectedContractActivity?.type == "Transaction")
       );
     },
     showChain(): boolean {
       return (
-        this.subType == AlertTypes.contract || this.subType == AlertTypes.wallet
+        this.subType == SubscriptionTypes.contract ||
+        this.subType == SubscriptionTypes.wallet
       );
     },
     showContracts(): boolean {
-      return this.subType == AlertTypes.contract;
+      return this.subType == SubscriptionTypes.contract;
     },
     selectedContract(): Contract | undefined {
       return this.contracts.find((e) => e.id == this.contractAddress);
@@ -452,8 +452,8 @@ export default defineComponent({
     },
     showProtocols(): boolean {
       return (
-        this.subType == AlertTypes.protocol ||
-        this.subType == AlertTypes.contract
+        this.subType == SubscriptionTypes.protocol ||
+        this.subType == SubscriptionTypes.contract
       );
     },
     protocols(): protocolInfo[] {
@@ -483,7 +483,7 @@ export default defineComponent({
       return contractsModule.CHAINS;
     },
     showSubGeneral(): boolean {
-      return this.subType == AlertTypes.protocol;
+      return this.subType == SubscriptionTypes.protocol;
     },
     selectedSubGeneralTypeName(): string | undefined {
       const t = this.selectedSubGeneralType;
@@ -520,7 +520,7 @@ export default defineComponent({
       return res;
     },
     showFrom(): boolean {
-      return this.subType == AlertTypes.wallet;
+      return this.subType == SubscriptionTypes.wallet;
     },
     myAddresses(): string[] {
       if (this.user) {
@@ -541,7 +541,7 @@ export default defineComponent({
       },
     },
     showTo(): boolean {
-      return this.subType == AlertTypes.wallet;
+      return this.subType == SubscriptionTypes.wallet;
     },
     to_address: {
       get() {
@@ -565,7 +565,7 @@ export default defineComponent({
       } else {
         msg = `Send alerts `;
       }
-      if (this.subType === AlertTypes.contract) {
+      if (this.subType === SubscriptionTypes.contract) {
         msg = `${msg} which trigger on`;
         if (this.selectedContractActivity?.type == "Transaction") {
           msg = `${msg} <strong>Transactions</strong>`;
@@ -577,11 +577,11 @@ export default defineComponent({
         if (this.selectedContract) {
           msg = `${msg} for the contract <strong>${this.selectedContract.description}</strong>`;
         }
-      } else if (this.subType === AlertTypes.protocol) {
+      } else if (this.subType === SubscriptionTypes.protocol) {
         msg = `${msg} for Protocol Alerts about <strong>${
           this.selectedSubGeneralTypeName || "[Select a Type above]"
         }</strong>`;
-      } else if (this.subType === AlertTypes.wallet) {
+      } else if (this.subType === SubscriptionTypes.wallet) {
         msg = `${msg} for transactions in my wallet`;
       }
       if (this.chkFrom) {
@@ -594,7 +594,7 @@ export default defineComponent({
         msg = `${msg} <br/>whose <strong>Value is ${this.valueOp} ${this.value}</strong>`;
       }
       if (
-        this.subType != AlertTypes.protocol &&
+        this.subType != SubscriptionTypes.protocol &&
         this.chain != undefined &&
         msg != ""
       ) {
@@ -618,11 +618,11 @@ export default defineComponent({
       );
     },
     validSubmit(): boolean {
-      if (this.subType == AlertTypes.protocol) {
+      if (this.subType == SubscriptionTypes.protocol) {
         return this.validGeneralSubmit;
-      } else if (this.subType == AlertTypes.contract) {
+      } else if (this.subType == SubscriptionTypes.contract) {
         return this.validContractSubmit;
-      } else if (this.subType == AlertTypes.wallet) {
+      } else if (this.subType == SubscriptionTypes.wallet) {
         return this.validWalletSubmit;
       }
       return false;

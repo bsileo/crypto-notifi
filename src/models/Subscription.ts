@@ -1,7 +1,6 @@
 import { UserModel } from "./User";
 import { SubscriptionType } from "@/models/SubscriptionType";
 import { Chain } from "@/models/Contract";
-import { AlertTypes } from "./Alert";
 import Moralis from "moralis";
 import { UserChannel } from "./Channel";
 import { Contract } from "./Contract";
@@ -13,9 +12,9 @@ export enum SubscriptionStatus {
   "paused" = "paused",
 }
 export enum SubscriptionTypes {
-  "Protocol Alerts",
-  "Smart Contracts",
-  "Wallet",
+  protocol = "Protocol Alerts",
+  contract = "Smart Contracts",
+  wallet = "Wallet",
 }
 
 export class Subscription extends Moralis.Object {
@@ -78,7 +77,7 @@ export class Subscription extends Moralis.Object {
   }
 
   get contractActivity(): ContractActivity {
-    return this.get("contractActvity");
+    return this.get("contractActivity");
   }
 
   get status(): SubscriptionStatus {
@@ -117,7 +116,7 @@ export class Subscription extends Moralis.Object {
   static async spawn(
     name: string,
     userID: string,
-    subType: AlertTypes,
+    subType: SubscriptionTypes,
     protocol?: Protocol,
   ): Promise<Subscription> {
     let s = new Subscription();
@@ -141,7 +140,7 @@ export class Subscription extends Moralis.Object {
     sub.set("protocol", this.protocol.name);
     sub.set("Protocol", this.protocol);
     sub.set("description", "Widget Subscription");
-    sub.set("subscriptionType", SubscriptionTypes["Protocol Alerts"])
+    sub.set("subscriptionType", SubscriptionTypes.protocol);
     sub.set("GeneralSubType", subType);
 
     sub.setACL(this.getACL(user));

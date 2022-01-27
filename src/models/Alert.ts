@@ -1,12 +1,7 @@
-import { SubscriptionType, SubscriptionTypeStatus } from './SubscriptionType';
+import { SubscriptionType } from "@/models/SubscriptionType";
+import { SubscriptionTypes } from "./Subscription";
 import Moralis from "moralis";
 import { Protocol } from "./Protocol";
-
-export enum AlertTypes {
-  protocol = "Protocol Alerts",
-  wallet = "Smart Wallet Alerts",
-  contract = "Smart Contracts",
-}
 
 export interface AlertModel {
   id: number | string;
@@ -35,7 +30,7 @@ export class Alert extends Moralis.Object {
       minute: "numeric",
     });
   }
-  get type(): string {
+  get type(): SubscriptionTypes {
     return this.get("type");
   }
 
@@ -64,6 +59,7 @@ export class Alert extends Moralis.Object {
   ): Alert {
     const a = new Alert();
     a.set("type", subType.get("type"));
+    a.set("Type", subType);
     a.set("content", content.plain);
     a.set("richContent", content.rich);
     if (protocol) {
