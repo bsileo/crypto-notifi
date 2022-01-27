@@ -2,7 +2,7 @@
   <div>
     <va-collapse v-model="showProtocolSelect" class="pb-3" icon="info">
       <template #header>
-        <div class="va-collapse__header">
+        <div class="ml-2 mr-2 va-collapse__header">
           <div
             v-if="this.selectedProtocol"
             class="row va-collapse__header__content"
@@ -22,7 +22,7 @@
             v-if="!this.selectedProtocol"
             class="row va-collapse__header__content"
           >
-            <va-icon class="flex sm1 pr-3" name="info"></va-icon>
+            <va-icon class="flex sm1" name="info"></va-icon>
             <span class="flex sm10">Select the Protcol to Manage</span>
             <va-icon
               v-if="showProtocolSelect"
@@ -61,6 +61,18 @@
         :protocol="selectedProtocol"
         @protocolUpdate="protocolUpdate"
       ></ProtocolSettings>
+    </va-collapse>
+    <va-collapse
+      v-model="showSubscription"
+      :disabled="!this.selectedProtocol"
+      header="Subscription"
+      class="pb-3"
+      icon="point_of_sale"
+    >
+      <ProtocolSubscription
+        :protocol="selectedProtocol"
+        @protocolUpdate="protocolUpdate"
+      ></ProtocolSubscription>
     </va-collapse>
     <va-collapse
       class="pb-3"
@@ -182,6 +194,7 @@ import SendAlert from "./SendAlert.vue";
 import EditContract from "./EditContract.vue";
 import ProtocolSelector from "./ProtocolSelector.vue";
 import ProtocolSettings from "./ProtocolSettings.vue";
+import ProtocolSubscription from "./ProtocolSubscription.vue";
 import { Contract } from "@/models/Contract";
 
 export default defineComponent({
@@ -192,9 +205,10 @@ export default defineComponent({
     EditContract,
     ProtocolSelector,
     ProtocolSettings,
+    ProtocolSubscription,
   },
   data() {
-    const columns = [
+    const alertColumns = [
       { key: "shortDateTime", label: "Date", sortable: true },
       { key: "type", label: "Alert Type", sortable: true },
       { key: "content", label: "Content", sortable: true },
@@ -202,11 +216,12 @@ export default defineComponent({
     return {
       alertCategory: undefined as SubscriptionType | undefined,
       newContent: "",
-      columns: columns,
+      columns: alertColumns,
       showProtocolSelect: true,
       showAlert: false,
       showProtocol: false,
       showProtocolSetup: false,
+      showSubscription: false,
       showHistory: false,
       showTransactional: false,
       showSuccess: false,
@@ -246,7 +261,6 @@ export default defineComponent({
     },
     getCategoryName(type: string): string {
       const cat = this.subCategories.find((sg) => sg.type == type);
-      console.log(`GetCategoryName: ${type}=${cat}`);
       return cat?.name || "";
     },
     async fetchsubCategories(): Promise<void> {

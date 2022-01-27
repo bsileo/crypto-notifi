@@ -32,18 +32,15 @@
         <Subscriptions @subscribe="doSubscribe"></Subscriptions>
       </div>
     </div>
-    <div v-if="!showSubscriptions" class="row pt-5">
-      <div class="flex sm12" style="text-align: center;">
+    <div v-if="showNewUser" class="row pt-5">
+      <div class="flex sm12" style="text-align: center">
         <h2>
           Welcome to Crypto Notifi. The first step is to setup one or more
           channels where you will recieve alerts.
         </h2>
         <h2 class="pt-3">
           Click the
-          <va-button
-            color="secondary"
-            @click.prevent="showChannels = true"
-          >
+          <va-button color="secondary" @click.prevent="showChannels = true">
             My Channels
           </va-button>
           button to get started.
@@ -135,6 +132,9 @@ export default defineComponent({
   computed: {
     showSubscriptions(): boolean {
       return this.userMode == "user" && channelsModule.myChannels.length > 0;
+    },
+    showNewUser(): boolean {
+      return this.userMode == "user" && channelsModule.myChannels.length == 0;
     },
     showManager(): boolean {
       return this.userMode == "manager";

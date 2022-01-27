@@ -1,4 +1,3 @@
-
 import { Chain } from "@/models/Contract";
 import Moralis from "moralis";
 import {
@@ -9,18 +8,18 @@ import {
   Action,
 } from "vuex-module-decorators";
 import { store } from ".";
-import { UserModel } from "../models/User";
+import { TokenBalance, UserModel } from "../models/User";
 
 @Module({ dynamic: true, store: store, namespaced: true, name: "User" })
 export class UserModule extends VuexModule {
   _user: Partial<UserModel> = {};
-  _userTokens: any = null;
+  _userTokens: TokenBalance[] = [];
 
   get user(): Partial<UserModel> {
     return this._user;
   }
 
-  get tokens(): any {
+  get tokens(): TokenBalance[] {
     return this._userTokens;
   }
 
@@ -31,7 +30,7 @@ export class UserModule extends VuexModule {
   }
 
   @Mutation
-  SET_TOKENS(userTokens: any): void {
+  SET_TOKENS(userTokens: TokenBalance[]): void {
     this._userTokens = userTokens;
   }
 
@@ -40,7 +39,8 @@ export class UserModule extends VuexModule {
     const options = {
       chain: chain ? chain : "avalanche",
     };
-    const balances = await Moralis.Web3API.account.getTokenBalances(options);
+    const balances: TokenBalance[] =
+      await Moralis.Web3API.account.getTokenBalances(options);
     this.SET_TOKENS(balances);
   }
 }

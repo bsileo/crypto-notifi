@@ -26,8 +26,8 @@ export default defineComponent({
   props: {
     startingLevel: {
       type: String,
-      required: true,
-      default: "",
+      required: false,
+      default: "Free",
     }
   },
   data() {

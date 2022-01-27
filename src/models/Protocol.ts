@@ -3,12 +3,26 @@ import { Chain, Contract } from "./Contract";
 import Moralis from "moralis";
 import { contractsModule } from "@/store/contracts";
 import { userModule } from "@/store/user";
+import { TokenBalance } from "@/models/User";
+import { SubscriptionType } from "./SubscriptionType";
 
 export enum ProtocolLevel {
   "Free" = "Free",
   "Basic" = "Basic",
   "Gold" = "Gold",
 }
+
+export enum StakingLevel {
+  "free" = "Free",
+  "basic" = "Basic",
+  "gold" = "Gold",
+}
+
+export type SummaryItem = {
+  name: string;
+  quantity: number;
+  limit: number;
+};
 
 export type TokenData = {
   symbol: string;
@@ -17,6 +31,13 @@ export type TokenData = {
   basicQuantity: number;
   goldQuantity: number;
 };
+
+enum LimitType {
+  "category" = "Category",
+  "contracts" = "Contracts",
+  "events" = "Events",
+  "managers" = "Managers",
+}
 
 type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends Moralis.Object {
@@ -63,8 +84,32 @@ export class Protocol extends Moralis.Object {
     return td.basicQuantity;
   }
 
-  get managers(): string {
-    return this.get("managers");
+  async managers(): Promise<string[]> {
+    const m = this.relation("Managers");
+    return await m.query().fetch();
+  }
+
+  async managersCount(): Promise<number> {
+    const r = this.relation("Managers");
+    return await r.query().count();
+  }
+
+  async categoryCount(): Promise<number> {
+    const q = new Moralis.Query(SubscriptionType);
+    q.equalTo("protocol", this);
+    return await q.count();
+  }
+
+  async contractActivityCount(): Promise<number> {
+    const q = new Moralis.Query(ContractActivity);
+    q.equalTo("contract.protocol", this);
+    return await q.count();
+  }
+
+  async contractsCount(): Promise<number> {
+    const q = new Moralis.Query(Contract);
+    q.equalTo("protocol", this);
+    return await q.count();
   }
 
   constructor() {
@@ -98,7 +143,7 @@ export class Protocol extends Moralis.Object {
     }
     if (this.get("tokenData")) {
       token = userModule.tokens.find(
-        (e: any) => e?.symbol == this.get("tokenData").symbol
+        (e: TokenBalance) => e?.symbol == this.tokenData.symbol
       );
     }
     if (token) {
@@ -116,8 +161,99 @@ export class Protocol extends Moralis.Object {
       return ProtocolLevel.Free;
     }
   }
+
+  get stakingWallet(): string {
+    return this.get("stakingWallet") || "";
+  }
+
+  get stakingBalance(): number {
+    let token = undefined;
+    const tokens = userModule.tokens;
+    if (!tokens) {
+      return 0;
+    }
+    if (this.get("tokenData")) {
+      token = userModule.tokens.find((e: TokenBalance) => e.symbol == "Notifi");
+    }
+    if (token) {
+      return parseFloat((token.balance / 10 ** token.decimals).toFixed(2));
+    }
+    return 55;
+  }
+
+  get stakingLevel(): StakingLevel {
+    const bal = this.stakingBalance;
+    if (bal < 10) {
+      return StakingLevel.free;
+    } else if (bal < 100) {
+      return StakingLevel.basic;
+    } else {
+      return StakingLevel.gold;
+    }
+  }
+
+  async subscriptionSummary(): Promise<SummaryItem[]> {
+    return [
+      {
+        name: "Categories",
+        quantity: await this.subscriptionQuantity(LimitType.category),
+        limit: this.subscriptionLimit(LimitType.category),
+      },
+      {
+        name: "Contracts",
+        quantity: await this.subscriptionQuantity(LimitType.contracts),
+        limit: this.subscriptionLimit(LimitType.contracts),
+      },
+      {
+        name: "Events",
+        quantity: await this.subscriptionQuantity(LimitType.events),
+        limit: this.subscriptionLimit(LimitType.events),
+      },
+      {
+        name: "Managers",
+        quantity: await this.subscriptionQuantity(LimitType.managers),
+        limit: this.subscriptionLimit(LimitType.managers),
+      },
+    ];
+  }
+
+  async subscriptionQuantity(limType: LimitType): Promise<number> {
+    const quans = await this.subscriptionQuantities();
+    return quans[limType];
+  }
+
+  subscriptionLimit(limType: LimitType): number {
+    const level = this.stakingLevel;
+    const limits = this.subscriptionLimits()[level];
+    return limits[limType];
+  }
+
+  subscriptionLimits(): {
+    [key in StakingLevel]: { [key in LimitType]: number };
+  } {
+    const limits: { [key in StakingLevel]: { [key in LimitType]: number } } = {
+      Free: { Category: 1, Contracts: 1, Events: 3, Managers: 1 },
+      Basic: { Category: 5, Contracts: 10, Events: 5, Managers: 3 },
+      Gold: { Category: 10, Contracts: 100, Events: 10, Managers: 10 },
+    };
+    return limits;
+  }
+
+  async subscriptionQuantities(): Promise<{
+    Category: number;
+    Contracts: number;
+    Events: number;
+    Managers: number;
+  }> {
+    return {
+      Category: await this.categoryCount(),
+      Contracts: await this.contractsCount(),
+      Events: await this.contractActivityCount(),
+      Managers: await this.managersCount(),
+    };
+  }
   // Returns True if the user is allowed to subscribe to aActivity
-  // based on the user and protocls current token balances
+  // based on the user and protocols current token balances
   userSubscriptionAllowed(aActivity: ContractActivity): boolean {
     const userLevel = this.getUserLevel();
     const actLevel = aActivity.level as ProtocolLevel;
