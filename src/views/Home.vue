@@ -32,6 +32,24 @@
         <Subscriptions @subscribe="doSubscribe"></Subscriptions>
       </div>
     </div>
+    <div v-if="!showSubscriptions" class="row pt-5">
+      <div class="flex sm12" style="text-align: center;">
+        <h2>
+          Welcome to Crypto Notifi. The first step is to setup one or more
+          channels where you will recieve alerts.
+        </h2>
+        <h2 class="pt-3">
+          Click the
+          <va-button
+            color="secondary"
+            @click.prevent="showChannels = true"
+          >
+            My Channels
+          </va-button>
+          button to get started.
+        </h2>
+      </div>
+    </div>
     <div v-if="false" class="row" style="max-height: 50%">
       <div class="flex md12 sm12">
         <va-collapse
@@ -85,6 +103,7 @@ import Transactions from "@/components/transactions.vue";
 import ProtocolManager from "@/components/ProtocolManager.vue";
 import Header from "@/components/header.vue";
 import { computed } from "vue";
+import { channelsModule } from "@/store/channels";
 
 let tx: Moralis.TransactionResult | null = null;
 
@@ -115,7 +134,7 @@ export default defineComponent({
   },
   computed: {
     showSubscriptions(): boolean {
-      return this.userMode == "user";
+      return this.userMode == "user" && channelsModule.myChannels.length > 0;
     },
     showManager(): boolean {
       return this.userMode == "manager";

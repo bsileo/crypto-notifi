@@ -14,7 +14,7 @@
       </va-popover>
     </div>
   </va-alert>
-  <div class="row pb-1">
+  <div v-if="!showNoSubscriptions" class="row pb-1">
     <va-input class="flex sm4" label="Search Names" v-model="search"></va-input>
     <div class="flex sm6">
       <ProtocolSelector
@@ -37,6 +37,23 @@
         </div>
       </div>
     </va-inner-loading>
+    <div v-if="showNoSubscriptions" class="pt-3">
+      <h2>
+        Welcome to Crypto Notifi! You have not created any subscriptions yet,
+        but once you do they will appear here for easy maintenance and review.
+      </h2>
+      <h2>
+        To get started, click the Add Button to create your first subscription!
+        <va-button
+          @click.prevent="this.$emit('subscribe')"
+          icon-right="add"
+          size="large"
+          color="success"
+          :disabled="!allowAdd"
+        >
+        </va-button>
+      </h2>
+    </div>
   </div>
   <va-modal
     fullscreen
@@ -61,6 +78,8 @@ import Subscribe from "@/components/subscribe.vue";
 import SubscriptionCard from "./Subscription.vue";
 import ProtocolSelector from "./ProtocolSelector.vue";
 import { Protocol } from "@/models/Protocol";
+import { userModule } from "@/store/user";
+import { channelsModule } from "@/store/channels";
 
 export default defineComponent({
   name: "Subscriptions",
@@ -99,6 +118,9 @@ export default defineComponent({
       }
       return subs;
     },
+    showNoSubscriptions(): boolean {
+      return this.rawSubscriptions.length == 0;
+    },
     search: {
       get(): string {
         return this.intSearch;
@@ -110,7 +132,7 @@ export default defineComponent({
       },
     },
     allowAdd(): boolean {
-      return true;
+      return channelsModule.myChannels.length > 0
     },
   },
   methods: {
@@ -141,6 +163,7 @@ export default defineComponent({
     async fetchSubscriptions(): Promise<void> {
       this.subscriptionsLoading = true;
       const query = new Moralis.Query(Subscription);
+      query.equalTo("userID", userModule.user.id);
       if (this.search) {
         query.matches("name", this.search);
       }
