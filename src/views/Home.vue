@@ -1,5 +1,5 @@
 <template>
-  <div class="container gutter--md">
+  <div class="container gutter--md pb-3">
     <Header>
       <template #right>
         <va-navbar-item>
