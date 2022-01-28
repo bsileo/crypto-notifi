@@ -42,40 +42,37 @@
     </va-card-title>
     <va-divider></va-divider>
     <div class="row ml-2 pb-1">
-      <div class="flex sm3"><strong>Type:</strong></div>
-      <div class="flex sm6">{{ subscriptionType }}</div>
-      <va-icon class="flex sm2" :name="typeIcon"></va-icon>
+      <div class="flex xs3"><strong>Type:</strong></div>
+      <div class="flex xs6">{{ subscriptionType }}</div>
+      <va-icon class="flex xs2" :name="typeIcon"></va-icon>
     </div>
     <div v-if="showProtocol" class="row ml-2 pb-1">
-      <div class="flex sm3"><strong>Protocol:</strong></div>
-      <div class="flex sm9">
+      <div class="flex xs3"><strong>Protocol:</strong></div>
+      <div class="flex xs9">
         <a :href="protocolWebsite" target="_blank">
           {{ protocolName }}
         </a>
       </div>
     </div>
     <div v-if="contractDescription" class="row ml-2 pb-1">
-      <div class="flex sm3"><strong>Contract:</strong></div>
-      <div class="flex sm9">
+      <div class="flex xs3"><strong>Contract:</strong></div>
+      <div class="flex xs9">
         <a :href="contractURL" target="_blank">{{ contractDescription }}</a>
       </div>
     </div>
     <div v-if="contractActivity" class="row ml-2 pb-1">
-      <div class="flex sm3">
+      <div class="flex xs3">
         <strong>{{ activityName }}:</strong>
       </div>
-      <div class="flex sm9">{{ contractActivity }}</div>
+      <div class="flex xs9">{{ contractActivity }}</div>
     </div>
     <div v-if="generalTypeName" class="row ml-2 pb-1">
-      <div class="flex sm3"><strong>Category:</strong></div>
-      <div class="flex sm9">{{ generalTypeName }}</div>
+      <div class="flex xs3"><strong>Category:</strong></div>
+      <div class="flex xs9">{{ generalTypeName }}</div>
     </div>
     <div class="row ml-2 pb-1">
-      <div class="flex sm3"><strong>Channels:</strong></div>
-      <div class="flex sm9">{{ channelsDescription }}</div>
-    </div>
-    <div v-if="false" class="description row pb-1 mr-2 ml-2">
-      <span v-html="description"></span>
+      <div class="flex xs3"><strong>Channels:</strong></div>
+      <div class="flex xs9">{{ channelsDescription }}</div>
     </div>
   </va-card>
 </template>

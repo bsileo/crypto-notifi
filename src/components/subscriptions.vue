@@ -14,22 +14,24 @@
       </va-popover>
     </div>
   </va-alert>
-  <div v-if="!showNoSubscriptions" class="row pb-1">
-    <va-input class="flex sm4" label="Search Names" v-model="search"></va-input>
-    <div class="flex sm6">
+  <div v-if="!showNoSubscriptions" class="row pb-1 pt-1">
+    <va-input class="flex xs5" label="Search Names" v-model="search"></va-input>
+    <div class="flex xs5">
       <ProtocolSelector
         :simpleList="true"
         :simpleMulti="true"
         @selection="setSearchProtocols"
       ></ProtocolSelector>
     </div>
-    <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
+    <div class="flex xs2">
+      <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
+    </div>
   </div>
   <div class="layout gutter--sm">
     <va-inner-loading :loading="subscriptionsLoading" :size="60">
       <div class="row">
         <div
-          class="flex sm6 md4 lg3"
+          class="flex xs12 sm6 md6 lg4 xl3"
           v-for="subscription in subscriptions"
           v-bind:key="subscription.id"
         >

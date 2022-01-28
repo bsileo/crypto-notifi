@@ -175,7 +175,7 @@
             v-model="chkChain"
           />
           <va-select
-            class="flex sm4"
+            class="flex sm8"
             label="Chain"
             v-model="chain"
             :options="protocolChains"
@@ -209,7 +209,7 @@
           <template v-slot:default><span v-html="message"></span></template>
         </va-alert>
       </div>
-      <div class="row pt-2">
+      <div class="row pt-2 pb-3">
         <div class="flex sm9">
           <h3>Send these alerts to:</h3>
           <va-option-list
@@ -401,10 +401,7 @@ export default defineComponent({
       );
     },
     showChain(): boolean {
-      return (
-        this.subType == SubscriptionTypes.contract ||
-        this.subType == SubscriptionTypes.wallet
-      );
+      return this.subType == SubscriptionTypes.wallet;
     },
     showContracts(): boolean {
       return this.subType == SubscriptionTypes.contract;
