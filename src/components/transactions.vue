@@ -22,7 +22,7 @@
 import Moralis from "moralis/types";
 import { defineComponent } from "vue";
 import { userModule } from "../store/user";
-import { UserModel } from "@/models/User";
+import { NotifiUser } from "@/models/NotifiUser";
 
 export default defineComponent({
   name: "Tranasactions",
@@ -52,8 +52,8 @@ export default defineComponent({
     this.fetchTransactions();
   },
   computed: {
-    user(): UserModel {
-      return userModule.user as UserModel;
+    user(): NotifiUser {
+      return userModule.user as NotifiUser;
     },
   },
   methods: {

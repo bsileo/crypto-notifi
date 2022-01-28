@@ -158,9 +158,10 @@ export default defineComponent({
       this.fetchSubscriptions();
     },
     async fetchSubscriptions(): Promise<void> {
+      if (!userModule.user) return;
       this.subscriptionsLoading = true;
       const query = new Moralis.Query(Subscription);
-      query.equalTo("userID", userModule.user.id);
+      query.equalTo("userID", userModule.user?.id);
       if (this.search) {
         query.matches("name", this.search);
       }

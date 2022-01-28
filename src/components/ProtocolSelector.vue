@@ -95,8 +95,7 @@
 
 <script lang="ts">
 import { Protocol } from "@/models/Protocol";
-import { UserModel } from "@/models/User";
-import { protocolsModule } from "@/store/protocol";
+import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Moralis from "moralis";
 import { defineComponent, inject } from "vue";
@@ -125,7 +124,7 @@ export default defineComponent({
     };
   },
   setup() {
-    const user: UserModel | undefined = inject("user");
+    const user: NotifiUser | undefined = inject("user");
     return {
       user,
     };

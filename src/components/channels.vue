@@ -140,10 +140,12 @@ export default defineComponent({
       }
     },
     async add(): Promise<void> {
-      console.log(`Add ${this.newChannel}`);
+      if (!userModule.user) {
+        throw "Login required";
+      }
       const c = UserChannel.spawn(
         this.name,
-        userModule.user.id,
+        userModule.user?.id,
         this.newChannel
       );
       c.setProviderData(this.providerData);

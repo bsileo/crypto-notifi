@@ -45,12 +45,12 @@
 import { Protocol } from "@/models/Protocol";
 import { Subscription } from "@/models/Subscription";
 import { SubscriptionType } from "@/models/SubscriptionType";
-import { UserModel } from "@/models/User";
+import { NotifiUser } from "@/models/NotifiUser";
 import Moralis from "moralis";
 import { defineComponent } from "vue";
 
 interface UserResult {
-  user: UserModel;
+  user: NotifiUser;
   status: "new" | "existing";
 }
 

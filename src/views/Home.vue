@@ -112,7 +112,7 @@
 <script lang="ts">
 import Moralis from "moralis/types";
 import { defineComponent } from "vue";
-import { UserModel } from "@/models/User";
+import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Channels from "@/components/channels.vue";
 import Subscriptions from "@/components/subscriptions.vue";
@@ -150,7 +150,7 @@ export default defineComponent({
   },
   provide() {
     return {
-      user: computed(() => userModule.user as UserModel),
+      user: computed(() => userModule.user as NotifiUser),
     };
   },
   computed: {
@@ -163,8 +163,8 @@ export default defineComponent({
     showManager(): boolean {
       return this.userMode == "manager";
     },
-    user(): UserModel {
-      return userModule.user as UserModel;
+    user(): NotifiUser {
+      return userModule.user as NotifiUser;
     },
     userIsManager(): boolean {
       return this.user.get("ProtocolManager");

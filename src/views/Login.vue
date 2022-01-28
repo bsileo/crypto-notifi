@@ -24,13 +24,48 @@
           </p>
         </div>
         <div class="flex sm4">
-          <va-button
-            color="primary"
-            style="float: right"
-            @click.prevent="metamaskLogin"
-          >
-            Login with MetaMask
-          </va-button>
+          <div class="layout gutter-md" style="max-width: 300px">
+            <div class="row pb-3">
+              <div class="flex">
+                <va-button color="primary" @click.prevent="metamaskLogin">
+                  Login with MetaMask
+                </va-button>
+              </div>
+            </div>
+            <div class="row pb-3">
+              <div class="flex">
+                <va-popover
+                  message="Coming Soon"
+                  color="primary"
+                  placement="right"
+                >
+                  <va-button
+                    color="primary"
+                    @click.prevent="walletConnectLogin"
+                  >
+                    Login with WalletConnect
+                  </va-button>
+                </va-popover>
+              </div>
+            </div>
+            <div class="row pb-3">
+              <div class="flex">
+                <va-popover
+                  message="Coming Soon"
+                  color="primary"
+                  placement="right"
+                >
+                  <va-button
+                    color="primary"
+                    style="float: right"
+                    @click.prevent="emailLogin"
+                  >
+                    Login with Email
+                  </va-button>
+                </va-popover>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="row">
@@ -44,7 +79,7 @@
 <script lang="ts">
 import Moralis from "moralis";
 import { defineComponent } from "vue";
-import { UserModel } from "../models/User";
+import { NotifiUser } from "../models/NotifiUser";
 import { userModule } from "../store/user";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import Header from "@/components/header.vue";
@@ -53,12 +88,18 @@ export default defineComponent({
   name: "Login",
   components: { ProtocolSelector, Header },
   methods: {
+    async walletConnectLogin(): Promise<void> {
+      return;
+    },
+    async emailLogin(): Promise<void> {
+      return;
+    },
     async metamaskLogin(): Promise<void> {
       try {
         Moralis.authenticate({
           signingMessage: "Sign to create an account on CryptoNotifi",
         });
-        const user: UserModel = await this.$moralis.Web3.authenticate();
+        const user: any = await this.$moralis.Web3.authenticate();
         user.setACL(new Moralis.ACL(user));
         userModule.SET_USER(user);
         //console.log(user);

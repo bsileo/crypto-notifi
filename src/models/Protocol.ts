@@ -3,7 +3,7 @@ import { Chain, Contract } from "./Contract";
 import Moralis from "moralis";
 import { contractsModule } from "@/store/contracts";
 import { userModule } from "@/store/user";
-import { TokenBalance } from "@/models/User";
+import { TokenBalance } from "@/models/NotifiUser";
 import { SubscriptionType } from "./SubscriptionType";
 
 export enum ProtocolLevel {
@@ -178,7 +178,7 @@ export class Protocol extends Moralis.Object {
     if (token) {
       return parseFloat((token.balance / 10 ** token.decimals).toFixed(2));
     }
-    return 55;
+    return 0;
   }
 
   get stakingLevel(): StakingLevel {

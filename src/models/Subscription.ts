@@ -1,4 +1,4 @@
-import { UserModel } from "./User";
+import { NotifiUser } from "@/models/NotifiUser";
 import { SubscriptionType } from "@/models/SubscriptionType";
 import { Chain } from "@/models/Contract";
 import Moralis from "moralis";
@@ -103,7 +103,7 @@ export class Subscription extends Moralis.Object {
     // All other initialization
   }
 
-  static getACL(user: UserModel): any {
+  static getACL(user: NotifiUser): any {
     const acl = new Moralis.ACL();
     acl.setReadAccess(user.id, true);
     acl.setWriteAccess(user.id, true);
@@ -133,7 +133,7 @@ export class Subscription extends Moralis.Object {
   static async widgetSpawn(
     protocol: Protocol,
     name: string,
-    user: UserModel,
+    user: NotifiUser,
     subType: SubscriptionType
   ): Promise<boolean> {
     const sub = new Subscription();

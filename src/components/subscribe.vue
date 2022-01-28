@@ -255,7 +255,7 @@ import Moralis from "moralis";
 import { UserChannel } from "@/models/Channel";
 import { contractsModule } from "@/store/contracts";
 import { Contract, Chain } from "@/models/Contract";
-import { UserModel } from "@/models/User";
+import { NotifiUser } from "@/models/NotifiUser";
 import ProtocolSelector from "./ProtocolSelector.vue";
 
 //import Moralis from "moralis/types";
@@ -337,7 +337,7 @@ export default defineComponent({
     };
   },
   setup() {
-    const user: UserModel | undefined = inject("user");
+    const user: NotifiUser | undefined = inject("user");
     return {
       user,
     };
@@ -656,7 +656,7 @@ export default defineComponent({
   methods: {
     // returns the current user or raises an error if none
     userID(): string {
-      if (userModule.user.id) {
+      if (userModule.user?.id) {
         return userModule.user.id;
       } else {
         console.error("UserID is unset");

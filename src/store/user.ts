@@ -8,14 +8,14 @@ import {
   Action,
 } from "vuex-module-decorators";
 import { store } from ".";
-import { TokenBalance, UserModel } from "../models/User";
+import { NotifiUser, TokenBalance } from "../models/NotifiUser";
 
 @Module({ dynamic: true, store: store, namespaced: true, name: "User" })
 export class UserModule extends VuexModule {
-  _user: Partial<UserModel> = {};
+  _user: NotifiUser | undefined = undefined;
   _userTokens: TokenBalance[] = [];
 
-  get user(): Partial<UserModel> {
+  get user(): NotifiUser | undefined {
     return this._user;
   }
 
@@ -24,7 +24,7 @@ export class UserModule extends VuexModule {
   }
 
   @Mutation
-  SET_USER(user: UserModel): void {
+  SET_USER(user: NotifiUser): void {
     this._user = user;
     //this.fetchUserTokens();
   }

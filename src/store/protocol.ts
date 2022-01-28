@@ -10,7 +10,7 @@ import { store } from ".";
 import Moralis from "@/config/moralis";
 import { Protocol } from "@/models/Protocol";
 import { userModule } from "./user";
-import { UserModel } from "@/models/User";
+import { UserModel } from "@/models/NotifiUser";
 @Module({
   dynamic: true,
   store: store,
@@ -101,7 +101,7 @@ export class ProtocolsModule extends VuexModule {
   public async refreshManagerProtocols(): Promise<void> {
     if (this.managerSubscription) {
       const res: Array<Protocol> = await this.managerSubscription.find();
-      const userid = userModule.user.id;
+      const userid = userModule.user?.id;
       console.log(`Refresh Manager Protocols got ${res.length}`);
       const mine: Protocol[] = res.filter( (p: Protocol) => {
         return (
