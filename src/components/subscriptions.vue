@@ -127,7 +127,7 @@ export default defineComponent({
       },
     },
     allowAdd(): boolean {
-      return channelsModule.myChannels.length > 0
+      return channelsModule.myChannels.length > 0;
     },
   },
   methods: {

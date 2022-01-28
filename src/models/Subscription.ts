@@ -117,7 +117,7 @@ export class Subscription extends Moralis.Object {
     name: string,
     userID: string,
     subType: SubscriptionTypes,
-    protocol?: Protocol,
+    protocol?: Protocol
   ): Promise<Subscription> {
     let s = new Subscription();
     if (protocol) {
