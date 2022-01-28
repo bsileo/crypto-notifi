@@ -3,27 +3,43 @@
     <Header>
       <template #right>
         <va-navbar-item>
-          <va-button color="danger" class="float-end" @click.prevent="logout">
-            Logout
-          </va-button>
-          <va-switch
-            true-inner-label="Manager"
-            false-inner-label="User"
-            true-value="manager"
-            false-value="user"
-            color="warning"
-            class="flex float-end pl-2"
-            v-model="userMode"
-            v-if="userIsManager"
-          >
-          </va-switch>
-          <va-button
+          <va-button-dropdown
             color="secondary"
-            class="flex float-end pl-2"
-            @click.prevent="showChannels = true"
+            label="Account"
+            class="float-end"
+            size="medium"
           >
-            My Channels
-          </va-button>
+            <div style="background-color: secondary" class="container menu">
+              <div class="row pb-3 pt-2">
+                <va-button color="primary" @click.prevent="showAccount = true">
+                  My Account
+                </va-button>
+              </div>
+              <div class="row pb-3">
+                <va-button color="primary" @click.prevent="showChannels = true">
+                  My Channels
+                </va-button>
+              </div>
+              <div class="row pb-2">
+                <va-button color="danger" @click.prevent="logout">
+                  Logout
+                </va-button>
+              </div>
+            </div>
+          </va-button-dropdown>
+          <div class="flex float-end pl-2">
+            <va-switch
+              true-inner-label="Manager"
+              false-inner-label="User"
+              true-value="manager"
+              false-value="user"
+              color="secondary"
+              size="large"
+              v-model="userMode"
+              v-if="userIsManager"
+            >
+            </va-switch>
+          </div>
         </va-navbar-item>
       </template>
     </Header>
@@ -69,6 +85,11 @@
         <Channels></Channels>
       </slot>
     </va-modal>
+    <va-modal v-model="showAccount" title="Manage my Account">
+      <slot>
+        <Account></Account>
+      </slot>
+    </va-modal>
     <va-modal
       fullscreen
       hide-default-actions
@@ -98,6 +119,7 @@ import Subscriptions from "@/components/subscriptions.vue";
 import Subscribe from "@/components/subscribe.vue";
 import Transactions from "@/components/transactions.vue";
 import ProtocolManager from "@/components/ProtocolManager.vue";
+import Account from "@/components/Account.vue";
 import Header from "@/components/header.vue";
 import { computed } from "vue";
 import { channelsModule } from "@/store/channels";
@@ -111,6 +133,7 @@ export default defineComponent({
     Subscriptions,
     Transactions,
     Subscribe,
+    Account,
     ProtocolManager,
     Header,
   },
@@ -122,6 +145,7 @@ export default defineComponent({
       showCategories: true,
       showSubscribe: false,
       showChannels: false,
+      showAccount: false,
     };
   },
   provide() {
