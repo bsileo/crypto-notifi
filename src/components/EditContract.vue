@@ -22,7 +22,7 @@
           v-model="protocolName"
         ></va-input>
         <va-input
-          class="flex sm8"
+          class="flex sm6"
           label="Contract name"
           v-model="contractName"
         ></va-input>
@@ -35,11 +35,17 @@
           :options="protocolChains"
           :rules="[this.contractChain != undefined || 'Select a chain']"
         />
-        <va-input
+        <ContractInput
+          :initialAddress="contractAddress"
+          :showToken="true"
+          :chain="contractChain"
+          @address="setContractAddress"
+        ></ContractInput>
+        <!--va-input
           class="flex sm8"
           label="Contract Address"
           v-model="contractAddress"
-        ></va-input>
+        ></va-input !-->
       </div>
     </div>
     <va-divider></va-divider>
@@ -89,10 +95,11 @@ import { ContractActivity } from "@/models/ContractActivity";
 import EditContractActivity from "./EditContractActivity.vue";
 import { Chain, Contract } from "@/models/Contract";
 import Moralis from "moralis";
+import ContractInput from "./contractInput.vue";
 
 export default defineComponent({
   name: "EditContract",
-  components: { EditContractActivity },
+  components: { EditContractActivity, ContractInput },
   emits: ["contractUpdate", "contractSaved", "cancel", "updated"],
   props: {
     protocol: { type: Protocol, required: true },
@@ -163,6 +170,9 @@ export default defineComponent({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     contractActivityDeleted(act: ContractActivity) {
       this.fetchContractActivities();
+    },
+    setContractAddress(address: string) {
+      this.contractAddress = address;
     },
     async fetchContractActivities(): Promise<ContractActivity[]> {
       const rel = this.activeContract.relation("ContractActivities");

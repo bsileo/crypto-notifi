@@ -105,11 +105,6 @@ export default defineComponent({
   computed: {
     subscriptions(): Subscription[] {
       let subs = this.rawSubscriptions;
-      /* Done inthe quesry now
-      subs = subs.filter((s) => {
-        const idx = s.name.indexOf(this.search);
-        return idx != -1;
-      });*/
       if (this.searchProtocols.length > 0) {
         const prots = this.searchProtocols.map((e) => e.name);
         subs = subs.filter((s) => {

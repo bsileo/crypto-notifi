@@ -17,11 +17,12 @@
         label="Symbol"
         v-model="symbol"
       ></va-input>
-      <va-input
-        class="flex sm9 pb-1"
-        label="Contract Address"
-        v-model="contractAddress"
-      ></va-input>
+      <ContractInput
+        :chain="stakingChain"
+        :initialAddress="contractAddress"
+        :showToken="true"
+        @address="setAddress"
+      ></ContractInput>
     </div>
     <div class="row pb-1"><h2>Staking Levels</h2></div>
     <div class="row pb-1">
@@ -34,10 +35,11 @@
 <script lang="ts">
 import { Protocol } from "@/models/Protocol";
 import { defineComponent } from "vue";
+import ContractInput from "./contractInput.vue";
 
 export default defineComponent({
   name: "ProtocolSettings",
-  components: {},
+  components: { ContractInput },
   emits: ["protocolUpdate"],
   props: {
     protocol: { type: Protocol, required: false },
@@ -90,6 +92,19 @@ export default defineComponent({
         }
       },
     },
+    stakingChain: {
+      get(): string | number {
+        return this.protocol?.tokenData.chain || 0;
+      },
+      set(newVal: string): void {
+        if (this.protocol) {
+          const tData = this.protocol.tokenData;
+          tData.chain = newVal;
+          this.protocol.set("tokenData", tData);
+          this.$emit("protocolUpdate", this.protocol);
+        }
+      },
+    },
     goldLevel: {
       get(): string | number {
         return this.protocol?.tokenData.goldQuantity || 0;
@@ -117,6 +132,10 @@ export default defineComponent({
       },
     },
   },
-  methods: {},
+  methods: {
+    setAddress(address: string) {
+      this.contractAddress = address;
+    },
+  },
 });
 </script>
