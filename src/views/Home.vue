@@ -4,28 +4,26 @@
       <template #right>
         <va-navbar-item>
           <va-button-dropdown
-            color="secondary"
-            label="Account"
+            color="dark"
+            label="My Account"
             class="float-end"
             size="medium"
+            :flat="true"
+            :outline="false"
           >
-            <div style="background-color: secondary" class="container menu">
-              <div class="row pb-3 pt-2">
+            <va-card color="dark" square :bordered="true">
+              <va-card-actions align="between" :vertical="true">
                 <va-button color="primary" @click.prevent="showAccount = true">
                   My Account
                 </va-button>
-              </div>
-              <div class="row pb-3">
                 <va-button color="primary" @click.prevent="showChannels = true">
                   My Channels
                 </va-button>
-              </div>
-              <div class="row pb-2">
                 <va-button color="danger" @click.prevent="logout">
                   Logout
                 </va-button>
-              </div>
-            </div>
+              </va-card-actions>
+            </va-card>
           </va-button-dropdown>
           <div class="flex float-end pl-2">
             <va-switch
@@ -33,7 +31,7 @@
               false-inner-label="User"
               true-value="manager"
               false-value="user"
-              color="secondary"
+              :color="userMode == 'manager' ? 'danger' : 'success'"
               size="large"
               v-model="userMode"
               v-if="userIsManager"
