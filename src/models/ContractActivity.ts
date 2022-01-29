@@ -91,7 +91,6 @@ export class ContractActivity extends Moralis.Object {
     const res: DataParameter[] = [];
     try {
       const raw = eval("(" + this.ABI + ")");
-      console.log(raw);
       const inputs = raw.inputs;
       inputs.forEach((element: DataParameter) => {
         res.push({

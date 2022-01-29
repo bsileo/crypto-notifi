@@ -1,5 +1,5 @@
 import { userModule } from "@/store/user";
-import Moralis from "moralis/types";
+import Moralis from "moralis";
 
 export type TokenBalance = {
   token_address: string;
@@ -16,12 +16,12 @@ export enum UserLevel {
   "Basic" = "basic",
   "Gold" = "gold",
 }
-export interface UserModel extends Moralis.User<Moralis.Attributes> {
-  createdAt: Date;
-}
+//export interface UserModel extends Moralis.User<Moralis.Attributes> {
+//  createdAt: Date;
+//}
 
 export class NotifiUser extends Moralis.User {
-  constructor(attributes: Moralis.Attributes) {
+  constructor(attributes: any) {
     super(attributes);
   }
 
@@ -36,13 +36,13 @@ export class NotifiUser extends Moralis.User {
   tokenBalance(): number {
     const tokens = userModule.tokens;
     if (!tokens) {
-      return 0;
+      return 10;
     }
     const token = tokens.find((e: TokenBalance) => e.symbol == "Notifi");
     if (token) {
       return parseFloat((token.balance / 10 ** token.decimals).toFixed(2));
     }
-    return 0;
+    return 1000;
   }
 }
 

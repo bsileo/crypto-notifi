@@ -37,6 +37,8 @@
         class="flex sm12"
         label="ABI"
         type="textarea"
+        :error="ABIfailed"
+        :error-messages="ABIerrors"
         :min-rows="4"
         v-model="abi"
       ></va-input>
@@ -149,6 +151,8 @@ export default defineComponent({
       activity: this.contractActivity || new ContractActivity(),
       intName: undefined as undefined | string,
       textType: "plain" as "plain" | "rich",
+      ABIfailed: true,
+      ABIerrors: [] as string[],
     };
   },
   computed: {
@@ -190,6 +194,17 @@ export default defineComponent({
         return this.activity.ABI;
       },
       set(newABI: string): void {
+        this.ABIfailed = false;
+        try {
+          JSON.parse(newABI);
+        }
+        catch (err: any) {
+          this.ABIfailed = true;
+          this.ABIerrors = ["Parse Failed-"+ err.message];
+          return;
+        }
+        this.ABIfailed = false;
+        this.ABIerrors = [];
         this.activity.ABI = newABI;
         this.$emit("activityUpdate", this.activity);
       },

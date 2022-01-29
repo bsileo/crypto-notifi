@@ -10,6 +10,7 @@
           placement="top"
           :hover-over-timeout="1"
         >
+          <va-inner-loading :loading="pausing" :size="18">
           <va-button
             @click.prevent="this.togglePause()"
             :icon-right="pauseToggleIcon"
@@ -17,6 +18,7 @@
             size="small"
             :color="paused ? 'warning' : 'success'"
           ></va-button>
+          </va-inner-loading>
         </va-popover>
         <va-button
           @click.prevent="this.destroy()"
@@ -78,23 +80,27 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { SubscriptionTypes } from "@/models/Subscription";
 
 export default defineComponent({
   name: "SubscriptionCard",
-  setup() {
-    return {};
-  },
   props: {
     subscription: { type: Subscription, required: false },
+  },
+  setup(props) {
+    const paused = computed(() => {
+      return props.subscription?.status == "paused";
+    })
+    return { paused};
   },
   components: {},
   data() {
     return {
       currentSubscription: this.subscription || new Subscription(),
       channelsDescription: "",
+      pausing: false,
     };
   },
   mounted() {
@@ -175,9 +181,6 @@ export default defineComponent({
         this.currentSubscription.description = val;
       },
     },
-    paused(): boolean {
-      return this.currentSubscription.status == "paused";
-    },
     pauseToggleIcon(): string {
       if (this.paused) return "pause";
       else return "play_arrow";
@@ -199,12 +202,14 @@ export default defineComponent({
         await this.currentSubscription.channelsDescription();
     },
     async togglePause(): Promise<void> {
+      this.pausing = true;
       if (this.paused) {
         this.currentSubscription.set("status", "active");
       } else {
         this.currentSubscription.set("status", "paused");
       }
-      this.currentSubscription.save();
+      await this.currentSubscription.save();
+      this.pausing = false;
     },
   },
 });

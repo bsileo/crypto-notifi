@@ -35,17 +35,14 @@
           :options="protocolChains"
           :rules="[this.contractChain != undefined || 'Select a chain']"
         />
-        <ContractInput
+        <div class="flex sm6">
+          <ContractInput
           :initialAddress="contractAddress"
           :showToken="true"
           :chain="contractChain"
           @address="setContractAddress"
         ></ContractInput>
-        <!--va-input
-          class="flex sm8"
-          label="Contract Address"
-          v-model="contractAddress"
-        ></va-input !-->
+        </div>
       </div>
     </div>
     <va-divider></va-divider>

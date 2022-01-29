@@ -170,8 +170,44 @@ export default defineComponent({
       query.include("contractActivity");
       query.include("contract");
       let subs = await query.find();
+      this.subscribe(query);
       this.rawSubscriptions.push(...subs);
       this.subscriptionsLoading = false;
+    },
+    async subscribe(query: any) {
+      const subscription = await query.subscribe();
+      subscription.on("create", (sub: Subscription) => {
+        this.rawSubscriptions.push(sub);
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      subscription.on("update", (sub: Subscription) => {
+        const index = this.rawSubscriptions.findIndex((e) => e.id == sub.id);
+        if (index > -1) {
+          this.rawSubscriptions.splice(index, 1, sub);
+        }
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      subscription.on("enter", (sub: Subscription) => {
+        // console.log("object entered");
+        this.rawSubscriptions.push(sub);
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      subscription.on("leave", (sub: Subscription) => {
+        const index = this.rawSubscriptions.findIndex((e) => e.id == sub.id);
+        if (index > -1) {
+          this.rawSubscriptions.splice(index, 1);
+        }
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      subscription.on("delete", (sub: Subscription) => {
+        const index = this.rawSubscriptions.findIndex((e) => e.id == sub.id);
+        if (index > -1) {
+          this.rawSubscriptions.splice(index, 1);
+        }
+      });
+      subscription.on("close", () => {
+        console.log("Subscriptions subscription closed");
+      });
     },
   },
 });

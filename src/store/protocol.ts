@@ -10,7 +10,7 @@ import { store } from ".";
 import Moralis from "@/config/moralis";
 import { Protocol } from "@/models/Protocol";
 import { userModule } from "./user";
-import { UserModel } from "@/models/NotifiUser";
+import { NotifiUser } from "@/models/NotifiUser";
 @Module({
   dynamic: true,
   store: store,
@@ -105,7 +105,7 @@ export class ProtocolsModule extends VuexModule {
       console.log(`Refresh Manager Protocols got ${res.length}`);
       const mine: Protocol[] = res.filter( (p: Protocol) => {
         return (
-          p.get("Managers").filter((u: UserModel) => {
+          p.get("Managers").filter((u: NotifiUser) => {
             u.id == userid;
           }).length > 0
         );

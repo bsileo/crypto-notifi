@@ -19,13 +19,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, inject } from "vue";
 import Moralis from "moralis";
-import { UserLevel } from "@/models/NotifiUser";
+import { NotifiUser, UserLevel } from "@/models/NotifiUser";
 
 export default defineComponent({
   name: "Account",
   components: {},
+  setup() {
+    const user: NotifiUser | undefined = inject("user");
+    return { user };
+  },
   data() {
     return {
       level: "Free" as UserLevel,
@@ -35,12 +39,16 @@ export default defineComponent({
   mounted() {
     this.fetchUserInfo();
   },
+  updated() {
+    this.fetchUserInfo();
+  },
   computed: {},
   methods: {
     async fetchUserInfo(): Promise<void> {
-      const u = Moralis.User.current();
-      this.level = await u.currentLevel();
-      this.tokens = u.tokenCount();
+      if (this.user) {
+        this.level = this.user.currentLevel();
+        this.tokens = this.user.tokenBalance();
+      }
     },
   },
 });

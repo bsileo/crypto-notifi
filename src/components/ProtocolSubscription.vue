@@ -16,12 +16,25 @@
             </span>
           </div>
           <div class="row pt-2">
-            <va-input
-              class="flex sm6"
-              label="Protocol Staking Wallet"
-              v-model="wallet"
-            ></va-input>
-            <va-button size="small" class="flex sm2" @click="setStakingWallet"
+            <va-select
+              class="flex sm4"
+              label="Chain"
+              v-model="walletChain"
+              :options="protocolChains"
+              :rules="[this.walletChain != undefined || 'Select a chain']"
+            />
+            <div class="flex sm8">
+              <ContractInput
+                :chain="walletChain"
+                :initialAddress="wallet"
+                :showToken="false"
+                @address="setWallet"
+                label="Protocol Staking Wallet"
+              ></ContractInput>
+            </div>
+          </div>
+          <div class="row pt-2 ml-4">
+            <va-button size="small" class="flex sm3" @click="setStakingWallet"
               >Set Wallet</va-button
             >
           </div>
@@ -42,16 +55,20 @@ import { userModule } from "@/store/user";
 import ProtocolSubscriptionSummary from "@/components/ProtocolSubscriptionSummary.vue";
 import Moralis from "moralis";
 import { defineComponent } from "vue";
+import ContractInput from "./contractInput.vue";
+import { Chain } from "@/models/Contract";
 
 export default defineComponent({
   name: "ProtocolSubscription",
-  components: { ProtocolSubscriptionSummary },
+  components: { ProtocolSubscriptionSummary, ContractInput },
   emits: ["protocolUpdate"],
   props: {
     protocol: { type: Protocol, required: false },
   },
   data() {
-    return {};
+    return {
+      walletChain: "",
+    };
   },
   computed: {
     wallet: {
@@ -64,6 +81,12 @@ export default defineComponent({
           this.$emit("protocolUpdate", this.protocol);
         }
       },
+    },
+    protocolChains(): Chain[] {
+      if (this.protocol) {
+        return this.protocol.chains;
+      }
+      return [];
     },
     stakingLevel(): StakingLevel {
       if (this.protocol) return this.protocol.stakingLevel;

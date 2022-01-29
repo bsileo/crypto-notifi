@@ -1,7 +1,6 @@
 <template>
   <va-input
-    label="Contract Address"
-    class="flex sm6"
+    :label="label"
     v-model="address"
     :error="!status"
     :success="status"
@@ -44,6 +43,11 @@ export default defineComponent({
         return "avalanche";
       },
     },
+    label: {
+      type: String,
+      required: false,
+      default: "Contract Address",
+    }
   },
   setup(props) {
     const result = ref({});

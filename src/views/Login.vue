@@ -100,10 +100,14 @@ export default defineComponent({
           signingMessage: "Sign to create an account on CryptoNotifi",
         });
         const user: any = await this.$moralis.Web3.authenticate();
-        user.setACL(new Moralis.ACL(user));
-        userModule.SET_USER(user);
-        //console.log(user);
-        this.$router.push({ name: "Home" });
+        if (user) {
+          const q = new Moralis.Query(NotifiUser);
+          const newUser = await q.get(user.id);
+          newUser.setACL(new Moralis.ACL(newUser));
+          userModule.SET_USER(newUser);
+          console.log(newUser);
+          this.$router.push({ name: "Home" });
+        }
       } catch (error) {
         console.log({ error });
       }
