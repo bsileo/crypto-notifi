@@ -9,3 +9,11 @@ Moralis.start({
 const MoralisConfig = Moralis;
 
 export default MoralisConfig;
+
+/*Moralis.onAccountChanged( async (account: any) => {
+  const confirmed = confirm("Link this address to your Notifi account?");
+  if (confirmed) {
+    await Moralis.link(account);
+  }
+});
+*/

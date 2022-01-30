@@ -12,8 +12,11 @@
         <va-button @click="openSwap" size="small" color="primary"
           >Swap</va-button
         >
-        native tokens for Notifi tokens and keep the in your wallet.
+        native tokens for Notifi tokens and keep them in your wallet.
       </p>
+    </div>
+    <div class="row">
+      <UserWallets></UserWallets>
     </div>
   </div>
 </template>
@@ -22,10 +25,11 @@
 import { defineComponent, inject } from "vue";
 import Moralis from "moralis";
 import { NotifiUser, UserLevel } from "@/models/NotifiUser";
+import UserWallets from "@/components/UserWallets.vue";
 
 export default defineComponent({
   name: "Account",
-  components: {},
+  components: { UserWallets },
   setup() {
     const user: NotifiUser | undefined = inject("user");
     return { user };

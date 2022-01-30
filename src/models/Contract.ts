@@ -56,6 +56,12 @@ export type Chain =
   | AvalancheTestChain
   | LocalDevChain;
 
+export type ContractInfo = {
+  chain: Chain;
+  address: string;
+  symbol: string;
+  name: symbol;
+};
 export class Contract extends Moralis.Object {
   get status(): ContractStatus {
     return this.get("Contractstatus");
@@ -106,6 +112,10 @@ export class Contract extends Moralis.Object {
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor
     super("Contract");
+  }
+
+  static supportedChains(): Chain[] {
+    return ["avalanche", "eth"];
   }
 
   static spawn(chain: Chain, address: string): Contract {
