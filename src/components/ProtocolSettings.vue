@@ -12,17 +12,16 @@
     </div>
     <div class="row pb-1"><h2>Staking Token</h2></div>
     <div class="row pb-1">
-      <va-input
-        class="flex sm3 pb-1"
-        label="Symbol"
-        v-model="symbol"
-      ></va-input>
-      <ContractInput
-        :chain="stakingChain"
-        :initialAddress="contractAddress"
-        :showToken="true"
-        @address="setAddress"
-      ></ContractInput>
+      <div class="flex sm9">
+        <ContractInput
+          :chain="stakingChain"
+          :initialAddress="contractAddress"
+          :showToken="true"
+          :chainPrompt="true"
+          :chainsList="protocolChains"
+          @contractInfo="setContract"
+        ></ContractInput>
+      </div>
     </div>
     <div class="row pb-1"><h2>Staking Levels</h2></div>
     <div class="row pb-1">
@@ -33,8 +32,9 @@
 </template>
 
 <script lang="ts">
+import { Chain, ContractInfo } from "@/models/Contract";
 import { Protocol } from "@/models/Protocol";
-import { defineComponent } from "vue";
+import { defineComponent, reactive, ref, watch, watchEffect } from "vue";
 import ContractInput from "./contractInput.vue";
 
 export default defineComponent({
@@ -44,97 +44,97 @@ export default defineComponent({
   props: {
     protocol: { type: Protocol, required: false },
   },
+  setup(props) {
+    const activeProtocol = ref(new Protocol());
+
+    watch(
+      () => props.protocol,
+      (newProt, oldValue, onInvalidate) => {
+        if (newProt) {
+          activeProtocol.value = newProt;
+        }
+      },
+      { deep: true }
+    );
+
+    return { activeProtocol };
+  },
   data() {
     return {};
   },
   computed: {
     description: {
       get(): string {
-        return this.protocol?.description || "";
+        return this.activeProtocol.description;
       },
       set(desc: string): void {
-        this.protocol?.set("description", desc);
+        this.activeProtocol.description = desc;
         this.$emit("protocolUpdate", this.protocol);
       },
+    },
+    protocolChains(): Chain[] {
+      return this.activeProtocol.chains;
     },
     website: {
       get(): string {
         return this.protocol?.website || "";
       },
       set(newVal: string): void {
-        this.protocol?.set("website", newVal);
+        this.activeProtocol.website = newVal;
         this.$emit("protocolUpdate", this.protocol);
       },
     },
     symbol: {
       get(): string | number {
-        return this.protocol?.tokenData.symbol || 0;
+        return this.activeProtocol.symbol || 0;
       },
       set(newVal: string): void {
-        if (this.protocol) {
-          const tData = this.protocol.tokenData;
-          tData.symbol = newVal;
-          this.protocol.set("tokenData", tData);
-          this.$emit("protocolUpdate", this.protocol);
-        }
+        this.activeProtocol.symbol = newVal;
+        this.$emit("protocolUpdate", this.protocol);
       },
     },
     contractAddress: {
       get(): string | number {
-        return this.protocol?.tokenData.contractAddress || 0;
+        return this.activeProtocol.stakingAddress || 0;
       },
       set(newVal: string): void {
-        if (this.protocol) {
-          const tData = this.protocol.tokenData;
-          tData.contractAddress = newVal;
-          this.protocol.set("tokenData", tData);
-          this.$emit("protocolUpdate", this.protocol);
-        }
+        this.activeProtocol.contractAddress = newVal;
+        this.$emit("protocolUpdate", this.protocol);
       },
     },
     stakingChain: {
       get(): string | number {
-        return this.protocol?.tokenData.chain || 0;
+        return this.activeProtocol.stakingChain || 0;
       },
-      set(newVal: string): void {
-        if (this.protocol) {
-          const tData = this.protocol.tokenData;
-          tData.chain = newVal;
-          this.protocol.set("tokenData", tData);
-          this.$emit("protocolUpdate", this.protocol);
-        }
+      set(newVal: Chain): void {
+        this.activeProtocol.stakingChain = newVal;
+        this.$emit("protocolUpdate", this.protocol);
       },
     },
     goldLevel: {
       get(): string | number {
-        return this.protocol?.tokenData.goldQuantity || 0;
+        return this.activeProtocol.goldQuantity;
       },
       set(newVal: string): void {
-        if (this.protocol) {
-          const tData = this.protocol.tokenData;
-          tData.goldQuantity = parseInt(newVal);
-          this.protocol.set("tokenData", tData);
-          this.$emit("protocolUpdate", this.protocol);
-        }
+        this.activeProtocol.goldQuantity = parseInt(newVal);
+        this.$emit("protocolUpdate", this.protocol);
       },
     },
     basicLevel: {
       get(): string | number {
-        return this.protocol?.tokenData.basicQuantity || 0;
+        return this.activeProtocol.basicQuantity;
       },
       set(newVal: string): void {
-        if (this.protocol) {
-          const tData = this.protocol.tokenData;
-          tData.basicQuantity = parseInt(newVal);
-          this.protocol.set("tokenData", tData);
-          this.$emit("protocolUpdate", this.protocol);
-        }
+        this.activeProtocol.basicQuantity = parseInt(newVal);
+        this.$emit("protocolUpdate", this.protocol);
       },
     },
   },
   methods: {
-    setAddress(address: string) {
-      this.contractAddress = address;
+    setContract(info: ContractInfo) {
+      this.contractAddress = info.address;
+      this.stakingChain = info.chain;
+      this.symbol = info.symbol;
     },
   },
 });

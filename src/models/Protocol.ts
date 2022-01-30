@@ -44,23 +44,36 @@ export class Protocol extends Moralis.Object {
   get name(): string {
     return this.get("name");
   }
+  set name(newVal: string) {
+    this.set("name", newVal);
+  }
 
   get website(): string {
     return this.get("website");
+  }
+  set website(newVal: string) {
+    this.set("website", newVal);
   }
 
   get description(): string {
     return this.get("description");
   }
+  set description(newVal: string) {
+    this.set("description", newVal);
+  }
 
   get iconURL(): string {
     return this.get("iconURL");
+  }
+  set iconURL(newVal: string) {
+    this.set("iconURL", newVal);
   }
 
   get chains(): Chain[] {
     const chainNames = this.get("chains");
     const chs = contractsModule.CHAINS;
     const res = [] as Chain[];
+    if (!chainNames) return res;
     chainNames.forEach((cn: string) => {
       const aChain = chs.find((c) => c == cn);
       if (aChain) {
@@ -74,14 +87,43 @@ export class Protocol extends Moralis.Object {
     return this.get("tokenData");
   }
 
+  get symbol(): string {
+    return this.tokenData?.symbol;
+  }
+  set symbol(newVal: string) {
+    this.tokenData.symbol = newVal;
+  }
+
+  get stakingAddress(): string {
+    return this.tokenData?.contractAddress;
+  }
+  set stakingAddress(newVal: string) {
+    this.tokenData.contractAddress = newVal;
+  }
+
   get goldQuantity(): number {
     const td = this.tokenData;
-    return td.goldQuantity;
+    return td?.goldQuantity;
+  }
+  set goldQuantity(val: number) {
+    const td = this.tokenData;
+    td.goldQuantity = val;
+    this.set("tokenData", td);
+  }
+
+  get userStakingChain(): Chain {
+    return this.tokenData?.chain as Chain;
+  }
+  set userStakingChain(newVal: Chain) {
+    this.tokenData.chain = newVal;
   }
 
   get basicQuantity(): number {
     const td = this.tokenData;
-    return td.basicQuantity;
+    return td?.basicQuantity;
+  }
+  set basicQuantity(val: number) {
+    this.tokenData.basicQuantity = val;
   }
 
   async managers(): Promise<string[]> {
@@ -116,6 +158,13 @@ export class Protocol extends Moralis.Object {
     // Pass the ClassName to the Moralis.Object constructor
     super("Protocol");
     // All other initialization
+    this.set("tokendata", {
+      symbol: "",
+      contractAddress: "",
+      chain: "",
+      basicQuantity: 0,
+      goldQuantity: 0,
+    });
   }
 
   static spawn(name: string, website: string, iconURL: string): Protocol {
@@ -162,8 +211,18 @@ export class Protocol extends Moralis.Object {
     }
   }
 
-  get stakingWallet(): string {
-    return this.get("stakingWallet") || "";
+  get protocolStakingWallet(): string {
+    return this.get("protocolStakingWallet") || "";
+  }
+  set protocolStakingWallet(newVal: string) {
+    this.set("protocolStakingWallet", newVal);
+  }
+
+  get protocolStakingChain(): Chain {
+    return this.get("protocolStakingChain") as Chain;
+  }
+  set protocolStakingChain(newVal: Chain) {
+    this.set("protocolStakingChain", newVal);
   }
 
   get stakingBalance(): number {
@@ -280,13 +339,11 @@ export class Protocol extends Moralis.Object {
   async managerOf(): Promise<boolean> {
     const mans = await this.relation("Managers").query().find();
     const currentUser = Moralis.User.current();
-    console.log(mans);
     for (let i = 0; i < mans.length; i++) {
       const man = mans[i];
       console.log(man.id == currentUser?.id);
       if (man.id == currentUser?.id) return true;
     }
-    console.log(`Manager false for ${this.name}`);
     return false;
   }
   tokenContractURL(): string {

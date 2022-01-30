@@ -16,27 +16,16 @@
             </span>
           </div>
           <div class="row pt-2">
-            <va-select
-              class="flex sm4"
-              label="Chain"
-              v-model="walletChain"
-              :options="protocolChains"
-              :rules="[this.walletChain != undefined || 'Select a chain']"
-            />
-            <div class="flex sm8">
+            <div class="flex sm10">
               <ContractInput
                 :chain="walletChain"
                 :initialAddress="wallet"
                 :showToken="false"
-                @address="setWallet"
+                :chainPrompt="true"
+                @contractInfo="setStakingWallet"
                 label="Protocol Staking Wallet"
               ></ContractInput>
             </div>
-          </div>
-          <div class="row pt-2 ml-4">
-            <va-button size="small" class="flex sm3" @click="setStakingWallet"
-              >Set Wallet</va-button
-            >
           </div>
         </div>
       </div>
@@ -54,9 +43,9 @@ import { Protocol, StakingLevel } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import ProtocolSubscriptionSummary from "@/components/ProtocolSubscriptionSummary.vue";
 import Moralis from "moralis";
-import { defineComponent } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import ContractInput from "./contractInput.vue";
-import { Chain } from "@/models/Contract";
+import { Chain, ContractInfo } from "@/models/Contract";
 
 export default defineComponent({
   name: "ProtocolSubscription",
@@ -65,42 +54,49 @@ export default defineComponent({
   props: {
     protocol: { type: Protocol, required: false },
   },
+  setup(props) {
+    const activeProtocol = ref(props.protocol || new Protocol());
+
+    watch(
+      () => props.protocol,
+      (newProt, oldValue, onInvalidate) => {
+        if (newProt) {
+          activeProtocol.value = newProt;
+        }
+      },
+      { deep: true }
+    );
+
+    return { activeProtocol };
+  },
   data() {
-    return {
-      walletChain: "",
-    };
+    return {};
   },
   computed: {
     wallet: {
       get(): string {
-        return this.protocol?.stakingWallet || "";
+        return this.activeProtocol.protocolStakingWallet;
       },
       set(newVal: string): void {
-        if (this.protocol) {
-          this.protocol.set("stakingWallet", newVal);
-          this.$emit("protocolUpdate", this.protocol);
-        }
+        this.activeProtocol.protocolStakingWallet = newVal;
+        this.$emit("protocolUpdate", this.protocol);
       },
     },
     protocolChains(): Chain[] {
-      if (this.protocol) {
-        return this.protocol.chains;
-      }
-      return [];
+      return this.activeProtocol.chains;
     },
     stakingLevel(): StakingLevel {
-      if (this.protocol) return this.protocol.stakingLevel;
-      return StakingLevel.free;
+      return this.activeProtocol.stakingLevel;
     },
     stakingBalance(): number {
-      if (this.protocol) return this.protocol.stakingBalance;
-      return 0;
+      return this.activeProtocol.stakingBalance;
     },
   },
   methods: {
-    async setStakingWallet(): Promise<void> {
-      const u = Moralis.User.current();
-      this.wallet = u?.get("accounts")[0];
+    async setStakingWallet(ci: ContractInfo): Promise<void> {
+      this.activeProtocol.protocolStakingWallet = ci.address;
+      this.activeProtocol.protocolStakingChain = ci.chain;
+      this.$emit("protocolUpdate", this.protocol);
     },
     async refresh(): Promise<void> {
       userModule.fetchUserTokens();
