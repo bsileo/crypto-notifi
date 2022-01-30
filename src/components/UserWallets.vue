@@ -11,11 +11,6 @@
         <va-button icon="delete" size="small"></va-button>
       </div>
     </div>
-    <div class="row pt-2">
-      <div class="flex sm6">
-        <ContractInput label="Wallet Address"></ContractInput>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -23,11 +18,10 @@
 import { defineComponent, inject, ref } from "vue";
 import Moralis from "moralis";
 import { NotifiUser, UserLevel } from "@/models/NotifiUser";
-import ContractInput from "@/components/contractInput.vue";
 
 export default defineComponent({
   name: "UserWallets",
-  components: { ContractInput },
+  components: {  },
   setup() {
     const user: NotifiUser | undefined = inject("user");
     const wallets = ref<string[]>([]);
