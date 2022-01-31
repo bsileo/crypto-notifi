@@ -10,7 +10,19 @@
           label="Name"
         >
         </va-input>
+        <va-popover message="Coming Soon">
+          <div class="pl-2">
+            <va-radio
+              v-for="option in listModeOptions"
+              disabled
+              :key="option"
+              :option="option"
+              v-model="listMode"
+            />
+          </div>
+        </va-popover>
         <va-input
+          class="pt-2"
           type="textarea"
           :min-rows="3"
           :max-rows="5"
@@ -44,7 +56,7 @@ import {
 } from "@/models/SubscriptionType";
 import Moralis from "moralis";
 import { defineComponent } from "vue";
-import LevelSelector from "./LevelSelector.vue"
+import LevelSelector from "./LevelSelector.vue";
 
 export default defineComponent({
   name: "EditCategory",
@@ -63,6 +75,8 @@ export default defineComponent({
   data() {
     return {
       activeCategory: this.category || new SubscriptionType(),
+      listMode: "Public",
+      listModeOptions: ["Public", "Moderated", "Private"],
     };
   },
   computed: {

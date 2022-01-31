@@ -10,7 +10,7 @@
     </va-radio>
     <va-popover
       placement="right"
-      message="Select the user level required to subscribe"
+      message="Select the staking level a user must have to subscribe."
       ><va-icon class="mb-3" name="info" />
     </va-popover>
   </div>

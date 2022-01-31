@@ -12,10 +12,10 @@
     </div>
     <div class="row pb-1"><h2>Staking Token</h2></div>
     <div class="row pb-1">
-      <div class="flex sm9">
+      <div class="flex sm12">
         <ContractInput
           :chain="stakingChain"
-          :initialAddress="contractAddress"
+          :initialAddress="stakingAddress"
           :showToken="true"
           :chainPrompt="true"
           :chainsList="protocolChains"
@@ -86,28 +86,28 @@ export default defineComponent({
     },
     symbol: {
       get(): string | number {
-        return this.activeProtocol.symbol || 0;
+        return this.activeProtocol.symbol;
       },
       set(newVal: string): void {
         this.activeProtocol.symbol = newVal;
         this.$emit("protocolUpdate", this.protocol);
       },
     },
-    contractAddress: {
+    stakingAddress: {
       get(): string | number {
-        return this.activeProtocol.stakingAddress || 0;
+        return this.activeProtocol.userStakingAddress;
       },
       set(newVal: string): void {
-        this.activeProtocol.contractAddress = newVal;
+        this.activeProtocol.userStakingAddress = newVal;
         this.$emit("protocolUpdate", this.protocol);
       },
     },
     stakingChain: {
       get(): string | number {
-        return this.activeProtocol.stakingChain || 0;
+        return this.activeProtocol.userStakingChain;
       },
       set(newVal: Chain): void {
-        this.activeProtocol.stakingChain = newVal;
+        this.activeProtocol.userStakingChain = newVal;
         this.$emit("protocolUpdate", this.protocol);
       },
     },
@@ -132,7 +132,7 @@ export default defineComponent({
   },
   methods: {
     setContract(info: ContractInfo) {
-      this.contractAddress = info.address;
+      this.stakingAddress = info.address;
       this.stakingChain = info.chain;
       this.symbol = info.symbol;
     },

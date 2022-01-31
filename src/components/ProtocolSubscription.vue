@@ -4,7 +4,7 @@
       <div class="flex sm6">
         <div class="row">
           <div class="flex sm12">
-            Current Staking Level <strong>{{ stakingLevel }}</strong> with a
+            Protocol Staking Level <strong>{{ stakingLevel }}</strong> with a
             balance of <strong>{{ stakingBalance }} Notifi</strong>
             <span class="pl-4"
               ><va-button
@@ -16,7 +16,7 @@
             </span>
           </div>
           <div class="row pt-2">
-            <div class="flex sm10">
+            <div class="flex sm12">
               <ContractInput
                 :chain="walletChain"
                 :initialAddress="wallet"
@@ -42,7 +42,6 @@
 import { Protocol, StakingLevel } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import ProtocolSubscriptionSummary from "@/components/ProtocolSubscriptionSummary.vue";
-import Moralis from "moralis";
 import { defineComponent, ref, watch } from "vue";
 import ContractInput from "./contractInput.vue";
 import { Chain, ContractInfo } from "@/models/Contract";
@@ -59,7 +58,7 @@ export default defineComponent({
 
     watch(
       () => props.protocol,
-      (newProt, oldValue, onInvalidate) => {
+      (newProt) => {
         if (newProt) {
           activeProtocol.value = newProt;
         }
@@ -86,10 +85,10 @@ export default defineComponent({
       return this.activeProtocol.chains;
     },
     stakingLevel(): StakingLevel {
-      return this.activeProtocol.stakingLevel;
+      return this.activeProtocol.protocolStakingLevel;
     },
     stakingBalance(): number {
-      return this.activeProtocol.stakingBalance;
+      return this.activeProtocol.protocolStakingBalance;
     },
   },
   methods: {
@@ -97,6 +96,7 @@ export default defineComponent({
       this.activeProtocol.protocolStakingWallet = ci.address;
       this.activeProtocol.protocolStakingChain = ci.chain;
       this.$emit("protocolUpdate", this.protocol);
+      this.refresh();
     },
     async refresh(): Promise<void> {
       userModule.fetchUserTokens();

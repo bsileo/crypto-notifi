@@ -14,7 +14,7 @@ export enum SubscriptionStatus {
 export enum SubscriptionTypes {
   protocol = "Protocol Alerts",
   contract = "Smart Contracts",
-  wallet = "Wallet",
+  wallet = "My Wallet",
 }
 
 export class Subscription extends Moralis.Object {

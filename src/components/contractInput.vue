@@ -1,16 +1,15 @@
 <template>
   <div class="flex">
     <div class="row">
-      <div class="flex sm4">
+      <div v-if="chainPrompt" class="flex sm4">
         <va-select
-          v-if="chainPrompt"
           label="Chain"
           v-model="selectedChain"
           :options="chains"
           :rules="[this.chain != undefined || 'Select a chain']"
         />
       </div>
-      <div class="flex sm8">
+      <div class="flex" :class="this.chainPrompt ? 'sm8' : 'sm12'">
         <va-input
           :label="label"
           v-model="address"
