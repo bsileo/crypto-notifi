@@ -108,7 +108,7 @@
     <va-divider dashed inset></va-divider>
     <div class="row ml-2 pb-1">
       <div class="flex xs4"><strong>Channels:</strong></div>
-      <div class="flex xs8">
+      <div v-if="availableChannels.length > 0" class="flex xs8">
         <va-button-dropdown
           right-icon
           icon="add"
