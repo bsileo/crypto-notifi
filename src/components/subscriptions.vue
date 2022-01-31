@@ -98,6 +98,7 @@ export default defineComponent({
       rawSubscriptions: [] as Subscription[],
       queryLimit: 25,
       subscriptionsLoading: false,
+      rawCount: 0,
     };
   },
   async mounted() {
@@ -116,7 +117,7 @@ export default defineComponent({
       return subs;
     },
     showNoSubscriptions(): boolean {
-      return this.rawSubscriptions.length == 0 && !this.subscriptionsLoading;
+      return this.rawCount == 0 && this.rawSubscriptions.length == 0 && !this.subscriptionsLoading;
     },
     search: {
       get(): string {
@@ -162,6 +163,7 @@ export default defineComponent({
       this.subscriptionsLoading = true;
       const query = new Moralis.Query(Subscription);
       query.equalTo("userID", userModule.user?.id);
+      this.rawCount = await query.count();
       if (this.search) {
         query.matches("name", this.search);
       }
