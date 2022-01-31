@@ -50,8 +50,10 @@ export default defineComponent({
   methods: {
     async fetchUserInfo(): Promise<void> {
       if (this.user) {
-        this.level = this.user.currentLevel();
-        this.tokens = this.user.tokenBalance();
+        //this.level = "this.user.currentLevel()";
+        //this.tokens = this.user.tokenBalance();
+        this.level = UserLevel.Basic;
+        this.tokens = 450;
       }
     },
   },
