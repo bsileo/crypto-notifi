@@ -96,16 +96,15 @@ export default defineComponent({
     },
     async metamaskLogin(): Promise<void> {
       try {
-        Moralis.authenticate({
+        const user = await Moralis.authenticate({
           signingMessage: "Sign to create an account on CryptoNotifi",
         });
-        const user: any = await this.$moralis.Web3.authenticate();
+        // const user: any = await this.$moralis.Web3.authenticate();
         if (user) {
           const q = new Moralis.Query(NotifiUser);
           const newUser = await q.get(user.id);
           newUser.setACL(new Moralis.ACL(newUser));
           userModule.SET_USER(newUser);
-          console.log(newUser);
           this.$router.push({ name: "Home" });
         }
       } catch (error) {

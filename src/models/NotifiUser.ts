@@ -16,9 +16,10 @@ export enum UserLevel {
   "Basic" = "basic",
   "Gold" = "gold",
 }
-//export interface UserModel extends Moralis.User<Moralis.Attributes> {
-//  createdAt: Date;
-//}
+/*export interface UserModel extends Moralis.User<Moralis.Attributes> {
+  createdAt: Date;
+}
+*/
 
 export class NotifiUser extends Moralis.User {
   constructor(attributes: any) {
