@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve --host localhost",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "deploy": "deploy-godaddy.js"
+    "deploy": "node deploy-godaddy.js"
   },
   "dependencies": {
     "@tinymce/tinymce-vue": "^4.0.5",
