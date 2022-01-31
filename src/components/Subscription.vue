@@ -107,7 +107,34 @@
     </div>
     <va-divider dashed inset></va-divider>
     <div class="row ml-2 pb-1">
-      <div class="flex xs12"><strong>Channels:</strong></div>
+      <div class="flex xs4"><strong>Channels:</strong></div>
+      <div class="flex xs8">
+        <va-button-dropdown
+          right-icon
+          icon="add"
+          class="mr-2 mb-2"
+          split
+          label="Add"
+          color="secondary"
+          size="small"
+        >
+          <div
+            v-for="channel in availableChannels"
+            :key="channel.id"
+            class="flex pb-1"
+          >
+            <va-chip
+              style="font-size: x-small"
+              size="small"
+              color="secondary"
+              :icon="channel.providerID == 'twilio' ? 'sms' : 'email'"
+              @click="addChannel(channel)"
+            >
+              {{ channel.name }}
+            </va-chip>
+          </div>
+        </va-button-dropdown>
+      </div>
     </div>
     <div class="layout gutter--sm">
       <div class="row ml-2">
@@ -116,6 +143,8 @@
             style="font-size: x-small"
             :icon="channel.providerID == 'twilio' ? 'sms' : 'email'"
             size="small"
+            closeable
+            @update:modelValue="removeChannel(channel)"
             >{{ channel.name }}
           </va-chip>
         </div>
@@ -129,6 +158,7 @@ import { computed, defineComponent, ref, watchEffect } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { SubscriptionTypes } from "@/models/Subscription";
 import { UserChannel } from "@/models/Channel";
+import { channelsModule } from "@/store/channels";
 
 export default defineComponent({
   name: "SubscriptionCard",
@@ -143,6 +173,21 @@ export default defineComponent({
 
     const activeSubscription = ref(new Subscription());
 
+    const availableChannels = computed(() => {
+      const myChannels = channelsModule.myChannels;
+      const chans: UserChannel[] = [];
+      for (let i = 0; i < myChannels.length; i++) {
+        let cand = myChannels[i];
+        let existing = channels.value.find((elem) => {
+          return elem.id == cand.id;
+        });
+        if (!existing) {
+          chans.push(cand);
+        }
+      }
+      return chans;
+    });
+
     watchEffect(async () => {
       if (props.subscription) {
         activeSubscription.value = props.subscription;
@@ -150,7 +195,7 @@ export default defineComponent({
       }
     });
 
-    return { paused, channels, activeSubscription };
+    return { paused, channels, activeSubscription, availableChannels };
   },
   components: {},
   data() {
@@ -278,6 +323,20 @@ export default defineComponent({
     },
   },
   methods: {
+    removeChannel(chan: UserChannel) {
+      if (this.channels.length < 2) {
+        alert("You can't remove the last channel on a subscription");
+      } else {
+        let text = `Are you sure you want to remove '${chan.name} from this subscription?`;
+        if (confirm(text) == true) {
+          chan.removeSubscription(this.activeSubscription);
+          console.log("CHAN=" + chan.name);
+        }
+      }
+    },
+    addChannel(chan: UserChannel) {
+      chan.addSubscription(this.activeSubscription);
+    },
     shortAddress(addr: string) {
       return addr.slice(1, 6) + "..." + addr.substring(addr.length - 4);
     },

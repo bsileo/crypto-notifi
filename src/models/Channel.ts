@@ -1,5 +1,6 @@
 import { channelsModule } from "@/store/channels";
 import Moralis from "moralis";
+import { Subscription } from "./Subscription";
 
 export interface ChannelModel {
   id: number | string;
@@ -80,6 +81,25 @@ export class UserChannel extends Moralis.Object {
     this.getSubscriptionCount().then((count) => {
       this.subscriptionCounter = count;
     });
+  }
+
+  public async removeSubscription(sub: Subscription): Promise<boolean> {
+    const subs = this.relation("subscriptions");
+    subs.remove(sub);
+    const chans = sub.relation("UserChannel");
+    chans.remove(this);
+    await this.save();
+    await sub.save();
+    return true;
+  }
+  public async addSubscription(sub: Subscription): Promise<boolean> {
+    const subs = this.relation("subscriptions");
+    subs.add(sub);
+    const chans = sub.relation("UserChannel");
+    chans.add(this);
+    await this.save();
+    await sub.save();
+    return true;
   }
 }
 

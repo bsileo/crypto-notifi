@@ -29,6 +29,7 @@
           v-model="newChannel"
           label="Provider"
           :options="availableChannels"
+          track-by="id"
           value-by="id"
           text-by="name"
         />
@@ -65,8 +66,6 @@ import Discord from "@/components/DiscordAdd.vue";
 import Email from "@/components/EmailAdd.vue";
 import Moralis from "moralis";
 
-//import { namespace } from "vuex-class";
-//const channels = namespace("channels");
 type ProviderData = Record<string, string | undefined>;
 
 export default defineComponent({
