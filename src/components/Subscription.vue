@@ -2,44 +2,53 @@
   <va-card class="subscription" color="#76b4e3" gradient>
     <va-card-title>
       <div class="flex md7">
-        <h3>{{ name }}</h3>
+        <div class="title">{{ name }}</div>
       </div>
       <div class="flex md5">
-        <va-popover
-          :message="pausePopoverText"
-          placement="top"
-          :hover-over-timeout="1"
-        >
-          <va-inner-loading :loading="pausing" :size="18">
-          <va-button
-            @click.prevent="this.togglePause()"
-            :icon-right="pauseToggleIcon"
-            class="mr-1"
-            size="small"
-            :color="paused ? 'warning' : 'success'"
-          ></va-button>
-          </va-inner-loading>
-        </va-popover>
-        <va-button
-          @click.prevent="this.destroy()"
-          icon-right="delete"
-          size="small"
-          class="mr-1"
-          color="danger"
-        ></va-button>
-        <va-popover
-          message="Coming Soon"
-          placement="top"
-          :hover-over-timeout="1"
-        >
-          <va-button
-            @click.prevent="this.edit()"
-            icon-right="edit"
-            size="small"
-            color="primary"
-            :disabled="true"
-          ></va-button>
-        </va-popover>
+        <div class="row">
+          <div class="flex sm4">
+            <va-popover
+              :message="pausePopoverText"
+              placement="top"
+              :hover-over-timeout="1"
+            >
+              <va-inner-loading :loading="pausing" :size="18">
+                <va-button
+                  @click.prevent="this.togglePause()"
+                  :icon-right="pauseToggleIcon"
+                  size="small"
+                  :color="paused ? 'warning' : 'success'"
+                ></va-button>
+              </va-inner-loading>
+            </va-popover>
+          </div>
+          <div class="flex sm4">
+            <va-inner-loading :loading="destroying" :size="18">
+              <va-button
+                @click.prevent="this.destroy()"
+                icon-right="delete"
+                size="small"
+                class="mr-1"
+                color="danger"
+              ></va-button>
+            </va-inner-loading>
+          </div>
+          <div class="flex sm4">
+            <va-popover
+              message="Coming Soon"
+              placement="top"
+              :hover-over-timeout="1"
+            >
+              <va-button
+                @click.prevent="this.edit()"
+                icon-right="edit"
+                size="small"
+                color="primary"
+                :disabled="true"
+              ></va-button>
+            </va-popover>
+          </div>
+        </div>
       </div>
     </va-card-title>
     <va-divider></va-divider>
@@ -47,6 +56,30 @@
       <div class="flex xs3"><strong>Type:</strong></div>
       <div class="flex xs6">{{ subscriptionType }}</div>
       <va-icon class="flex xs2" :name="typeIcon"></va-icon>
+    </div>
+    <div v-if="subscriptionType == 'My Wallet'">
+      <div v-if="fromAddress" class="row ml-2 pb-1">
+        <div class="flex xs3"><strong>From:</strong></div>
+        <div class="flex xs9">
+          <va-popover :message="fromAddress">
+            {{ fromAddressShort }}
+          </va-popover>
+        </div>
+      </div>
+      <div v-if="toAddress" class="row ml-2 pb-1">
+        <div class="flex xs3"><strong>To:</strong></div>
+        <div class="flex xs9">
+          <va-popover :message="toAddress">
+            {{ toAddressShort }}
+          </va-popover>
+        </div>
+      </div>
+      <div v-if="valueDescription" class="row ml-2 pb-1">
+        <div class="flex xs3"><strong>Value is:</strong></div>
+        <div class="flex xs9">
+          {{ valueDescription }}
+        </div>
+      </div>
     </div>
     <div v-if="showProtocol" class="row ml-2 pb-1">
       <div class="flex xs3"><strong>Protocol:</strong></div>
@@ -92,8 +125,8 @@ export default defineComponent({
   setup(props) {
     const paused = computed(() => {
       return props.subscription?.status == "paused";
-    })
-    return { paused};
+    });
+    return { paused };
   },
   components: {},
   data() {
@@ -101,6 +134,7 @@ export default defineComponent({
       currentSubscription: this.subscription || new Subscription(),
       channelsDescription: "",
       pausing: false,
+      destroying: false,
     };
   },
   mounted() {
@@ -162,6 +196,45 @@ export default defineComponent({
         return "";
       }
     },
+    fromAddress(): string {
+      if (this.currentSubscription) {
+        const addr = this.currentSubscription.fromAddress;
+        return addr;
+      } else {
+        return "";
+      }
+    },
+    toAddress(): string {
+      if (this.currentSubscription) {
+        const addr = this.currentSubscription.toAddress;
+        return addr;
+      } else {
+        return "";
+      }
+    },
+    fromAddressShort(): string {
+      if (this.currentSubscription) {
+        const addr = this.currentSubscription.fromAddress;
+        return this.shortAddress(addr);
+      } else {
+        return "";
+      }
+    },
+    toAddressShort(): string {
+      if (this.currentSubscription) {
+        const addr = this.currentSubscription.toAddress;
+        return this.shortAddress(addr);
+      } else {
+        return "";
+      }
+    },
+    valueDescription(): string {
+      if (this.currentSubscription) {
+        return `${this.currentSubscription.valueOperator} ${this.currentSubscription.value}`;
+      } else {
+        return "";
+      }
+    },
     name: {
       get(): string {
         return this.currentSubscription.name;
@@ -191,7 +264,11 @@ export default defineComponent({
     },
   },
   methods: {
+    shortAddress(addr: string) {
+      return addr.slice(1, 6) + "..." + addr.substring(addr.length - 4);
+    },
     async destroy(): Promise<void> {
+      this.destroying = true;
       this.currentSubscription.destroy();
     },
     async edit(): Promise<void> {
@@ -216,14 +293,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
+.title {
+  font-size: larger;
+}
 .subscription {
   height: 20em;
-}
-.description {
-  padding-top: 1em;
-  overflow-x: clip;
-  overflow-y: clip;
-  border-color: black;
-  border-style: solid;
 }
 </style>
