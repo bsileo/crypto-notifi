@@ -13,8 +13,7 @@ import Moralis from "@/config/moralis";
 @Module({ dynamic: true, store: store, namespaced: true, name: "Channels" })
 export class ChannelsModule extends VuexModule {
   CHANNELS: Array<ChannelModel> = [
-    { id: "discord", name: "Discord", multiple: true },
-    { id: "twilio", name: "Twilio", multiple: true },
+    { id: "twilio", name: "SMS", multiple: true },
     { id: "email", name: "Email", multiple: true },
   ];
   MYCHANNELS: Array<UserChannel> = [];
