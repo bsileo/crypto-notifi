@@ -1,10 +1,44 @@
 /* eslint-disable no-undef */
 // eslint-disable-next-line no-undef
+Moralis.Cloud.beforeSave(
+  "Subscription",
+  async (request) => {
+    await checkUserStakingLevels(request);
+  },
+  {
+    fields: {
+      name: {
+        required: true,
+        error: "You must provide a Name",
+      },
+      status: {
+        required: true,
+        options: (status) => {
+          return status == "active" || status == "paused";
+        },
+        error: "Invalid Subscription status value",
+      },
+    },
+  }
+);
+
+async function checkUserStakingLevels(request) {
+  const logger = Moralis.Cloud.getLogger();
+  const subCount = await getUserSubscriptionCount(request.user);
+  const subLimit = await getUserSubscriptionLimit(request.user);
+  logger.info(
+    `[checkUserStakingLevels] ${request.user.id} - ${subCount} ?> ${subLimit}`
+  );
+  if (subCount >= subLimit) {
+    throw "Your staking level is to low to add more Subscriptions.";
+  }
+}
+
 Moralis.Cloud.afterSave("Subscription", async (request) => {
   const logger = Moralis.Cloud.getLogger();
   const { object: sub, context } = request;
-  if (context && context.final) {
-    updateSubscriptionAdd(sub);
+  if (context && context.insert) {
+    updateSubscriptionInsert(sub);
     const type = sub.get("subscriptionType");
     if (type == "Smart Contracts") {
       processSmartContractSubscription(sub);
@@ -27,18 +61,20 @@ Moralis.Cloud.afterDelete("Subscription", async (request) => {
   }
 });
 
-async function updateSubscriptionAdd(sub) {
+async function updateSubscriptionInsert(sub) {
   const logger = Moralis.Cloud.getLogger();
   const con = sub.get("contract");
   logger.info("CON=" + con);
   if (con) {
     con.increment("SubscriptionCount", 1, { useMasterKey: true });
+    con.save();
   }
 
   const conAct = sub.get("contractActivity");
   logger.info("CONACT=" + conAct);
   if (conAct) {
     conAct.increment("SubscriptionCount", 1, { useMasterKey: true });
+    conAct.save();
   }
 
   const rel = sub.relation("UserChannel");
@@ -47,6 +83,7 @@ async function updateSubscriptionAdd(sub) {
   logger.info("UCS-" + ucs);
   for (let i = 0; i < ucs.length; i++) {
     ucs[i].increment("SubscriptionCount", 1, { useMasterKey: true });
+    ucs[i].save();
   }
 }
 
@@ -54,11 +91,13 @@ async function updateSubscriptionDelete(sub) {
   const con = sub.get("contract");
   if (con) {
     con.decrement("SubscriptionCount", 1, { useMasterKey: true });
+    con.save();
   }
 
   const conAct = sub.get("contractActivity");
   if (conAct) {
     conAct.decrement("SubscriptionCount", 1, { useMasterKey: true });
+    conAct.save();
   }
 
   const rel = sub.relation("UserChannel");
@@ -114,12 +153,10 @@ async function setupSmartContractWatch(sub) {
       Moralis.Cloud.beforeConsume(tableName, (event) => {
         return event && event.confirmed;
       });
-    }
-    catch (err) {
+    } catch (err) {
       logger.error("Watch Setup error - " + err.message);
       return;
     }
-   
   } else {
     logger.info("[setupSmartContractWatch] Already watching:" + tableName);
   }
