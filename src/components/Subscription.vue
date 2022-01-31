@@ -105,6 +105,7 @@
       <div class="flex xs3"><strong>Category:</strong></div>
       <div class="flex xs9">{{ generalTypeName }}</div>
     </div>
+    <va-divider dashed inset></va-divider>
     <div class="row ml-2 pb-1">
       <div class="flex xs12"><strong>Channels:</strong></div>
     </div>
