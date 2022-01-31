@@ -106,16 +106,28 @@
       <div class="flex xs9">{{ generalTypeName }}</div>
     </div>
     <div class="row ml-2 pb-1">
-      <div class="flex xs3"><strong>Channels:</strong></div>
-      <div class="flex xs9">{{ channelsDescription }}</div>
+      <div class="flex xs12"><strong>Channels:</strong></div>
+    </div>
+    <div class="layout gutter--sm">
+      <div class="row ml-2">
+        <div v-for="channel in channels" :key="channel.id" class="flex">
+          <va-chip
+            style="font-size: x-small"
+            :icon="channel.providerID == 'twilio' ? 'sms' : 'email'"
+            size="small"
+            >{{ channel.name }}
+          </va-chip>
+        </div>
+      </div>
     </div>
   </va-card>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, ref, watchEffect } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { SubscriptionTypes } from "@/models/Subscription";
+import { UserChannel } from "@/models/Channel";
 
 export default defineComponent({
   name: "SubscriptionCard",
@@ -126,7 +138,18 @@ export default defineComponent({
     const paused = computed(() => {
       return props.subscription?.status == "paused";
     });
-    return { paused };
+    const channels = ref([] as UserChannel[]);
+
+    const activeSubscription = ref(new Subscription());
+
+    watchEffect(async () => {
+      if (props.subscription) {
+        activeSubscription.value = props.subscription;
+        channels.value = await props.subscription.channels();
+      }
+    });
+
+    return { paused, channels, activeSubscription };
   },
   components: {},
   data() {
@@ -136,16 +159,6 @@ export default defineComponent({
       pausing: false,
       destroying: false,
     };
-  },
-  mounted() {
-    this.fetchChannelsDescription();
-  },
-  watch: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    currentSubscription(newVal: Subscription, oldVal: Subscription) {
-      console.log(`Watch currentSub ${newVal}`);
-      this.fetchChannelsDescription();
-    },
   },
   computed: {
     protocolName(): string {
@@ -273,10 +286,6 @@ export default defineComponent({
     },
     async edit(): Promise<void> {
       console.log("EDIT");
-    },
-    async fetchChannelsDescription() {
-      this.channelsDescription =
-        await this.currentSubscription.channelsDescription();
     },
     async togglePause(): Promise<void> {
       this.pausing = true;
