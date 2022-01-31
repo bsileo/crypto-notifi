@@ -88,7 +88,8 @@ export class Subscription extends Moralis.Object {
     return await this.get("UserChannel").query().count();
   }
   async channels(): Promise<UserChannel[]> {
-    const q = this.get("UserChannel").query();
+    const r = this.relation("UserChannel");
+    const q = r.query();
     return await q.find();
   }
   async channelsDescription(): Promise<string> {
@@ -164,6 +165,7 @@ export class Subscription extends Moralis.Object {
   public async setUserChannels(channels: UserChannel[]): Promise<void> {
     const myChans = this.relation("UserChannel");
     channels.forEach(async (chan: UserChannel) => {
+      console.log(chan);
       if (chan) {
         myChans.add(chan);
         chan.relation("subscriptions").add(this);
