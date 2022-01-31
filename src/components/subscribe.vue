@@ -105,17 +105,17 @@
             :disabled="!validFrom"
             v-model="chkFrom"
           />
-          <va-input
-            class="flex sm8"
-            label="From Address"
-            v-if="!fromMe"
-            v-model="from_address"
-            :rules="[
-              this.validFrom || 'Enter a valid contract/wallet address',
-              this.to_address !== this.from_address ||
-                'From and To Addresses must be different',
-            ]"
-          />
+          <div v-if="!fromMe" class="flex sm8">
+            <ContractInput
+              label="From Address"
+              :chainPrompt="false"
+              :showToken="false"
+              :initialAddress="from_address"
+              :addressOptions="myAddresses"
+              @address="setFromAddress"
+            >
+            </ContractInput>
+          </div>
           <va-select
             class="flex sm8"
             :options="myAddresses"
@@ -136,13 +136,17 @@
             :disabled="!validTo"
             v-model="chkTo"
           />
-          <va-input
-            class="flex sm8"
-            label="To Address"
-            v-if="!toMe"
-            v-model="to_address"
-            :rules="[this.validTo || 'Enter a valid contract/wallet address']"
-          />
+          <div v-if="!toMe" class="flex sm8">
+            <ContractInput
+              label="From Address"
+              :chainPrompt="false"
+              :showToken="false"
+              :initialAddress="to_address"
+              :addressOptions="myAddresses"
+              @address="setToAddress"
+            >
+            </ContractInput>
+          </div>
           <va-select
             class="flex sm8"
             v-if="toMe"
@@ -257,6 +261,7 @@ import { contractsModule } from "@/store/contracts";
 import { Contract, Chain } from "@/models/Contract";
 import { NotifiUser } from "@/models/NotifiUser";
 import ProtocolSelector from "./ProtocolSelector.vue";
+import ContractInput from "./contractInput.vue";
 
 //import Moralis from "moralis/types";
 // let tx: Moralis.TransactionResult | null = null;
@@ -292,7 +297,7 @@ let allSubTypes: SubscriptionTypes[] = [
 
 export default defineComponent({
   name: "Subscribe",
-  components: { ProtocolSelector },
+  components: { ProtocolSelector, ContractInput },
   props: {
     transaction: { type: tx, required: false },
     subscription: { type: Subscription, required: false },
@@ -421,9 +426,11 @@ export default defineComponent({
       if (!this.activityAllowed) {
         const prot = this.selectedProtocol;
         const actTokens = prot?.goldQuantity;
+        const symbol = prot?.symbol;
+        const bal = prot?.getWalletBalance();
         res =
           res +
-          `<br/><br/>Warning: Requires protocol level <strong>${act.level}</strong>.  Stake at least ${actTokens} tokens to subscribe to this activity.`;
+          `<br/><br/>Warning: Requires protocol level <strong>${act.level}</strong>.  Stake at least ${actTokens} tokens in ${symbol} to subscribe to this activity. Your wallet holds ${bal}`;
       }
       return res;
     },
@@ -625,10 +632,15 @@ export default defineComponent({
       return false;
     },
     validWalletSubmit(): boolean {
+      let dupAddresses = false;
+      if (this.chkTo && this.chkFrom) {
+        dupAddresses = this.to_address == this.from_address
+      }
       return (
         this.validName &&
-        this.validTo &&
-        this.validFrom &&
+        !dupAddresses &&
+        (!this.chkTo || this.validTo) &&
+        (!this.chkFrom || this.validFrom) &&
         (!this.chkValue || (this.valueOp != null && this.value > 0)) &&
         this.chain &&
         this.newChannels?.length > 0
@@ -662,6 +674,12 @@ export default defineComponent({
         console.error("UserID is unset");
         throw "UserID is unset";
       }
+    },
+    setFromAddress(address: string) {
+      this.from_address = address;
+    },
+    setToAddress(address: string) {
+      this.to_address = address;
     },
     async fetchSubGeneralTypes(): Promise<void> {
       const q = new Moralis.Query(SubscriptionType);
