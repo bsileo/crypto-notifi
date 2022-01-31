@@ -755,7 +755,7 @@ export default defineComponent({
               color: "success",
             }
           );
-          const context = { final: true };
+          const context = { insert: true };
           c.save(null, { context: context });
           this.$emit("saved");
         },

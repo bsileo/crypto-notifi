@@ -107,14 +107,11 @@
     </div>
     <va-divider dashed inset></va-divider>
     <div class="row ml-2 pb-1">
-      <div class="flex xs4"><strong>Channels:</strong></div>
-      <div v-if="availableChannels.length > 0" class="flex xs8">
+      <div v-if="availableChannels.length > 0" class="flex xs2">
         <va-button-dropdown
           right-icon
           icon="add"
           class="mr-2 mb-2"
-          split
-          label="Add"
           color="secondary"
           size="small"
         >
@@ -135,6 +132,7 @@
           </div>
         </va-button-dropdown>
       </div>
+      <div class="flex xs4"><strong>Channels:</strong></div>
     </div>
     <div class="layout gutter--sm">
       <div class="row ml-2">
@@ -338,6 +336,7 @@ export default defineComponent({
       chan.addSubscription(this.activeSubscription);
     },
     shortAddress(addr: string) {
+      if (!addr || addr.length < 6) return "";
       return addr.slice(1, 6) + "..." + addr.substring(addr.length - 4);
     },
     async destroy(): Promise<void> {

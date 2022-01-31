@@ -175,6 +175,7 @@ export default defineComponent({
       query.skip(this.rawSubscriptions.length);
       query.include("contractActivity");
       query.include("contract");
+      query.include("GeneralSubType");
       let subs = await query.find();
       this.subscribe(query);
       this.rawSubscriptions.push(...subs);
