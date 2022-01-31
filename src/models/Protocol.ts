@@ -94,10 +94,10 @@ export class Protocol extends Moralis.Object {
     this.tokenData.symbol = newVal;
   }
 
-  get stakingAddress(): string {
+  get userStakingAddress(): string {
     return this.tokenData?.contractAddress;
   }
-  set stakingAddress(newVal: string) {
+  set userStakingAddress(newVal: string) {
     this.tokenData.contractAddress = newVal;
   }
 
@@ -183,7 +183,7 @@ export class Protocol extends Moralis.Object {
     const res = await q.find();
     return res;
   }
-  // return the current Users wallet ba;ance for my toekn
+  // return the current Users wallet balance for my User Staking token
   getWalletBalance(): number | string {
     let token = undefined;
     const tokens = userModule.tokens;
@@ -192,7 +192,7 @@ export class Protocol extends Moralis.Object {
     }
     if (this.get("tokenData")) {
       token = userModule.tokens.find(
-        (e: TokenBalance) => e?.symbol == this.tokenData.symbol
+        (e: TokenBalance) => e?.symbol == this.symbol
       );
     }
     if (token) {
@@ -225,7 +225,7 @@ export class Protocol extends Moralis.Object {
     this.set("protocolStakingChain", newVal);
   }
 
-  get stakingBalance(): number {
+  get protocolStakingBalance(): number {
     let token = undefined;
     const tokens = userModule.tokens;
     if (!tokens) {
@@ -240,7 +240,7 @@ export class Protocol extends Moralis.Object {
     return 0;
   }
 
-  get stakingLevel(): StakingLevel {
+  get protocolStakingLevel(): StakingLevel {
     const bal = this.stakingBalance;
     if (bal < 10) {
       return StakingLevel.free;
@@ -282,7 +282,7 @@ export class Protocol extends Moralis.Object {
   }
 
   subscriptionLimit(limType: LimitType): number {
-    const level = this.stakingLevel;
+    const level = this.protocolStakingLevel;
     const limits = this.subscriptionLimits()[level];
     return limits[limType];
   }
@@ -348,15 +348,11 @@ export class Protocol extends Moralis.Object {
   }
   tokenContractURL(): string {
     if (this.get("tokenData")) {
-      const chain = this.get("tokenData").chain as Chain;
+      const chain = this.userStakingChain as Chain;
       if (chain == "avalanche") {
-        return `https://snowtrace.io/token/${
-          this.get("tokenData").contractAddress
-        }`;
+        return `https://snowtrace.io/token/${this.stakingAddress}`;
       } else if (chain == "eth") {
-        return `https://etherscan.io/address/${
-          this.get("tokenData").contractAddress
-        }`;
+        return `https://etherscan.io/address/${this.stakingAddress}`;
       } else {
         // throw `Chain not configured in protocol.tokenContractURL() for ${this.id}`;
         console.log(
