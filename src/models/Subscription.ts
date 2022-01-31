@@ -127,6 +127,7 @@ export class Subscription extends Moralis.Object {
     s.set("name", name);
     s.set("userID", userID);
     s.set("subscriptionType", subType);
+    s.set("status", SubscriptionStatus.active);
     s = await s.save();
     return s;
   }
