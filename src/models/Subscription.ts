@@ -120,7 +120,7 @@ export class Subscription extends Moralis.Object {
     subType: SubscriptionTypes,
     protocol?: Protocol
   ): Promise<Subscription> {
-    let s = new Subscription();
+    const s = new Subscription();
     if (protocol) {
       s.set("Protocol", protocol);
     }
@@ -128,7 +128,7 @@ export class Subscription extends Moralis.Object {
     s.set("userID", userID);
     s.set("subscriptionType", subType);
     s.set("status", SubscriptionStatus.active);
-    s = await s.save();
+    //s = await s.save();
     return s;
   }
 

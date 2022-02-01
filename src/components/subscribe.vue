@@ -634,7 +634,7 @@ export default defineComponent({
     validWalletSubmit(): boolean {
       let dupAddresses = false;
       if (this.chkTo && this.chkFrom) {
-        dupAddresses = this.to_address == this.from_address
+        dupAddresses = this.to_address == this.from_address;
       }
       return (
         this.validName &&
@@ -744,32 +744,22 @@ export default defineComponent({
       }
       var acl = Subscription.getACL(Moralis.User.current());
       c.setACL(acl);
-      c.save().then(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (uc: Subscription) => {
-          // Execute any logic that should take place after the object is saved.
-          uc.setUserChannels(this.newChannels);
-          getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init(
-            {
-              message: "Subscription added successfully!",
-              color: "success",
-            }
-          );
-          const context = { insert: true };
-          c.save(null, { context: context });
-          this.$emit("saved");
-        },
-        (error: { message: string }) => {
-          // error is a Moralis.Error with an error code and message.
-          alert("Failed to save object, with error code: " + error.message);
-          getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init(
-            {
-              message: "Failed to add subscription " + error.message,
-              color: "warning",
-            }
-          );
-        }
-      );
+      const myChans = c.relation("UserChannel");
+      myChans.add(this.newChannels);
+      const context = { insert: true };
+      try {
+        const uc = await c.save(null, { context: context });
+        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
+          message: "Subscription added successfully!",
+          color: "success",
+        });
+        this.$emit("saved");
+      } catch (error: any) {
+        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
+          message: "Subscription failed " + error.message,
+          color: "danger",
+        });
+      }
     },
     async getContractIcon(): Promise<string | undefined> {
       const addr = this.contractAddress;
