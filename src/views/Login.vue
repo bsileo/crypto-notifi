@@ -70,7 +70,14 @@
       </div>
       <div class="row">
         <va-divider></va-divider>
-        <ProtocolSelector :allowSelect="false"></ProtocolSelector>
+        <ProtocolSelector
+          :showSearch="true"
+          :showVote="false"
+          :showSubscribe="false"
+          :showUserInfo="false"
+          :allowSelect="false"
+          :showStatus="true"
+        ></ProtocolSelector>
       </div>
     </div>
   </div>

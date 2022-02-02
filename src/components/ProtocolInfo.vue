@@ -65,7 +65,7 @@
           >Vote</va-button
         >
       </va-popover>
-       <va-button
+      <va-button
         v-if="this.showSubscribe && protocol.protocolSiteStatus != 'Pending'"
         size="small"
         color="primary"
@@ -81,17 +81,23 @@
       >
     </va-card-actions>
   </va-card>
+  <va-modal v-model="showClaim" title="" hide-default-actions>
+    <slot>
+      <ProtocolClaim :protocol="protocol"></ProtocolClaim>
+    </slot>
+  </va-modal>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import Moralis from "moralis";
 import { Protocol } from "@/models/Protocol";
+import ProtocolClaim from "./ProtocolClaim.vue";
 
 export default defineComponent({
   name: "ProtocolInfo",
-  components: {},
-  emits: ["selected", "subscribe" ],
+  components: { ProtocolClaim },
+  emits: ["selected", "subscribe"],
   props: {
     showVote: { type: Boolean, required: false, default: false },
     showSubscribe: { type: Boolean, required: false, default: false },
@@ -99,10 +105,12 @@ export default defineComponent({
     allowSelect: { type: Boolean, required: false, default: true },
     manager: { type: Boolean, required: false, default: false },
     protocol: { type: Protocol, required: true },
-    selected: { type: Boolean, required: false, default: false }
+    selected: { type: Boolean, required: false, default: false },
   },
   data() {
-    return {};
+    return {
+      showClaim: false,
+    };
   },
   computed: {},
   methods: {
@@ -112,7 +120,7 @@ export default defineComponent({
       this.$forceUpdate();
     },
     claim(aProtocol: Protocol): void {
-      console.log(aProtocol);
+      this.showClaim = true;
     },
     select(aProtocol: Protocol): void {
       this.$emit("selected", this.protocol);

@@ -20,6 +20,7 @@ export enum StakingLevel {
 
 export enum SiteStatus {
   "pending" = "Pending",
+  "inprogress" = "In-Progress",
   "active" = "Active",
 }
 

@@ -343,8 +343,9 @@ export default defineComponent({
       contractActivityID: undefined as string | undefined,
     };
   },
-  setup() {
+  setup(props) {
     const user: NotifiUser | undefined = inject("user");
+
     return {
       user,
     };
