@@ -16,11 +16,13 @@
         :header="selectProtocolHeader"
         class="pb-3"
       >
-        <ProtocolSelector
-          :showSearch="true"
-          :showUserInfo="true"
-          @selection="selectProtocol"
-        ></ProtocolSelector>
+        <div class="protocolCards">
+          <ProtocolSelector
+            :showSearch="true"
+            :showUserInfo="true"
+            @selection="selectProtocol"
+          ></ProtocolSelector>
+        </div>
       </va-collapse>
       <div>
         <div v-if="showSubGeneral" class="row pt-2">
@@ -301,6 +303,7 @@ export default defineComponent({
   props: {
     transaction: { type: tx, required: false },
     subscription: { type: Subscription, required: false },
+    protocol: { type: Protocol, required: false },
   },
   data() {
     const app = getCurrentInstance();
@@ -308,8 +311,7 @@ export default defineComponent({
     return {
       showSectionProtocolsVal: true,
       showToast: vaToast?.init,
-      selectedProtocolName: "",
-      intSelectedProtocol: undefined as Protocol | undefined,
+      intSelectedProtocol: this.protocol,
       subName: "My Subscription",
       subType: SubscriptionTypes.protocol as SubscriptionTypes,
       subTypes: allSubTypes,
@@ -382,6 +384,14 @@ export default defineComponent({
         return `Protocol: ${this.selectedProtocolName}`;
       } else {
         return "Select a Protocol";
+      }
+    },
+    selectedProtocolName(): string {
+      const p = this.intSelectedProtocol;
+      if (!p) {
+        return "";
+      } else {
+        return p.name;
       }
     },
     selectedProtocol: {
@@ -783,5 +793,14 @@ export default defineComponent({
   },
 });
 </script>
-div.active { background-color: rgb(197 47 47); }
-<style scoped></style>
+
+<style scoped>
+div.active {
+  background-color: rgb(197 47 47);
+}
+.protocolCards {
+  max-height: 30em;
+  overflow-y: scroll;
+  overflow-x: clip;
+}
+</style>

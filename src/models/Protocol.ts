@@ -18,6 +18,11 @@ export enum StakingLevel {
   "gold" = "Gold",
 }
 
+export enum SiteStatus {
+  "pending" = "Pending",
+  "active" = "Active",
+}
+
 export type SummaryItem = {
   name: string;
   quantity: number;
@@ -103,7 +108,7 @@ export class Protocol extends Moralis.Object {
 
   get goldQuantity(): number {
     const td = this.tokenData;
-    return td?.goldQuantity;
+    return td?.goldQuantity || 0;
   }
   set goldQuantity(val: number) {
     const td = this.tokenData;
@@ -120,7 +125,7 @@ export class Protocol extends Moralis.Object {
 
   get basicQuantity(): number {
     const td = this.tokenData;
-    return td?.basicQuantity;
+    return td?.basicQuantity || 0;
   }
   set basicQuantity(val: number) {
     this.tokenData.basicQuantity = val;
@@ -202,9 +207,12 @@ export class Protocol extends Moralis.Object {
   }
   getUserLevel(): ProtocolLevel {
     const bal = this.getWalletBalance();
-    if (bal >= this.tokenData.goldQuantity) {
+    if (!this.tokenData) {
+      return ProtocolLevel.Free;
+    }
+    if (bal >= this.goldQuantity) {
       return ProtocolLevel.Gold;
-    } else if (bal >= this.tokenData.basicQuantity) {
+    } else if (bal >= this.basicQuantity) {
       return ProtocolLevel.Basic;
     } else {
       return ProtocolLevel.Free;
@@ -249,6 +257,60 @@ export class Protocol extends Moralis.Object {
     } else {
       return StakingLevel.gold;
     }
+  }
+
+  // Status of this protocol on the overall website -  Is it active / being managed?
+  get protocolSiteStatus(): SiteStatus {
+    return this.get("siteStatus");
+  }
+
+  get protocolPendingVotes(): number {
+    const ps = this.get("ProtocolStatus");
+    if (!ps || !ps.isDataAvailable()) {
+      throw "Data not retrieved with Protocol Query";
+    }
+    return ps.get("sitePendingVotes");
+  }
+
+  async retrieveProtocolPendingVotes(): Promise<number> {
+    const ps = await this.getProtocolStatus();
+    const votes = ps.get("sitePendingVotes");
+    return votes;
+  }
+
+  async getProtocolStatus(): Promise<any> {
+    let ps = this.get("ProtocolStatus");
+    if (!ps || !ps.isDataAvailable()) {
+      const qps = new Moralis.Query("ProtocolStatus");
+      qps.equalTo("Protocol", this);
+      ps = await qps.first();
+      if (!ps) {
+        ps = await this.makeProtocolStatus();
+      }
+    }
+    return ps;
+  }
+
+  async makeProtocolStatus(): Promise<any> {
+    const pStatus = Moralis.Object.extend("ProtocolStatus");
+    let ps = new pStatus();
+    ps.set("sitePendingVotes", 0);
+    ps.set("Protocol", this);
+    ps = await ps.save();
+    this.set("ProtocolStatus", ps);
+    this.save();
+    return ps;
+  }
+
+  async siteVote(): Promise<number> {
+    let ps = await this.getProtocolStatus();
+    const rel = ps.relation("Voters");
+    rel.add(Moralis.User.current());
+    ps = await ps.save();
+    const votes = await rel.query().count();
+    ps.set("sitePendingVotes", votes);
+    ps.save();
+    return votes;
   }
 
   async subscriptionSummary(): Promise<SummaryItem[]> {

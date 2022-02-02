@@ -1,19 +1,4 @@
 <template>
-  <va-alert color="primary" title="My Subscriptions" center class="mb-1">
-    <div class="top-right">
-      <va-popover message="Add a new Subscription">
-        <va-button
-          @click.prevent="this.$emit('subscribe')"
-          icon-right="add"
-          size="small"
-          class="mr-4"
-          color="success"
-          :disabled="!allowAdd"
-        >
-        </va-button>
-      </va-popover>
-    </div>
-  </va-alert>
   <div v-if="!showNoSubscriptions" class="row pb-1 pt-1">
     <va-input class="flex xs5" label="Search Names" v-model="search"></va-input>
     <div class="flex xs5">
@@ -25,6 +10,17 @@
     </div>
     <div class="flex xs2">
       <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
+      <va-popover message="Add a new Subscription">
+        <va-button
+          @click.prevent="this.$emit('subscribe')"
+          icon-right="add"
+          size="medium"
+          class="ml-4"
+          color="success"
+          :disabled="!allowAdd"
+        >
+        </va-button>
+      </va-popover>
     </div>
   </div>
   <div class="layout gutter--sm">

@@ -11,7 +11,11 @@
           <div class="title">Notifi</div>
         </va-navbar-item>
       </template>
-      <template #center> </template>
+      <template #center>
+        <h2 style="font-size: large; color: red">
+          ALPHA Version <br />No Real Alerts
+        </h2>
+      </template>
       <template #right>
         <slot name="right"></slot>
       </template>

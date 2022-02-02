@@ -4,6 +4,7 @@
       <template #right>
         <va-navbar-item>
           <va-button-dropdown
+            id="menu"
             color="dark"
             label="My Account"
             class="float-end"
@@ -11,7 +12,7 @@
             :flat="true"
             :outline="false"
           >
-            <va-card color="dark" square :bordered="true">
+            <va-card color="background" square :bordered="true">
               <va-card-actions align="between" :vertical="true">
                 <va-button color="primary" @click.prevent="showAccount = true">
                   My Account
@@ -25,7 +26,7 @@
               </va-card-actions>
             </va-card>
           </va-button-dropdown>
-          <div class="flex float-end pl-2">
+          <div v-if="userIsManager" class="flex float-end pl-2">
             <va-switch
               true-inner-label="Manager"
               false-inner-label="User"
@@ -34,9 +35,16 @@
               :color="userMode == 'manager' ? 'danger' : 'success'"
               size="large"
               v-model="userMode"
-              v-if="userIsManager"
             >
             </va-switch>
+          </div>
+          <div v-if="userMode != 'manager'" class="flex float-end pl-2">
+            <va-button-toggle
+              color="secondary"
+              toggle-color="warning"
+              v-model="mode"
+              :options="modeOptions"
+            />
           </div>
         </va-navbar-item>
       </template>
@@ -60,6 +68,21 @@
           button to get started.
         </h2>
       </div>
+    </div>
+    <div v-if="showProtocols">
+      <ProtocolSelector
+        :showSearch="true"
+        :showVote="true"
+        :showSubscribe="true"
+        :showUserInfo="false"
+        :allowSelect="false"
+        :showStatus="true"
+        @subscribe="protocolSubscribe"
+      >
+      </ProtocolSelector>
+    </div>
+    <div v-if="showManager">
+      <ProtocolManager></ProtocolManager>
     </div>
     <div v-if="false" class="row" style="max-height: 50%">
       <div class="flex md12 sm12">
@@ -97,13 +120,11 @@
       <slot>
         <Subscribe
           :transaction="subscribeTx"
+          :protocol="subscribeProtocol"
           @saved="showSubscribe = false"
         ></Subscribe>
       </slot>
     </va-modal>
-    <div v-if="showManager">
-      <ProtocolManager></ProtocolManager>
-    </div>
   </div>
 </template>
 
@@ -117,10 +138,12 @@ import Subscriptions from "@/components/subscriptions.vue";
 import Subscribe from "@/components/subscribe.vue";
 import Transactions from "@/components/transactions.vue";
 import ProtocolManager from "@/components/ProtocolManager.vue";
+import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import Account from "@/components/Account.vue";
 import Header from "@/components/header.vue";
 import { computed } from "vue";
 import { channelsModule } from "@/store/channels";
+import { Protocol } from "@/models/Protocol";
 
 let tx: Moralis.TransactionResult | null = null;
 
@@ -133,17 +156,24 @@ export default defineComponent({
     Subscribe,
     Account,
     ProtocolManager,
+    ProtocolSelector,
     Header,
   },
   data() {
     return {
       userMode: "user" as "user" | "manager",
       subscribeTx: tx,
+      subscribeProtocol: undefined as Protocol | undefined,
       showTransactions: false,
       showCategories: true,
       showSubscribe: false,
       showChannels: false,
       showAccount: false,
+      mode: "subscriptions",
+      modeOptions: [
+        { value: "subscriptions", label: "Subscriptions" },
+        { value: "protocols", label: "Protocols" },
+      ],
     };
   },
   provide() {
@@ -152,8 +182,15 @@ export default defineComponent({
     };
   },
   computed: {
+    showProtocols(): boolean {
+      return this.userMode == "user" && this.mode == "protocols";
+    },
     showSubscriptions(): boolean {
-      return this.userMode == "user" && channelsModule.myChannels.length > 0;
+      return (
+        this.userMode == "user" &&
+        this.mode == "subscriptions" &&
+        channelsModule.myChannels.length > 0
+      );
     },
     showNewUser(): boolean {
       return this.userMode == "user" && channelsModule.myChannels.length == 0;
@@ -176,6 +213,10 @@ export default defineComponent({
       await this.$moralis.User.logOut();
       this.$router.push({ name: "Login" });
     },
+    protocolSubscribe(aProtocol: Protocol) {
+      this.subscribeProtocol=aProtocol;
+      this.showSubscribe=true;
+    },
     async doSubscribe(tx: Moralis.TransactionResult | null) {
       if (tx) {
         this.subscribeTx = tx;
@@ -196,5 +237,11 @@ export default defineComponent({
   font-weight: bold;
   align-self: center;
   font-family: "Material Icons";
+}
+div {
+  --va-dropdown-content-background: var(--va-background);
+}
+.va-modal__inner {
+  max-width: 95%;
 }
 </style>
