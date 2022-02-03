@@ -1,7 +1,9 @@
 <template>
   <div class="flex pl-2 pt-3">
     <div class="row">
-      <h1>Claim {{ protocol.name }} Protocol on Notifi</h1>
+      <h1>
+        Claim <strong>{{ protocol.name }} Protocol</strong> on Notifi.
+      </h1>
     </div>
     <div class="row pt-2">
       <p>
@@ -21,24 +23,28 @@
     </div>
     <div class="row pt-3">
       <va-input
-        label="name"
+        label="Manager's Name"
         v-model="name"
         placeholder="Joe Protocol"
       ></va-input>
+    </div>
+    <div class="row">
       <va-input
-        label="Discord Server Invite"
+        class="flex sm7"
+        label="Protocol Discord Server Invite"
         v-model="discordServer"
         placeholder="https://discord.gg/8ryhkfkfk"
       ></va-input>
       <va-input
-        label="Discord User Name"
+        class="flex sm5"
+        label="Manager's Discord User Name"
         v-model="discordUser"
         placeholder="@protocolMaster"
       ></va-input>
     </div>
-    <div class="row pt-3">
-      <va-button @click="save" :disabled="!saveValid">Submit</va-button>
-    </div>
+  </div>
+  <div class="row pt-3">
+    <va-button @click="save" :disabled="!saveValid">Submit</va-button>
   </div>
 </template>
 
@@ -61,8 +67,14 @@ export default defineComponent({
   props: {
     protocol: { type: Protocol, required: true },
   },
-  setup(props) {
+  emits: ["saved"],
+  setup(props, { emit }) {
     const user: NotifiUser | undefined = inject("user");
+    const app = getCurrentInstance();
+    console.log(`App=${app}`);
+    const vaToast = app?.appContext.config.globalProperties.$vaToast;
+    console.log(`TST=${vaToast}`);
+    const showToast = vaToast.init;
 
     const discordUser = ref("");
     const discordServer = ref("");
@@ -78,38 +90,38 @@ export default defineComponent({
         name.value.length > 3
       );
     });
-
-    return { user, discordUser, discordServer, name, saveValid };
-  },
-  data() {
-    return {};
-  },
-  methods: {
-    async save(): Promise<void> {
-      const pi = new Moralis.Query("ProtocolStatus");
-      pi.equalTo("Protocol", this.protocol);
-      const newPI = await pi.first();
-      if (!newPI) {
+    const save = async (): Promise<void> => {
+      const ps = new Moralis.Query("ProtocolStatus");
+      ps.equalTo("Protocol", props.protocol);
+      let newPS = await ps.first();
+      if (!newPS) {
         throw "Missing Protocol Info";
       }
-      newPI.set("ClaimUser", this.user);
-      newPI.set("claimName", this.name);
-      newPI.set("discordUser", this.discordUser);
-      newPI.set("discordServer", this.discordServer);
+      if (!user) {
+        throw "User must be set";
+      }
+      newPS.set("claimStarted", true);
+      newPS.set("ClaimUser", Moralis.User.current());
+      newPS.set("claimName", name.value);
+      newPS.set("discordUser", discordUser.value);
+      newPS.set("discordServer", discordServer.value);
       try {
-        await newPI.save();
-        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
+        newPS = await newPS.save();
+        /*showToast({
           message: "Subscription added successfully!",
           color: "success",
-        });
+        });*/
+        emit("saved", newPS);
       } catch (error: any) {
-        console.log("Claim failed " + error.message);
-        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
+        console.log("Claim failed -- " + error.message);
+        showToast({
           message: "Claim Failed",
           color: "danger",
         });
       }
-    },
+    };
+
+    return { user, showToast, discordUser, discordServer, name, saveValid, save };
   },
 });
 </script>
