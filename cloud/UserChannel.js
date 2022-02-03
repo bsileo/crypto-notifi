@@ -5,7 +5,7 @@ Moralis.Cloud.beforeSave(
   async (request) => {
     return true;
   },
-  {
+ /* {
     fields: {
       userID: {
         required: true,
@@ -13,12 +13,14 @@ Moralis.Cloud.beforeSave(
       },
       providerID: {
         required: true,
+        error: "A ProviderID is requried",
       },
       name: {
         required: true,
+        error: "A UserChannel Name is requried",
       },
     },
-  }
+  }*/
 );
 
 /* eslint-disable no-undef */
