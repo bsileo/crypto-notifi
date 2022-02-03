@@ -43,73 +43,76 @@
 
 <script lang="ts">
 import { Protocol } from "@/models/Protocol";
-import { Subscription } from "@/models/Subscription";
 import { SubscriptionType } from "@/models/SubscriptionType";
 import { NotifiUser } from "@/models/NotifiUser";
 import Moralis from "moralis";
-import { defineComponent } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 interface UserResult {
   user: NotifiUser;
   status: "new" | "existing";
 }
 
-export default defineComponent({
-  name: "Widget",
+export default {
+  name: "EmailCategoryWidget",
   components: {},
-  data() {
-    return {
-      email: "",
-      types: [] as SubscriptionType[],
-      selectedType: "",
-      prot: undefined as Protocol | undefined,
-      alertMessage: "",
-      showAlert: false,
-    };
+  props: {
+    protocol: { type: String, required: true },
   },
-  mounted() {
-    this.fetchSubscriptionTypes();
-    this.fetchProtocol();
-  },
-  computed: {
-    allowSubscribe(): boolean {
-      return this.selectedType !== "" && this.validEmail;
-    },
-    validEmail(): boolean {
-      if (/(.+)@(.+){2,}\.(.+){2,}/.test(this.email)) {
+  setup: (props: any): any => {
+    const email = ref("");
+    const types = ref<SubscriptionType[]>([]);
+    const selectedType = ref("");
+    const prot = ref(undefined as Protocol | undefined);
+    const alertMessage = ref("");
+    const showAlert = ref(false);
+
+    const allowSubscribe = computed(() => {
+      return selectedType.value !== "" && validEmail.value;
+    });
+
+    const selectedSubscriptionType = computed(() => {
+      return types.value.find((e: any) => e.id == selectedType.value);
+    });
+
+    const validEmail = computed(() => {
+      if (/(.+)@(.+){2,}\.(.+){2,}/.test(email.value)) {
         return true;
       } else {
         return false;
       }
-    },
-    selectedSubscriptionType(): SubscriptionType | undefined {
-      return this.types.find((e) => e.id == this.selectedType);
-    },
-  },
-  methods: {
-    async fetchProtocol(): Promise<void> {
-      const id = this.$route.query.protocol as string;
+    });
+
+    onMounted(() => {
+      fetchSubscriptionTypes();
+      fetchProtocol();
+    });
+
+    const fetchProtocol = async (): Promise<void> => {
+      const id = props.protocol;
       const q = new Moralis.Query(Protocol);
       q.equalTo("objectId", id);
       const res = await q.find();
       if (res.length > 0) {
-        this.prot = res[0];
+        prot.value = res[0];
       }
-    },
-    async fetchSubscriptionTypes(): Promise<void> {
-      const id = this.$route.query.protocol as string;
+    };
+
+    const fetchSubscriptionTypes = async (): Promise<void> => {
+      const id = props.protocol;
       if (id) {
         const res = await SubscriptionType.typesForProtocolID(id);
-        this.types = res;
+        types.value = res;
       } else {
-        this.types = [];
+        types.value = [];
       }
-    },
-    async subscribe(): Promise<void> {
-      const { user: u, status: stat } = await this.createFetchAccount();
-      const subName = "Widget Subscription";
-      if (u && this.prot && this.selectedSubscriptionType) {
+    };
 
+
+    const subscribe = async (): Promise<void> => {
+      const { user: u, status: stat } = await createFetchAccount();
+      //const subName = "Widget Subscription";
+      if (u && prot.value && selectedSubscriptionType.value) {
         /* const sub = await Subscription.widgetSpawn(
           this.prot,
           subName,
@@ -117,19 +120,20 @@ export default defineComponent({
           this.selectedSubscriptionType
         );*/
         if (stat == "new") {
-          this.alertMessage = "Subscription Created. Please verify your email.";
+          alertMessage.value = "Subscription Created. Please verify your email.";
         } else {
-          this.alertMessage = "Subscription Created for existing email.";
+          alertMessage.value = "Subscription Created for existing email.";
         }
-        this.showAlert = true;
+        showAlert.value = true;
       } else {
-        this.alertMessage = "Subscription creation failed";
-        this.showAlert = true;
+        alertMessage.value = "Subscription creation failed";
+        showAlert.value = true;
       }
-      setTimeout(() => (this.showAlert = false), 3000);
+      setTimeout(() => (showAlert.value = false), 3000);
       return;
-    },
-    getRandomPassword(): string {
+    };
+
+    const getRandomPassword = (): string => {
       var chars =
         "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       var passwordLength = 12;
@@ -139,19 +143,20 @@ export default defineComponent({
         password += chars.substring(randomNumber, randomNumber + 1);
       }
       return password;
-    },
-    async createFetchAccount(): Promise<UserResult> {
+    };
+
+    const createFetchAccount = async (): Promise<UserResult> => {
       const qUser = new Moralis.Query(Moralis.User);
-      qUser.equalTo("email", this.email);
+      qUser.equalTo("email", email.value);
       const users = await qUser.find();
       if (users.length > 0) {
         return { user: users[0], status: "existing" };
       }
 
       const user = new Moralis.User();
-      user.set("username", this.email);
-      user.set("password", this.getRandomPassword());
-      user.set("email", this.email);
+      user.set("username", email.value);
+      user.set("password", getRandomPassword());
+      user.set("email", email.value);
 
       try {
         await user.signUp();
@@ -161,9 +166,22 @@ export default defineComponent({
         alert("Error: " + error.code + " " + error.message);
       }
       return { user: user, status: "new" };
-    },
-  },
-});
+    };
+
+    return {
+      email,
+      types,
+      selectedType,
+      prot,
+      alertMessage,
+      showAlert,
+      allowSubscribe,
+      validEmail,
+      selectedSubscriptionType,
+      subscribe
+    };
+  }
+};
 </script>
 
 <style scoped>

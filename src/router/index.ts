@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Home from "../views/Home.vue";
 import Login from "../views/Login.vue";
-import Widget from "../views/Widget.vue";
 import ProtectedPages from "../components/ProtectedPages.vue";
 import RouterGuard from "./router.guard";
 
@@ -11,11 +10,6 @@ const routes: Array<RouteRecordRaw> = [
     name: "Login",
     component: Login,
     beforeEnter: RouterGuard.Login,
-  },
-  {
-    path: "/widget",
-    name: "Widget",
-    component: Widget,
   },
   {
     path: "/",
