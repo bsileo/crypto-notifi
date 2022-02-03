@@ -40,8 +40,11 @@ Moralis.Cloud.job("importData", async (request) => {
   const objectClass = request.params.input.objectClass;
   logger.info(`importData ${objectClass} with clear=${clear}`);
   const config = await Moralis.Config.get({ useMasterKey: true });
-  const ApplicationId = config.get("import_app_id") || "vNzZEcsSUFcPhfxYFqNbfMXVyfp2cNSX8tha5TwW";
-  const ServerUrl = config.get("import_server_url") || "https://dfnrl9oy6cjp.usemoralis.com:2053/server";
+  const ApplicationId =
+    config.get("import_app_id") || "vNzZEcsSUFcPhfxYFqNbfMXVyfp2cNSX8tha5TwW";
+  const ServerUrl =
+    config.get("import_server_url") ||
+    "https://dfnrl9oy6cjp.usemoralis.com:2053/server";
   const url = `${ServerUrl}/functions/exportData`;
   logger.info(`import from ${url}`);
   const result = await Moralis.Cloud.httpRequest({
@@ -52,15 +55,15 @@ Moralis.Cloud.job("importData", async (request) => {
       secret: userSecret,
     },
   });
-  if (result.data && result.data.result) {
-    if (clear) {
-      const qu = new Moralis.Query(objectClass);
-      const oldRecs = await qu.find();
-      for (let i = 0; i < oldRecs.length; ++i) {
-        const rec = oldRecs[i];
-        await rec.destroy();
-      }
+  if (clear) {
+    const qu = new Moralis.Query(objectClass);
+    const oldRecs = await qu.find();
+    for (let i = 0; i < oldRecs.length; ++i) {
+      const rec = oldRecs[i];
+      await rec.destroy();
     }
+  }
+  if (result.data && result.data.result) {
     for (let i = 0; i < result.data.result.length; ++i) {
       const objClass = Moralis.Object.extend(objectClass);
       const obj = new objClass();
