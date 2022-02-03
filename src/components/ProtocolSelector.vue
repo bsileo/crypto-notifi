@@ -174,6 +174,7 @@ export default defineComponent({
       if (!refresh) {
         query.skip(this.rawProtocols.length);
       }
+      this.querySubscribe(query);
       let prots = await query.find();
 
       // temporary code until we can make the query do this for us!
@@ -196,6 +197,49 @@ export default defineComponent({
     },
     refresh(): void {
       this.fetchProtocols(true);
+    },
+    async querySubscribe(query: any) {
+      const protocol = await query.subscribe();
+      const safeManagerPush = async (prot: Protocol) => {
+        if (this.manager) {
+          if (await prot.managerOf()) {
+            this.rawProtocols.push(prot);
+          }
+        } else {
+          this.rawProtocols.push(prot);
+        }
+      };
+      protocol.on("create", async (prot: Protocol) => {
+        safeManagerPush(prot);
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      protocol.on("update", (sub: Protocol) => {
+        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
+        if (index > -1) {
+          this.rawProtocols.splice(index, 1, sub);
+        }
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      protocol.on("enter", (prot: Protocol) => {
+        safeManagerPush(prot);
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      protocol.on("leave", (sub: Protocol) => {
+        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
+        if (index > -1) {
+          this.rawProtocols.splice(index, 1);
+        }
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      protocol.on("delete", (sub: Protocol) => {
+        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
+        if (index > -1) {
+          this.rawProtocols.splice(index, 1);
+        }
+      });
+      protocol.on("close", () => {
+        console.log("Protocols Subscription closed");
+      });
     },
   },
 });

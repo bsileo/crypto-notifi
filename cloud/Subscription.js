@@ -5,7 +5,7 @@ Moralis.Cloud.beforeSave(
   async (request) => {
     await checkUserStakingLevels(request);
   },
-  {
+ /* {
     fields: {
       name: {
         required: true,
@@ -19,7 +19,7 @@ Moralis.Cloud.beforeSave(
         error: "Invalid Subscription status value",
       },
     },
-  }
+  }*/
 );
 
 async function checkUserStakingLevels(request) {

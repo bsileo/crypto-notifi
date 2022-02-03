@@ -35,19 +35,34 @@ async function getLogger() {
 
 // import data from other server
 Moralis.Cloud.job("importData", async (request) => {
-  logger.info("importData");
+  const userSecret = request.params.input.secret;
+  const clear = request.params.input.clear;
   const objectClass = request.params.input.objectClass;
+  logger.info(`importData ${objectClass} with clear=${clear}`);
   const config = await Moralis.Config.get({ useMasterKey: true });
-  const ApplicationId = config.get("cms_app_id");
-  const ServerUrl = config.get("cms_server_url");
+  const ApplicationId =
+    config.get("import_app_id") || "vNzZEcsSUFcPhfxYFqNbfMXVyfp2cNSX8tha5TwW";
+  const ServerUrl =
+    config.get("import_server_url") ||
+    "https://dfnrl9oy6cjp.usemoralis.com:2053/server";
   const url = `${ServerUrl}/functions/exportData`;
+  logger.info(`import from ${url}`);
   const result = await Moralis.Cloud.httpRequest({
     url: url,
     params: {
       _ApplicationId: ApplicationId,
       objectClass: objectClass,
+      secret: userSecret,
     },
   });
+  if (clear) {
+    const qu = new Moralis.Query(objectClass);
+    const oldRecs = await qu.find();
+    for (let i = 0; i < oldRecs.length; ++i) {
+      const rec = oldRecs[i];
+      await rec.destroy();
+    }
+  }
   if (result.data && result.data.result) {
     for (let i = 0; i < result.data.result.length; ++i) {
       const objClass = Moralis.Object.extend(objectClass);
@@ -74,11 +89,20 @@ Moralis.Cloud.job("importData", async (request) => {
 Moralis.Cloud.define(
   "exportData",
   async (request) => {
+    const userSecret = request.params.secret;
+    const dataSecret = await getImportExportSecret();
+    logger.info(`exportData request for ${request.params.objectClass}`);
+    if (userSecret !== dataSecret) throw "Incorrect password";
     const draftQuery = new Moralis.Query(request.params.objectClass);
     const exportData = draftQuery.find({ useMasterKey: true });
     return exportData;
   },
   {
-    fields: ["objectClass"],
+    fields: ["objectClass", "secret"],
   }
 );
+
+async function getImportExportSecret() {
+  const config = await Moralis.Config.get({ useMasterKey: true });
+  return config.get("import_export_secret");
+}

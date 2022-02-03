@@ -66,7 +66,7 @@
         >
       </va-popover>
       <va-button
-        v-if="this.showSubscribe && protocol.protocolSiteStatus != 'Pending'"
+        v-if="this.showSubscribe && protocol.protocolSiteStatus == 'Active'"
         size="small"
         color="primary"
         @click="subscribe(protocol)"
@@ -83,7 +83,10 @@
   </va-card>
   <va-modal v-model="showClaim" title="" hide-default-actions>
     <slot>
-      <ProtocolClaim :protocol="protocol"></ProtocolClaim>
+      <ProtocolClaim
+        :protocol="protocol"
+        @saved="claimSaved"
+      ></ProtocolClaim>
     </slot>
   </va-modal>
 </template>
@@ -97,7 +100,7 @@ import ProtocolClaim from "./ProtocolClaim.vue";
 export default defineComponent({
   name: "ProtocolInfo",
   components: { ProtocolClaim },
-  emits: ["selected", "subscribe"],
+  emits: ["selected", "subscribe", "claimed"],
   props: {
     showVote: { type: Boolean, required: false, default: false },
     showSubscribe: { type: Boolean, required: false, default: false },
@@ -116,11 +119,14 @@ export default defineComponent({
   methods: {
     async voteFor(aProtocol: Protocol): Promise<void> {
       const newVotes = await aProtocol.siteVote();
-      console.log(newVotes);
       this.$forceUpdate();
     },
     claim(aProtocol: Protocol): void {
       this.showClaim = true;
+    },
+    claimSaved(aProtcolStatus: any): void {
+      this.showClaim = false;
+      this.$emit("claimed");
     },
     select(aProtocol: Protocol): void {
       this.$emit("selected", this.protocol);
