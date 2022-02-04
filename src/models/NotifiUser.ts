@@ -26,24 +26,25 @@ export class NotifiUser extends Moralis.User {
     super(attributes);
   }
 
-  currentLevel(): UserLevel {
-    const bal = this.tokenBalance();
+  static async currentLevel(): Promise<UserLevel> {
+    const bal = await this.tokenBalance();
     if (bal < 100 ) return UserLevel.Free;
     else if (bal <= 500) return UserLevel.Basic;
     else if (bal >= 500) return UserLevel.Gold;
     return UserLevel.Free;
   }
 
-  tokenBalance(): number {
-    const tokens = userModule.tokens;
-    if (!tokens) {
-      return 10;
-    }
-    const token = tokens.find((e: TokenBalance) => e.symbol == "Notifi");
-    if (token) {
-      return parseFloat((token.balance / 10 ** token.decimals).toFixed(2));
-    }
-    return 1000;
+  static async tokenBalance(): Promise<number> {
+    const address = "0xd3CF2281e6d8C445905c859b3AbE692a707286cf";
+    //const ethers = Moralis.web3Library;
+    const options = { chain: "avalanche" };
+    const tokens = await Moralis.Web3API.account.getTokenBalances(options);
+    const info = tokens.find(
+      (tok: any) => tok.token_address.toLowerCase() == address.toLowerCase()
+    );
+    //console.log(info);
+    const result = Moralis.Units.FromWei(info.balance, info.decimals);
+    return result;
   }
 }
 

@@ -12,7 +12,7 @@
         <va-button @click="openSwap" size="small" color="primary"
           >Swap</va-button
         >
-        native tokens for Notifi tokens and keep them in your wallet.
+        Avalanche tokens for Notifi tokens and keep them in your wallet.
       </p>
     </div>
     <div class="row">
@@ -26,6 +26,7 @@ import { defineComponent, inject } from "vue";
 import Moralis from "moralis";
 import { NotifiUser, UserLevel } from "@/models/NotifiUser";
 import UserWallets from "@/components/UserWallets.vue";
+import { userModule } from "@/store/user";
 
 export default defineComponent({
   name: "Account",
@@ -43,17 +44,15 @@ export default defineComponent({
   mounted() {
     this.fetchUserInfo();
   },
-  updated() {
-    this.fetchUserInfo();
-  },
   computed: {},
   methods: {
+    openSwap(): void {
+      window.open("https://app.pangolin.exchange/#/swap");
+    },
     async fetchUserInfo(): Promise<void> {
       if (this.user) {
-        //this.level = "this.user.currentLevel()";
-        //this.tokens = this.user.tokenBalance();
-        this.level = UserLevel.Basic;
-        this.tokens = 450;
+        this.level = userModule.currentLevel;
+        this.tokens = userModule.NotifiTokens;
       }
     },
   },
