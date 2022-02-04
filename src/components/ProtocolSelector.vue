@@ -247,7 +247,7 @@ export default defineComponent({
 
 <style scoped>
 .protocolCards {
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: clip;
 }
 </style>

@@ -97,7 +97,8 @@ export default defineComponent({
       rawCount: 0,
     };
   },
-  async mounted() {
+  async created() {
+    console.log("Created");
     this.fetchSubscriptions();
   },
   emits: ["subscribe"],

@@ -49,10 +49,33 @@
         </va-navbar-item>
       </template>
     </Header>
-    <div v-if="showSubscriptions" class="row pb-3">
+    <div v-show="showSubscriptions" class="row pb-3">
       <div class="flex sm12">
         <Subscriptions @subscribe="doSubscribe"></Subscriptions>
       </div>
+    </div>
+    <div v-show="showProtocols">
+      <ProtocolSelector
+        :showSearch="true"
+        :showVote="true"
+        :showSubscribe="true"
+        :showUserInfo="false"
+        :allowSelect="false"
+        :showStatus="true"
+        @subscribe="protocolSubscribe"
+      >
+      </ProtocolSelector>
+    </div>
+    <div v-show="showSubscribe">
+      <Subscribe
+        :transaction="subscribeTx"
+        :protocol="subscribeProtocol"
+        @saved="this.mode = DisplayMode.subscriptions"
+        @cancel="cancelSubscribe"
+      ></Subscribe>
+    </div>
+    <div v-if="showManager">
+      <ProtocolManager></ProtocolManager>
     </div>
     <div v-if="showNewUser" class="row pt-5">
       <div class="flex sm12" style="text-align: center">
@@ -68,21 +91,6 @@
           button to get started.
         </h2>
       </div>
-    </div>
-    <div v-if="showProtocols">
-      <ProtocolSelector
-        :showSearch="true"
-        :showVote="true"
-        :showSubscribe="true"
-        :showUserInfo="false"
-        :allowSelect="false"
-        :showStatus="true"
-        @subscribe="protocolSubscribe"
-      >
-      </ProtocolSelector>
-    </div>
-    <div v-if="showManager">
-      <ProtocolManager></ProtocolManager>
     </div>
     <div v-if="false" class="row" style="max-height: 50%">
       <div class="flex md12 sm12">
@@ -111,20 +119,6 @@
         <Account></Account>
       </slot>
     </va-modal>
-    <va-modal
-      fullscreen
-      hide-default-actions
-      v-model="showSubscribe"
-      title="Setup a new Subscription"
-    >
-      <slot>
-        <Subscribe
-          :transaction="subscribeTx"
-          :protocol="subscribeProtocol"
-          @saved="showSubscribe = false"
-        ></Subscribe>
-      </slot>
-    </va-modal>
   </div>
 </template>
 
@@ -147,6 +141,12 @@ import { Protocol } from "@/models/Protocol";
 
 let tx: Moralis.TransactionResult | null = null;
 
+enum DisplayMode {
+  "protocols" = "Protocols",
+  "subscriptions" = "Subscriptions",
+  "subscribe" = "Subscribe",
+}
+
 export default defineComponent({
   name: "Home",
   components: {
@@ -165,14 +165,12 @@ export default defineComponent({
       subscribeTx: tx,
       subscribeProtocol: undefined as Protocol | undefined,
       showTransactions: false,
-      showCategories: true,
-      showSubscribe: false,
       showChannels: false,
       showAccount: false,
-      mode: "subscriptions",
+      mode: DisplayMode.subscriptions as DisplayMode,
       modeOptions: [
-        { value: "subscriptions", label: "Subscriptions" },
-        { value: "protocols", label: "Protocols" },
+        { value: DisplayMode.subscriptions, label: "Subscriptions" },
+        { value: DisplayMode.protocols, label: "Protocols" },
       ],
     };
   },
@@ -183,12 +181,19 @@ export default defineComponent({
   },
   computed: {
     showProtocols(): boolean {
-      return this.userMode == "user" && this.mode == "protocols";
+      return this.userMode == "user" && this.mode == DisplayMode.protocols;
+    },
+    showSubscribe(): boolean {
+      return (
+        this.userMode == "user" &&
+        this.mode == DisplayMode.subscribe &&
+        channelsModule.myChannels.length > 0
+      );
     },
     showSubscriptions(): boolean {
       return (
         this.userMode == "user" &&
-        this.mode == "subscriptions" &&
+        this.mode == DisplayMode.subscriptions &&
         channelsModule.myChannels.length > 0
       );
     },
@@ -214,14 +219,17 @@ export default defineComponent({
       this.$router.push({ name: "Login" });
     },
     protocolSubscribe(aProtocol: Protocol) {
-      this.subscribeProtocol=aProtocol;
-      this.showSubscribe=true;
+      this.subscribeProtocol = aProtocol;
+      this.mode = DisplayMode.subscribe;
     },
     async doSubscribe(tx: Moralis.TransactionResult | null) {
       if (tx) {
         this.subscribeTx = tx;
       }
-      this.showSubscribe = true;
+      this.mode = DisplayMode.subscribe;
+    },
+    cancelSubscribe() {
+      this.mode = DisplayMode.subscriptions;
     },
   },
 });
