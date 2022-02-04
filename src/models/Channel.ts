@@ -9,6 +9,12 @@ export interface ChannelModel {
   multiple: boolean;
 }
 
+export enum UserChannelStatus {
+  "pending" = "Pending Verification",
+  "active" = "Active",
+  "optout" = "Opted Out",
+}
+
 export class UserChannel extends Moralis.Object {
   subscriptionCounter: undefined | number = undefined;
 
@@ -40,6 +46,17 @@ export class UserChannel extends Moralis.Object {
   get providerData(): Record<string | number, unknown> {
     return this.get("providerData");
   }
+  set providerdata(data: Record<string | number, unknown>) {
+    this.set("providerData", data);
+  }
+
+  get status(): UserChannelStatus {
+    return this.get("status");
+  }
+
+  set status(status: UserChannelStatus) {
+    this.set("status, status");
+  }
 
   get providerName(): string | null {
     const res = channelsModule.channels.find((e) => e.id == this.providerID);
@@ -59,6 +76,7 @@ export class UserChannel extends Moralis.Object {
     us.set("userID", userID);
     us.set("providerID", providerID);
     us.set("name", name);
+    us.set("status", UserChannelStatus.pending);
     return us;
   }
 

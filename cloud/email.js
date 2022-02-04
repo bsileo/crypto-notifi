@@ -5,7 +5,7 @@ async function sendEmailAlert(channel, content) {
   const logger = Moralis.Cloud.getLogger();
   logger.info(`Email send ${content} to ${channel.get("providerData").email}`);
   const SENDGRID_API_KEY = await getAPIKey("SENDGRID_API_KEY");
-  const sendgridContent = [{ type: "text/plain", value: content.plain }]
+  const sendgridContent = [{ type: "text/plain", value: content.plain }];
   if (content.rich) {
     sendgridContent.push({ type: "text/html", value: content.rich });
   }
