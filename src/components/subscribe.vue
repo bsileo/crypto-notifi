@@ -237,6 +237,14 @@
             size="large"
             >Create</va-button
           >
+           <va-button
+            class="flex"
+            @click.prevent="this.$emit('cancel')"
+            color="danger"
+            icon-right="close"
+            size="large"
+            >Cancel</va-button
+          >
         </div>
       </div>
     </va-form>
@@ -350,7 +358,7 @@ export default defineComponent({
       user,
     };
   },
-  emits: ["saved"],
+  emits: ["saved", "cancel"],
   watch: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     subscription(newSub: Subscription, oldSub: Subscription): void {
