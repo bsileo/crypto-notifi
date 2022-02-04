@@ -1,3 +1,4 @@
+import { NotifiUser } from '@/models/NotifiUser';
 import { channelsModule } from "@/store/channels";
 import Moralis from "moralis";
 import { Subscription } from "./Subscription";
@@ -43,6 +44,11 @@ export class UserChannel extends Moralis.Object {
     return this.get("userID");
   }
 
+  get user(): NotifiUser {
+    const u = this.get("User");
+    return u;
+  }
+
   get providerData(): Record<string | number, unknown> {
     return this.get("providerData");
   }
@@ -74,6 +80,7 @@ export class UserChannel extends Moralis.Object {
   ): UserChannel {
     const us = new UserChannel();
     us.set("userID", userID);
+    us.set("User", Moralis.User.current());
     us.set("providerID", providerID);
     us.set("name", name);
     us.set("status", UserChannelStatus.pending);
