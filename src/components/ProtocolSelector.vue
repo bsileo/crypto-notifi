@@ -36,12 +36,12 @@
             label="Search Protocols"
             v-model="search"
           ></va-input>
-          <div class="flex sm1 float-right">
-          <va-button
-            icon="refresh"
+          <div class="flex sm1 float-right" :class="showSearch ? '' : 'offset--sm11'">
+            <va-button
+              icon="refresh"
               color="secondary"
-            @click="refresh"
-          ></va-button>
+              @click="refresh"
+            ></va-button>
           </div>
         </div>
       </va-affix>
