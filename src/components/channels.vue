@@ -59,7 +59,7 @@
 <script lang="ts">
 import { userModule } from "../store/user";
 import { defineComponent } from "vue";
-import { ChannelModel, UserChannel } from "../models/Channel";
+import { ChannelModel, UserChannel, UserChannelStatus } from "../models/Channel";
 import { channelsModule } from "../store/channels";
 import Twilio from "@/components/TwilioAdd.vue";
 import Discord from "@/components/DiscordAdd.vue";
@@ -73,10 +73,10 @@ export default defineComponent({
   components: { Twilio, Discord, Email },
   data() {
     const columns = [
-      { key: "id", label: "Remove", sortable: true },
+      { key: "id", label: "Remove", sortable: false },
       { key: "name", label: "Name", sortable: true },
-      { key: "providerName", label: "Provider", sortable: false },
-      { key: "subscriptionsCount", label: "Subscriptions", sortable: false },
+      { key: "providerName", label: "Provider", sortable: true },
+      { key: "status", label: "Status", sortable: false },
     ];
     const pd: ProviderData | undefined = { to: undefined };
     return {
@@ -118,8 +118,6 @@ export default defineComponent({
   },
   methods: {
     setProviderData(pd: ProviderData): void {
-      console.log("Set PD");
-      console.log(pd);
       this.providerData = pd;
     },
     async remove(id: string): Promise<void> {
@@ -154,7 +152,8 @@ export default defineComponent({
       acl.setRoleReadAccess("admins", true);
       acl.setRoleWriteAccess("admins", true);
       c.setACL(acl);
-      c.save().then(
+      const context = { action: "insert"}
+      c.save(null, { context: context}).then(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (uc: UserChannel) => {
           // Execute any logic that should take place after the object is saved.
