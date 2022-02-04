@@ -21,27 +21,27 @@ async function sendEmailAlert(channel, content) {
   };
   logger.debug(`[SendEmailAlert] Content-Plain="${content.plain}"`);
   logger.debug(`[SendEmailAlert] Content-Rich="${content.rich}"`);
-  Moralis.Cloud.httpRequest({
-    method: "POST",
-    url: "https://api.sendgrid.com/v3/mail/send",
-    body: data,
-    headers: {
-      Authorization: `Bearer ${SENDGRID_API_KEY}`,
-      "Content-Type": "application/json;charset=utf-8",
-    },
-  }).then(
-    function (httpResp) {
-      logger.info(
-        `[SendEmailAlert] Email sent - response= (${httpResp.status})-${httpResp.text}`
-      );
-    },
-    function (httpResp) {
-      logger.error(
-        "[SendEmailAlert] Request failed with response code " +
-          httpResp.status +
-          "::" +
-          httpResp.text
-      );
-    }
-  );
+  try {
+    const httpResp = await Moralis.Cloud.httpRequest({
+      method: "POST",
+      url: "https://api.sendgrid.com/v3/mail/send",
+      body: data,
+      headers: {
+        Authorization: `Bearer ${SENDGRID_API_KEY}`,
+        "Content-Type": "application/json;charset=utf-8",
+      },
+    });
+    const result = { status: true, result: httpResp.text };
+    return result;
+  } catch (httpResp) {
+    logger.error("Caught failed Email");
+    const msg =
+      "[SendEmailAlert] Request failed with response code " +
+      httpResp.status +
+      "::" +
+      httpResp.text;
+    logger.error(msg);
+    const result = { status: false, error: msg, result: httpResp.text };
+    return result;
+  }
 }

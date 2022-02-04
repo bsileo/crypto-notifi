@@ -7,17 +7,33 @@
 async function sendAlert(subscription, content) {
   const logger = Moralis.Cloud.getLogger();
   const relChannels = subscription.relation("UserChannel");
-  const channels = await relChannels.query().find({ useMasterKey: true });
+  const qc = relChannels.query();
+  qc.equalTo("status", "Active");
+  const channels = await qc.find({ useMasterKey: true });
   logger.info(`[SendAlert] Sending to ${channels.length} Channels`);
   for (let i = 0; i < channels.length; i++) {
     const chan = channels[i];
     const PID = chan.get("providerID");
+    let res = null;
     if (PID == "discord") {
-      sendDiscordAlert(chan, content);
+      res = await sendDiscordAlert(chan, content);
     } else if (PID == "twilio") {
-      sendTwilioAlert(chan, content);
+      res = await sendTwilioAlert(chan, content);
     } else if (PID == "email") {
-      sendEmailAlert(chan, content);
+      res = await sendEmailAlert(chan, content);
     }
+    saveAlertHistory(chan, content, res);
   }
+}
+
+async function saveAlertHistory(uChannel, content, result) {
+  const aHist = Moralis.Object.extend("AlertHistory");
+  const ah = new aHist();
+  ah.set("UserChannel", uChannel);
+  const u = uChannel.get("User");
+  ah.set("User", u);
+  ah.set("content", content);
+  ah.set("result", result);
+  await ah.save(null, { useMasterKey: true });
+  return true;
 }
