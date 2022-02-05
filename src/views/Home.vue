@@ -70,7 +70,7 @@
       <Subscribe
         :transaction="subscribeTx"
         :protocol="subscribeProtocol"
-        @saved="this.mode = DisplayMode.subscriptions"
+        @saved="subscriptionSaved"
         @cancel="cancelSubscribe"
       ></Subscribe>
     </div>
@@ -227,6 +227,9 @@ export default defineComponent({
         this.subscribeTx = tx;
       }
       this.mode = DisplayMode.subscribe;
+    },
+    subscriptionSaved() {
+      this.mode = DisplayMode.subscriptions;
     },
     cancelSubscribe() {
       this.mode = DisplayMode.subscriptions;

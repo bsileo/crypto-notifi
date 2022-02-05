@@ -22,16 +22,17 @@ async function sendAlert(subscription, content) {
     } else if (PID == "email") {
       res = await sendEmailAlert(chan, content);
     }
-    saveAlertHistory(chan, content, res);
+    saveAlertHistory(subscription, chan, content, res);
   }
 }
 
-async function saveAlertHistory(uChannel, content, result) {
+async function saveAlertHistory(subscription, uChannel, content, result) {
   const aHist = Moralis.Object.extend("AlertHistory");
   const ah = new aHist();
   ah.set("UserChannel", uChannel);
   const u = uChannel.get("User");
   ah.set("User", u);
+  ah.set("Subscription", subscription);
   ah.set("content", content);
   ah.set("result", result);
   await ah.save(null, { useMasterKey: true });

@@ -12,13 +12,14 @@ export interface ChannelModel {
 
 export enum UserChannelStatus {
   "pending" = "Pending Verification",
+  "pendingSent" = "Verification Sent",
   "active" = "Active",
   "optout" = "Opted Out",
 }
 
 export class UserChannel extends Moralis.Object {
   subscriptionCounter: undefined | number = undefined;
-
+  _statusPlus: UserChannelStatus | undefined = undefined;
   constructor() {
     // Pass the ClassName to the Moralis.Object constructor
     super("UserChannel");
@@ -57,11 +58,47 @@ export class UserChannel extends Moralis.Object {
   }
 
   get status(): UserChannelStatus {
-    return this.get("status");
+    const stat = this.get("status") as UserChannelStatus;
+    if (stat == UserChannelStatus.pending) {
+      const code = this.get("verificationCode");
+      if (code == "system") {
+        const u = Moralis.User.current();
+        const val = u.get("emailVerified");
+        if (val) return UserChannelStatus.active;
+        else return UserChannelStatus.pendingSent;
+      }
+    }
+    return stat;
+  }
+  set status(status: UserChannelStatus) {
+    this.set("status", status);
   }
 
-  set status(status: UserChannelStatus) {
-    this.set("status, status");
+  get statusPlus(): UserChannelStatus | undefined {
+    if (this._statusPlus == undefined) {
+      this.getStatusPlus().then((val) => {
+        this._statusPlus = val;
+      })
+    }
+    return this._statusPlus;
+  }
+
+  public async getStatusPlus(): Promise<UserChannelStatus> {
+    const stat = this.get("status") as UserChannelStatus;
+    if (stat == UserChannelStatus.pending) {
+      const code = this.get("verificationCode");
+      if (code == "system") {
+        const val = await this.emailVerified()
+        if (val) return UserChannelStatus.active;
+        else return UserChannelStatus.pendingSent;
+      }
+    }
+    return stat;
+  }
+
+  public async emailVerified(): Promise<any> {
+    const val: any = await Moralis.Cloud.run("emailVerified");
+    return val;
   }
 
   get providerName(): string | null {
