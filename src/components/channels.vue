@@ -66,7 +66,7 @@ import Discord from "@/components/DiscordAdd.vue";
 import Email from "@/components/EmailAdd.vue";
 import Moralis from "moralis";
 
-type ProviderData = Record<string, string | undefined>;
+type ProviderData = Record<string, string | boolean | undefined>;
 
 export default defineComponent({
   name: "Channels",
@@ -76,7 +76,7 @@ export default defineComponent({
       { key: "id", label: "Remove", sortable: false },
       { key: "name", label: "Name", sortable: true },
       { key: "providerName", label: "Provider", sortable: true },
-      { key: "status", label: "Status", sortable: false },
+      { key: "statusPlus", label: "Status", sortable: false },
     ];
     const pd: ProviderData | undefined = { to: undefined };
     return {

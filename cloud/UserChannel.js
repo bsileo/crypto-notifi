@@ -26,8 +26,8 @@ Moralis.Cloud.beforeSave(
 Moralis.Cloud.afterSave("UserChannel", async (request) => {
   const { object: uc, context } = request;
   logger.info("[userChannel.afterSave] " + uc.id);
-  logger.info("[userChannel.afterSave] Status=" + uc.get("status"));
-  logger.info("[userChannel.afterSave] Action=" + context.action);
+  //logger.info("[userChannel.afterSave] Status=" + uc.get("status"));
+  //logger.info("[userChannel.afterSave] Action=" + context.action);
   if (
     uc.get("status") == "Pending Verification" &&
     context.action == "insert"
@@ -40,14 +40,39 @@ function processVerification(uc) {
   const pid = uc.get("providerID");
   logger.info("[processVerification] " + uc.id);
   if (pid == "twilio") {
-    content = {
-      plain:
-        "Welcome to Notifi. Reply YES to verify / opt-in. Standard Message Rates Apply. STOP to end.",
-    };
-    sendTwilioAlert(uc, content);
-    uc.set("status", "Verification Sent");
-    uc.save(null, { useMasterKey: true });
+    processSMSVerification(uc);
   } else if (pid == "email") {
+    processEmailVerification(uc);
+  }
+}
+
+function processSMSVerification(uc) {
+  content = {
+    plain:
+      "Welcome to Notifi. Reply YES to verify / opt-in. Standard Message Rates Apply. STOP to end.",
+  };
+  sendTwilioAlert(uc, content);
+  uc.set("status", "Verification Sent");
+  uc.save(null, { useMasterKey: true });
+}
+
+Moralis.Cloud.define("emailVerified", async (request) => {
+  const val = request.user.get("emailVerified");
+  return val;
+});
+
+function processEmailVerification(uc) {
+  const pd = uc.get("providerData");
+  if (pd.setDefault) {
+    // special case - use system email and verification
+    const u = uc.get("User");
+    logger.info("processEV " + u);
+    u.set("email", pd.email);
+    u.save(null, { useMasterKey: true });
+    uc.set("status", "Pending Verification");
+    uc.set("verificationCode", "system");
+    uc.save(null, { useMasterKey: true });
+  } else {
     const code = getRandomCode();
     const serverURL =
       "https://dfnrl9oy6cjp.usemoralis.com:2053/server/functions";
@@ -67,10 +92,10 @@ function processVerification(uc) {
 
 Moralis.Cloud.define("confirmEmail", async (request) => {
   const code = request.params.code;
-  const q = new Moralis.Query('UserChannel');
+  const q = new Moralis.Query("UserChannel");
   q.equalTo("verificationCode", code);
   const uc = await q.first({ useMasterKey: true });
-  logger.info("[confirmEmail]" + uc )
+  logger.info("[confirmEmail]" + uc);
   if (uc) {
     uc.set("status", "Active");
     uc.save(null, { useMasterKey: true });
