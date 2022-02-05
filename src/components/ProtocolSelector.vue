@@ -28,23 +28,24 @@
       </va-select>
     </div>
     <div v-else class="protocolCards" ref="cards">
-      <va-affix :offset-top="0" :offset-bottom="0" :target="() => $refs.cards">
-        <div class="row pb-1">
-          <va-input
-            v-if="showSearch"
-            class="flex sm11"
-            label="Search Protocols"
-            v-model="search"
-          ></va-input>
-          <div class="flex sm1 float-right" :class="showSearch ? '' : 'offset--sm11'">
-            <va-button
-              icon="refresh"
-              color="secondary"
-              @click="refresh"
-            ></va-button>
-          </div>
+      <div class="row pb-1">
+        <va-input
+          v-if="showSearch"
+          class="flex sm11"
+          label="Search Protocols"
+          v-model="search"
+        ></va-input>
+        <div
+          class="flex sm1 float-right"
+          :class="showSearch ? '' : 'offset--sm11'"
+        >
+          <va-button
+            icon="refresh"
+            color="secondary"
+            @click="refresh"
+          ></va-button>
         </div>
-      </va-affix>
+      </div>
       <va-infinite-scroll :load="appendProtocols">
         <va-inner-loading :loading="loading" :size="60">
           <div class="row pt-2 pb-4">
@@ -73,7 +74,7 @@ import { Protocol } from "@/models/Protocol";
 import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Moralis from "moralis";
-import { defineComponent, inject } from "vue";
+import { defineComponent, inject, ref } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
 
 export default defineComponent({
@@ -90,22 +91,27 @@ export default defineComponent({
     allowSelect: { type: Boolean, required: false, default: true },
     manager: { type: Boolean, required: false, default: false },
   },
-  data() {
-    return {
-      intSearch: "",
-      selectedProtocol: undefined as Protocol | undefined,
-      selectedProtocols: [] as Protocol[],
-      managerQuery: undefined as any,
-      query: undefined as any,
-      rawProtocols: [] as Protocol[],
-      queryLimit: 20,
-      loading: false,
-    };
-  },
   setup() {
     const user: NotifiUser | undefined = inject("user");
+    const intSearch = ref("");
+    const selectedProtocol = ref<Protocol | undefined>(undefined);
+    const selectedProtocols = ref<Protocol[]>([]);
+    const query = ref<any>(undefined);
+    const rawProtocols = ref<Protocol[]>([]);
+    const filteredProtocols = ref<Protocol[]>([]);
+    const queryLimit = ref<number>(20);
+    const loading = ref(false);
+
     return {
       user,
+      intSearch,
+      selectedProtocol,
+      selectedProtocols,
+      query,
+      rawProtocols,
+      filteredProtocols,
+      queryLimit,
+      loading,
     };
   },
   async mounted() {
@@ -131,8 +137,8 @@ export default defineComponent({
       },
       set(newVal: string) {
         this.intSearch = newVal;
-        this.rawProtocols.length = 0;
-        this.fetchProtocols();
+        //this.rawProtocols.length = 0;
+        //this.fetchProtocols();
       },
     },
   },
@@ -164,35 +170,46 @@ export default defineComponent({
     async fetchProtocols(refresh?: boolean): Promise<void> {
       this.loading = true;
       const query = new Moralis.Query(Protocol);
-      if (this.search) {
+      /*if (this.search) {
         query.matches("name", this.search);
         console.log(`Search term ${this.search}`);
-      }
+      }*/
       query.include("ProtocolStatus");
       query.limit(this.queryLimit);
-      //console.log(`Skip the first ${this.rawProtocols.length}`);
       if (!refresh) {
         query.skip(this.rawProtocols.length);
       }
       this.querySubscribe(query);
       let prots = await query.find();
-
-      // temporary code until we can make the query do this for us!
+      if (refresh == true) {
+        this.rawProtocols = prots;
+      } else {
+        this.rawProtocols.push(...prots);
+      }
+      let res: Protocol[] = [];
       if (this.manager) {
-        const res = [] as Protocol[];
         for (let i = 0; i < prots.length; i++) {
           let man = await prots[i].managerOf();
           if (man) {
             res.push(prots[i]);
           }
         }
-        prots = res;
-      }
-      if (refresh == true) {
-        this.rawProtocols = prots;
       } else {
-        this.rawProtocols.push(...prots);
+        res = this.rawProtocols;
       }
+      let res2: Protocol[] = [];
+      if (this.search) {
+        const test = this.search.toLowerCase();
+        console.log(`Search term ${this.search}`);
+        for (let i=0; i++; i< res.length) {
+          if (res[i].name.search(test) != -1) {
+            res2.push(res[i]);
+          }
+        }
+      } else {
+        res2 = res;
+      }
+      this.filteredProtocols = res2;
       this.loading = false;
     },
     refresh(): void {
