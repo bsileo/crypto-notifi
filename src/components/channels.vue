@@ -45,6 +45,10 @@
           v-if="newChannel == 'email'"
           @providerData="this.setProviderData"
         ></Email>
+        <Telegram
+          v-if="newChannel == 'telegram'"
+          @providerData="this.setProviderData"
+        ></Telegram>
       </slot>
       <template #footer>
         <va-button @click.prevent="add" :disabled="!this.addValid"
@@ -64,13 +68,14 @@ import { channelsModule } from "../store/channels";
 import Twilio from "@/components/TwilioAdd.vue";
 import Discord from "@/components/DiscordAdd.vue";
 import Email from "@/components/EmailAdd.vue";
+import Telegram from "@/components/TelegramAdd.vue";
 import Moralis from "moralis";
 
 type ProviderData = Record<string, string | boolean | undefined>;
 
 export default defineComponent({
   name: "Channels",
-  components: { Twilio, Discord, Email },
+  components: { Twilio, Discord, Email, Telegram },
   data() {
     const columns = [
       { key: "id", label: "Remove", sortable: false },

@@ -21,6 +21,8 @@ async function sendAlert(subscription, content) {
       res = await sendTwilioAlert(chan, content);
     } else if (PID == "email") {
       res = await sendEmailAlert(chan, content);
+    } else if (PID == "telegram") {
+      res = await sendTelegramAlert(chan, content);
     }
     saveAlertHistory(subscription, chan, content, res);
   }

@@ -1,4 +1,4 @@
-import { NotifiUser } from '@/models/NotifiUser';
+import { NotifiUser } from "@/models/NotifiUser";
 import { channelsModule } from "@/store/channels";
 import Moralis from "moralis";
 import { Subscription } from "./Subscription";
@@ -78,7 +78,7 @@ export class UserChannel extends Moralis.Object {
     if (this._statusPlus == undefined) {
       this.getStatusPlus().then((val) => {
         this._statusPlus = val;
-      })
+      });
     }
     return this._statusPlus;
   }
@@ -88,7 +88,7 @@ export class UserChannel extends Moralis.Object {
     if (stat == UserChannelStatus.pending) {
       const code = this.get("verificationCode");
       if (code == "system") {
-        const val = await this.emailVerified()
+        const val = await this.emailVerified();
         if (val) return UserChannelStatus.active;
         else return UserChannelStatus.pendingSent;
       }
@@ -108,6 +108,19 @@ export class UserChannel extends Moralis.Object {
     } else {
       return null;
     }
+  }
+
+  get providerIcon(): string {
+    const pid = this.providerID;
+    switch (pid) {
+      case "twilio":
+        return "sms";
+      case "email":
+        return "email";
+      case "telegram":
+        return "telegram";
+    }
+    return "email";
   }
 
   static spawn(
@@ -130,6 +143,9 @@ export class UserChannel extends Moralis.Object {
 
   public setProviderData(providerData: Record<string | number, unknown>): void {
     this.set("providerData", providerData);
+    if (providerData.status) {
+      this.status = providerData.status as UserChannelStatus;
+    }
   }
 
   public async getSubscriptionCount(): Promise<number> {
