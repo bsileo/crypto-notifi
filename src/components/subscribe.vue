@@ -110,12 +110,12 @@
         </div>
         <div class="row pt-2" v-if="showFrom">
           <va-switch
-            class="flex sm2 pr-3"
+            class="flex xs2 sm2 lg1 pr-3"
             color="primary"
             :disabled="!validFrom"
             v-model="chkFrom"
           />
-          <div v-if="!fromMe" class="flex sm8">
+          <div v-if="!fromMe" class="flex xs8 sm8 lg9">
             <ContractInput
               label="From Address"
               :chainPrompt="false"
@@ -127,28 +127,28 @@
             </ContractInput>
           </div>
           <va-select
-            class="flex sm8"
+            class="flex xs8 sm8 lg9"
             :options="myAddresses"
             v-if="fromMe"
             label="From Address"
             v-model="from_address"
           />
           <va-checkbox
-            vlass="flex sm1"
+            vlass="flex xs1 sm1"
             v-model="fromMe"
             checked-icon="person"
           />
         </div>
         <div class="row pt-2" v-if="showTo">
           <va-switch
-            class="flex sm2 pr-3"
+            class="flex xs2 lg1 pr-3"
             color="primary"
             :disabled="!validTo"
             v-model="chkTo"
           />
-          <div v-if="!toMe" class="flex sm8">
+          <div v-if="!toMe" class="flex xs8 lg9">
             <ContractInput
-              label="From Address"
+              label="To Address"
               :chainPrompt="false"
               :showToken="false"
               :initialAddress="to_address"
@@ -158,38 +158,38 @@
             </ContractInput>
           </div>
           <va-select
-            class="flex sm8"
+            class="flex xs8 lg9"
             v-if="toMe"
             :options="myAddresses"
             label="To Address"
             v-model="to_address"
           />
-          <va-checkbox class="flex sm1" v-model="toMe" checked-icon="person" />
+          <va-checkbox class="flex xs1" v-model="toMe" checked-icon="person" />
         </div>
         <div class="row pt-2" v-if="showValue">
           <va-switch
-            class="flex sm2"
+            class="flex xs2 lg1"
             color="primary"
             :disabled="!allowValue"
             v-model="chkValue"
           />
           <va-select
-            class="flex sm3"
+            class="flex xs3 lg4"
             label="Transaction value is"
             v-model="valueOp"
             :options="valueOperators"
           />
-          <va-input class="flex sm5" label="This Value" v-model="value" />
+          <va-input class="flex xs5" label="This Value" v-model="value" />
         </div>
         <div class="row pt-2" v-if="showChain">
           <va-switch
-            class="flex sm2"
+            class="flex xs2 lg1"
             color="primary"
             :disabled="true"
             v-model="chkChain"
           />
           <va-select
-            class="flex sm8"
+            class="flex xs8"
             label="Chain"
             v-model="chain"
             :options="protocolChains"
@@ -224,7 +224,7 @@
         </va-alert>
       </div>
       <div class="row pt-2 pb-3">
-        <div class="flex sm9">
+        <div class="flex xs12 sm9">
           <h3>Send these alerts to:</h3>
           <va-option-list
             type="switch"
@@ -233,9 +233,10 @@
             :options="myChannels"
             valueBy="id"
             textBy="name"
+            class="pb-3"
           />
         </div>
-        <div class="flex sm3">
+        <div class="flex xs12 sm3">
           <va-button
             class="flex mr-3"
             :disabled="!validSubmit"
@@ -732,16 +733,13 @@ export default defineComponent({
       const q = new Moralis.Query(SubscriptionType);
       q.equalTo("protocol", this.selectedProtocol);
       q.equalTo("status", SubscriptionTypeStatus.active);
-      console.log("Fetch General Subtypes");
       const res = await q.find();
-      console.log(res);
       this.subGeneralTypeID = "";
       this.subGeneralTypes = res;
     },
     async fetchContractActivities(): Promise<void> {
       const res: ContractActivity[] = [];
       const ci = this.selectedContract;
-      console.log("Get Acts for ", ci);
       if (ci) {
         const actsRel = ci.relation("ContractActivities");
         const acts: ContractActivity[] = await actsRel.query().find();
