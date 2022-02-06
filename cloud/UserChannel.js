@@ -36,6 +36,26 @@ Moralis.Cloud.afterSave("UserChannel", async (request) => {
   }
 });
 
+Moralis.Cloud.define(
+  "resendVerification",
+  async (request) => {
+    const ucID = request.params.userChannelID;
+    const uChan = new Moralis.Query("UserChannel");
+    uc = await uChan.get(ucID);
+    return processVerification(uc);
+  },
+  {
+    fields: {
+      userChannelID: {
+        required: true,
+        type: String,
+        error: "A UserChannel must be provided.",
+      },
+    },
+    requireUser: true,
+  }
+);
+
 function processVerification(uc) {
   const pid = uc.get("providerID");
   logger.info("[processVerification] " + uc.id);
@@ -44,6 +64,7 @@ function processVerification(uc) {
   } else if (pid == "email") {
     processEmailVerification(uc);
   }
+  return true;
 }
 
 function processSMSVerification(uc) {

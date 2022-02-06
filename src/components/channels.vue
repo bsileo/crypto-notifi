@@ -3,10 +3,21 @@
     <va-data-table :items="myChannels" :columns="columns">
       <template #header(name)>Name</template>
       <template #header(provider)>Provider</template>
-      <template #header(subscriptionCount)>Subscriptions</template>
+      <template #header(statusPlus)>Status</template>
       <template #header(id)></template>
       <template #cell(id)="{ source: id }">
         <va-button size="small" @click="remove(id)" icon="delete"></va-button>
+      </template>
+      <template #cell(statusPlus)="{ source: status, cells: cells }">
+        {{ status }}
+        <div v-show="status == 'Verification Sent'">
+          <a
+            style="font-size: smaller"
+            href="#"
+            @click.prevent="resendVerification(cells)"
+            >Resend</a
+          >
+        </div>
       </template>
     </va-data-table>
     <div class="flex pl-2 pt-3">
@@ -62,8 +73,12 @@
 
 <script lang="ts">
 import { userModule } from "../store/user";
-import { defineComponent } from "vue";
-import { ChannelModel, UserChannel, UserChannelStatus } from "../models/Channel";
+import { defineComponent, getCurrentInstance, ref } from "vue";
+import {
+  ChannelModel,
+  UserChannel,
+  UserChannelStatus,
+} from "../models/Channel";
 import { channelsModule } from "../store/channels";
 import Twilio from "@/components/TwilioAdd.vue";
 import Discord from "@/components/DiscordAdd.vue";
@@ -76,6 +91,12 @@ type ProviderData = Record<string, string | boolean | undefined>;
 export default defineComponent({
   name: "Channels",
   components: { Twilio, Discord, Email, Telegram },
+  setup() {
+    const app = getCurrentInstance();
+    const vaToast = app?.appContext.config.globalProperties.$vaToast;
+    const showToast = ref(vaToast.init);
+    return { showToast };
+  },
   data() {
     const columns = [
       { key: "id", label: "Remove", sortable: false },
@@ -141,6 +162,19 @@ export default defineComponent({
         );
       }
     },
+    async resendVerification(data: any): Promise<boolean> {
+      // this is a hack till we can pass the records in.
+      const id = data[0].source;
+      const uc = this.myChannels.find((chan) => chan.id == id);
+      if (uc && uc?.sendVerification()) {
+        this.showToast({
+          message: "Verification Sent",
+          duration: 2000,
+          color: "success",
+        });
+      }
+      return true;
+    },
     async add(): Promise<void> {
       if (!userModule.user) {
         throw "Login required";
@@ -157,8 +191,8 @@ export default defineComponent({
       acl.setRoleReadAccess("admins", true);
       acl.setRoleWriteAccess("admins", true);
       c.setACL(acl);
-      const context = { action: "insert"}
-      c.save(null, { context: context}).then(
+      const context = { action: "insert" };
+      c.save(null, { context: context }).then(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         (uc: UserChannel) => {
           // Execute any logic that should take place after the object is saved.

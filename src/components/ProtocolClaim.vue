@@ -71,9 +71,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const user: NotifiUser | undefined = inject("user");
     const app = getCurrentInstance();
-    console.log(`App=${app}`);
     const vaToast = app?.appContext.config.globalProperties.$vaToast;
-    console.log(`TST=${vaToast}`);
     const showToast = vaToast.init;
 
     const discordUser = ref("");
