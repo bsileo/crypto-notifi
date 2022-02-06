@@ -1,14 +1,22 @@
 <template>
   <div class="flex">
     <va-form type="form">
-      <div class="row pt-2 pb-3">
-        <va-select
-          class="flex sm12 pt-1"
-          v-model="subType"
-          label="Select Alert Type"
-          :options="subTypes"
-          :rules="[(subType) => subType != null || 'Select a type']"
-        />
+      <div class="row pl-4 pt-2 pb-3 gutter--md">
+        <va-card
+          class="flex sm3"
+          v-for="type in subTypes"
+          v-bind:key="type"
+          href="#"
+          :color="subType == type ? 'info' : '#FFF'"
+          :stripe="true"
+          :stripe-color="subType == type ? 'info' : 'dark'"
+          @click.prevent="this.subType = type"
+        >
+          <va-card-title>
+            <va-icon :name="typeIcon(type)"></va-icon>
+            {{ type }}
+          </va-card-title>
+        </va-card>
       </div>
       <va-collapse
         v-model="showSectionProtocols"
@@ -229,15 +237,15 @@
         </div>
         <div class="flex sm3">
           <va-button
-            class="flex"
+            class="flex mr-3"
             :disabled="!validSubmit"
             @click.prevent="subscribe"
-            color="danger"
+            color="primary"
             icon-right="create"
             size="large"
             >Create</va-button
           >
-           <va-button
+          <va-button
             class="flex"
             @click.prevent="this.$emit('cancel')"
             color="danger"
@@ -686,6 +694,26 @@ export default defineComponent({
   },
   methods: {
     // returns the current user or raises an error if none
+    typeIcon(t: SubscriptionTypes): string {
+      if (t == SubscriptionTypes.wallet) {
+        return "account_balance_wallet";
+      } else if (t == SubscriptionTypes.protocol) {
+        return "announcement";
+      } else if (t == SubscriptionTypes.contract) {
+        return "gavel";
+      }
+      return "";
+    },
+    typeContent(t: SubscriptionTypes): string {
+      if (t == SubscriptionTypes.wallet) {
+        return "Alerts for your wallets.";
+      } else if (t == SubscriptionTypes.protocol) {
+        return "Ad Hoc from Protocols";
+      } else if (t == SubscriptionTypes.contract) {
+        return "Smart contract alerts for events on the chain";
+      }
+      return "";
+    },
     userID(): string {
       if (userModule.user?.id) {
         return userModule.user.id;

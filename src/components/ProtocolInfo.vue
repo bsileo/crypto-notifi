@@ -7,6 +7,8 @@
     :dark="selected"
     :stripe="selected"
     stripe-color="success"
+    :href="allowSelectHref"
+    @click.prevent="this.select(protocol)"
   >
     <va-card-title>
       <va-chip :href="protocol.website" shadow color="success" size="medium">{{
@@ -83,10 +85,7 @@
   </va-card>
   <va-modal v-model="showClaim" title="" hide-default-actions>
     <slot>
-      <ProtocolClaim
-        :protocol="protocol"
-        @saved="claimSaved"
-      ></ProtocolClaim>
+      <ProtocolClaim :protocol="protocol" @saved="claimSaved"></ProtocolClaim>
     </slot>
   </va-modal>
 </template>
@@ -115,7 +114,11 @@ export default defineComponent({
       showClaim: false,
     };
   },
-  computed: {},
+  computed: {
+    allowSelectHref() {
+      return this.allowSelect ? "#" : null;
+    },
+  },
   methods: {
     async voteFor(aProtocol: Protocol): Promise<void> {
       const newVotes = await aProtocol.siteVote();
@@ -129,7 +132,9 @@ export default defineComponent({
       this.$emit("claimed");
     },
     select(aProtocol: Protocol): void {
-      this.$emit("selected", this.protocol);
+      if (this.allowSelect) {
+        this.$emit("selected", this.protocol);
+      }
     },
     subscribe(aProtocol: Protocol): void {
       this.$emit("subscribe", this.protocol);
