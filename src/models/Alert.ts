@@ -58,7 +58,7 @@ export class Alert extends Moralis.Object {
     protocol?: Protocol | undefined
   ): Alert {
     const a = new Alert();
-    a.set("type", subType.get("type"));
+    a.set("type", subType.get("name"));
     a.set("Type", subType);
     a.set("content", content.plain);
     a.set("richContent", content.rich);

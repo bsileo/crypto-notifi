@@ -15,6 +15,7 @@ export class ChannelsModule extends VuexModule {
   CHANNELS: Array<ChannelModel> = [
     { id: "twilio", name: "SMS", multiple: true },
     { id: "email", name: "Email", multiple: true },
+    { id: "telegram", name: "Telegram", multiple: true },
   ];
   MYCHANNELS: Array<UserChannel> = [];
 

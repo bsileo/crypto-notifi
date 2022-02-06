@@ -124,7 +124,7 @@
               style="font-size: x-small"
               size="small"
               color="secondary"
-              :icon="channel.providerID == 'twilio' ? 'sms' : 'email'"
+              :icon="channel.providerIcon"
               @click="addChannel(channel)"
             >
               {{ channel.name }}
@@ -139,7 +139,7 @@
         <div v-for="channel in channels" :key="channel.id" class="flex">
           <va-chip
             style="font-size: x-small"
-            :icon="channel.providerID == 'twilio' ? 'sms' : 'email'"
+            :icon="channel.providerIcon"
             size="small"
             closeable
             @update:modelValue="removeChannel(channel)"
