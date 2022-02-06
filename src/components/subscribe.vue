@@ -224,7 +224,7 @@
         </va-alert>
       </div>
       <div class="row pt-2 pb-3">
-        <div class="flex xs12 sm9">
+        <div class="flex xs12 sm5 md5">
           <h3>Send these alerts to:</h3>
           <va-option-list
             type="switch"
@@ -236,9 +236,9 @@
             class="pb-3"
           />
         </div>
-        <div class="flex xs12 sm3">
+        <div class="flex xs12 sm7 md5 lg4 offset-lg-3">
           <va-button
-            class="flex mr-3"
+            class="flex mr-2"
             :disabled="!validSubmit"
             @click.prevent="subscribe"
             color="primary"
