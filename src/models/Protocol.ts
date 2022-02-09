@@ -5,6 +5,9 @@ import { contractsModule } from "@/store/contracts";
 import { userModule } from "@/store/user";
 import { TokenBalance } from "@/models/NotifiUser";
 import { SubscriptionType } from "./SubscriptionType";
+import { Position } from "./Position";
+import { APIResponse } from "cookietrack-types";
+
 
 export enum ProtocolLevel {
   "Free" = "Free",
@@ -130,6 +133,50 @@ export class Protocol extends Moralis.Object {
   }
   set basicQuantity(val: number) {
     this.tokenData.basicQuantity = val;
+  }
+
+  public async isFavorite(): Promise<boolean> {
+    const u = Moralis.User.current();
+    const rel = u.relation("FavoriteProtocols");
+    const prots: Array<Protocol> = await rel.query().find();
+    const found = prots.find((p) => p.id == this.id);
+    return found != undefined;
+  }
+
+  public async toggleFavorite(): Promise<boolean> {
+    const fav = await this.isFavorite();
+    const u = Moralis.User.current();
+    if (fav) {
+      u.relation("FavoriteProtocols").remove(this);
+      u.save();
+      return false;
+    } else {
+      u.relation("FavoriteProtocols").add(this);
+      u.save();
+      return true;
+    }
+  }
+
+  public async positions(): Promise<Position[]> {
+    const chain = this.chains[0];
+    const name = this.get("cookieName");
+    const addr = Moralis.User.current().get("accounts")[0];
+    const res: Position[] = [];
+    if (name && addr) {
+      const url = `https://api.cookietrack.io/${chain}/${name}?address=${addr}`;
+      console.log(url);
+      const resp = await fetch(url);
+      const result = await resp.json() as APIResponse;
+      console.log(result);
+      if (result.status == "ok") {
+        result.data.forEach(async (aPos: any) => {
+          const pos = new Position(aPos, this);
+          res.push(pos);
+          await pos.fetchSubscription();
+        });
+      }
+    }
+    return res;
   }
 
   async managers(): Promise<string[]> {

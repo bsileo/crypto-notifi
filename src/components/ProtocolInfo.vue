@@ -1,9 +1,6 @@
 <template>
   <va-card
-    class="flex xs12 sm4 lg3 xl2 mb-1"
-    :class="{
-      active: selected,
-    }"
+    :class="cardClass"
     :dark="selected"
     :stripe="selected"
     stripe-color="success"
@@ -14,6 +11,12 @@
       <va-chip :href="protocol.website" shadow color="success" size="medium">{{
         protocol.name
       }}</va-chip>
+      <va-icon
+        :name="isFavorite ? 'favorite' : 'favorite_border'"
+        :size="35"
+        @click="toggleFavorite"
+        :color="isFavorite ? 'danger' : '#000'"
+      ></va-icon>
     </va-card-title>
     <va-image style="height: 50px" contain :src="protocol.iconURL">
       <template #error> Image not found! :( </template>
@@ -47,6 +50,18 @@
           {{ protocol.protocolSiteStatus }}
         </div>
       </div>
+    </div>
+    <div v-if="showPositions">
+      <va-list>
+        <va-list-label> Positions: </va-list-label>
+        <va-inner-loading :loading="loadingPositions">
+          <PositionVue
+            v-for="(position, idx) in positions"
+            v-bind:key="idx"
+            :position="position"
+          ></PositionVue>
+        </va-inner-loading>
+      </va-list>
     </div>
     <div v-if="showUserInfo">Balance: {{ protocol.getWalletBalance() }}</div>
     <div v-if="showUserInfo">
@@ -91,27 +106,89 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { computed, defineComponent, onMounted, ref } from "vue";
 import Moralis from "moralis";
 import { Protocol } from "@/models/Protocol";
 import ProtocolClaim from "./ProtocolClaim.vue";
-
+import PositionVue from "./position.vue";
+import { Position } from "@/models/Position";
 export default defineComponent({
   name: "ProtocolInfo",
-  components: { ProtocolClaim },
+  components: { ProtocolClaim, PositionVue },
   emits: ["selected", "subscribe", "claimed"],
   props: {
     showVote: { type: Boolean, required: false, default: false },
     showSubscribe: { type: Boolean, required: false, default: false },
     showUserInfo: { type: Boolean, required: false, default: false },
+    showPositions: { type: Boolean, required: false, default: false },
     allowSelect: { type: Boolean, required: false, default: true },
+    displayMode: { type: String, required: false, default: "wide" },
     manager: { type: Boolean, required: false, default: false },
     protocol: { type: Protocol, required: true },
     selected: { type: Boolean, required: false, default: false },
   },
-  data() {
+  setup(props, { emit }) {
+    const showClaim = ref(false);
+
+    const isFavorite = ref(false);
+    const refreshFavorite = async () => {
+      isFavorite.value = await props.protocol.isFavorite();
+    };
+
+    const toggleFavorite = async (): Promise<void> => {
+      await props.protocol.toggleFavorite();
+      refreshFavorite();
+    };
+
+    const positions = ref<Position[]>([]);
+    const loadingPositions = ref(false);
+    const wide = computed(() => {
+      return props.displayMode == "wide";
+    });
+
+    const cardClass = computed((): Record<string, boolean> => {
+      if (wide.value)
+        return {
+          active: props.selected,
+          flex: true,
+          "mb-1": true,
+          xs12: wide.value,
+          sm6: wide.value,
+          lg6: wide.value,
+          xl6: wide.value,
+        };
+      else
+        return {
+          active: props.selected,
+          flex: true,
+          "mb-1": true,
+          xs12: !wide.value,
+          sm4: !wide.value,
+          lg3: !wide.value,
+          xl2: !wide.value,
+        };
+    });
+
+    onMounted(async () => {
+      fetchPositions();
+      refreshFavorite();
+    });
+
+    const fetchPositions = async () => {
+      loadingPositions.value = true;
+      positions.value = await props.protocol.positions();
+      loadingPositions.value = false;
+    };
+
     return {
-      showClaim: false,
+      showClaim,
+      isFavorite,
+      wide,
+      toggleFavorite,
+      positions,
+      loadingPositions,
+      fetchPositions,
+      cardClass,
     };
   },
   computed: {
