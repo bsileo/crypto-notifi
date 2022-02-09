@@ -2,10 +2,11 @@ import { NotifiUser } from "@/models/NotifiUser";
 import { SubscriptionType } from "@/models/SubscriptionType";
 import { Chain } from "@/models/Contract";
 import Moralis from "moralis";
-import { UserChannel } from "./Channel";
+import { UserChannel, UserChannelStatus } from "./Channel";
 import { Contract } from "./Contract";
 import { ContractActivity } from "./ContractActivity";
 import { Protocol } from "./Protocol";
+import { Position } from "./Position";
 
 export enum SubscriptionStatus {
   "active" = "active",
@@ -15,6 +16,7 @@ export enum SubscriptionTypes {
   protocol = "Protocol Alerts",
   contract = "Smart Contracts",
   wallet = "My Wallet",
+  position = "Position",
 }
 
 export class Subscription extends Moralis.Object {
@@ -84,6 +86,21 @@ export class Subscription extends Moralis.Object {
     return this.get("status");
   }
 
+  get positionLow(): number | undefined {
+    return this.get("positionLow");
+  }
+  set positionLow(val: number | undefined) {
+    if (val) this.set("positionLow", parseFloat(val.toString()));
+    else this.unset("positionLow");
+  }
+  get positionHigh(): number | undefined {
+    return this.get("positionHigh");
+  }
+  set positionHigh(val: number | undefined) {
+    if (val) this.set("positionHigh", parseFloat(val.toString()));
+    else this.unset("positionHigh");
+  }
+
   async channelCount(): Promise<number> {
     return await this.get("UserChannel").query().count();
   }
@@ -114,6 +131,24 @@ export class Subscription extends Moralis.Object {
     return acl;
   }
 
+  static async spawnPosition(
+    name: string,
+    user: any,
+    position: Position
+  ): Promise<Subscription> {
+    const sub = await Subscription.spawn(
+      name,
+      user.id,
+      SubscriptionTypes.position,
+      position.protocol
+    );
+    sub.set("contractAddress", position.address);
+    sub.set("contractChain", position.chain);
+    sub.set("positionStatus", position.status);
+    sub.setACL(this.getACL(user));
+    return sub;
+  }
+
   static async spawn(
     name: string,
     userID: string,
@@ -126,6 +161,7 @@ export class Subscription extends Moralis.Object {
     }
     s.set("name", name);
     s.set("userID", userID);
+    s.set("User", Moralis.User.current());
     s.set("subscriptionType", subType);
     s.set("status", SubscriptionStatus.active);
     //s = await s.save();
@@ -165,15 +201,16 @@ export class Subscription extends Moralis.Object {
 
   public async setUserChannels(channels: UserChannel[]): Promise<void> {
     const myChans = this.relation("UserChannel");
-    channels.forEach(async (chan: UserChannel) => {
-      console.log(chan);
-      if (chan) {
-        myChans.add(chan);
-        chan.relation("subscriptions").add(this);
-        await chan.save();
-        await this.save();
+    myChans.add(channels);
+    const q = myChans.query();
+    const current = await q.find();
+    current.forEach((curChan: UserChannel) => {
+      const idx = channels.findIndex( (newChan: UserChannel) => newChan.id == curChan.id)
+      if (idx == -1) {
+        myChans.remove(curChan);
       }
     });
+    await this.save();
   }
 }
 

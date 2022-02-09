@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "..\\notifi-moralis-cloud"
 		}
 	],
 	"settings": {}

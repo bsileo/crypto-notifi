@@ -54,6 +54,11 @@
         <Subscriptions @subscribe="doSubscribe"></Subscriptions>
       </div>
     </div>
+    <div v-show="showPositions" class="row pb-3">
+      <div class="flex sm12">
+        <Positions></Positions>
+      </div>
+    </div>
     <div v-show="showProtocols">
       <ProtocolSelector
         :showSearch="true"
@@ -92,23 +97,6 @@
         </h2>
       </div>
     </div>
-    <div v-if="false" class="row" style="max-height: 50%">
-      <div class="flex md12 sm12">
-        <va-collapse
-          header="Transactions"
-          color="primary"
-          v-model="showTransactions"
-        >
-          <va-card gradient>
-            <Transactions
-              :showTX="this.showTransactions"
-              @subscribe="doSubscribe"
-            >
-            </Transactions>
-          </va-card>
-        </va-collapse>
-      </div>
-    </div>
     <va-modal v-model="showChannels" title="Configure your Channels">
       <slot>
         <Channels></Channels>
@@ -129,8 +117,8 @@ import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Channels from "@/components/channels.vue";
 import Subscriptions from "@/components/subscriptions.vue";
+import Positions from "@/components/positions.vue";
 import Subscribe from "@/components/subscribe.vue";
-import Transactions from "@/components/transactions.vue";
 import ProtocolManager from "@/components/ProtocolManager.vue";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import Account from "@/components/Account.vue";
@@ -138,21 +126,17 @@ import Header from "@/components/header.vue";
 import { computed } from "vue";
 import { channelsModule } from "@/store/channels";
 import { Protocol } from "@/models/Protocol";
+import { DisplayMode } from "@/notifi_types";
+
 
 let tx: Moralis.TransactionResult | null = null;
-
-enum DisplayMode {
-  "protocols" = "Protocols",
-  "subscriptions" = "Subscriptions",
-  "subscribe" = "Subscribe",
-}
 
 export default defineComponent({
   name: "Home",
   components: {
     Channels,
     Subscriptions,
-    Transactions,
+    Positions,
     Subscribe,
     Account,
     ProtocolManager,
@@ -170,6 +154,7 @@ export default defineComponent({
       mode: DisplayMode.subscriptions as DisplayMode,
       modeOptions: [
         { value: DisplayMode.subscriptions, label: "Subscriptions" },
+        { value: DisplayMode.positions, label: "Positions" },
         { value: DisplayMode.protocols, label: "Protocols" },
       ],
     };
@@ -182,6 +167,9 @@ export default defineComponent({
   computed: {
     showProtocols(): boolean {
       return this.userMode == "user" && this.mode == DisplayMode.protocols;
+    },
+    showPositions(): boolean {
+      return this.userMode == "user" && this.mode == DisplayMode.positions;
     },
     showSubscribe(): boolean {
       return (
