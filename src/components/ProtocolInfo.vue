@@ -12,6 +12,7 @@
         protocol.name
       }}</va-chip>
       <va-icon
+        v-if="showFavorites"
         :name="isFavorite ? 'favorite' : 'favorite_border'"
         :size="35"
         @click="toggleFavorite"
@@ -131,6 +132,7 @@ export default defineComponent({
     showSubscribe: { type: Boolean, required: false, default: false },
     showUserInfo: { type: Boolean, required: false, default: false },
     showPositions: { type: Boolean, required: false, default: false },
+    showFavorites: { type: Boolean, required: false, default: true },
     allowSelect: { type: Boolean, required: false, default: true },
     displayMode: { type: String, required: false, default: "wide" },
     manager: { type: Boolean, required: false, default: false },

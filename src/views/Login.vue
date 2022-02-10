@@ -77,6 +77,7 @@
           :showUserInfo="false"
           :allowSelect="false"
           :showStatus="true"
+          :showFavorites="false"
         ></ProtocolSelector>
       </div>
     </div>

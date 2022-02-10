@@ -56,8 +56,10 @@
               :selected="this.selectedProtocol == protocol"
               :showVote="showVote"
               :showUserInfo="showUserInfo"
+              :showFavorites="showFavorites"
               :allowSelect="allowSelect"
               :showSubscribe="showSubscribe"
+              displayMode="narrow"
               @selected="select"
               @subscribe="subscribe"
             >
@@ -74,7 +76,7 @@ import { Protocol } from "@/models/Protocol";
 import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Moralis from "moralis";
-import { defineComponent, inject, ref } from "vue";
+import { computed, defineComponent, inject, ref } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
 
 export default defineComponent({
@@ -85,13 +87,14 @@ export default defineComponent({
     showSearch: { type: Boolean, required: false, default: true },
     showVote: { type: Boolean, required: false, default: false },
     showSubscribe: { type: Boolean, required: false, default: false },
+    showFavorites: { type: Boolean, required: false, default: true },
     showUserInfo: { type: Boolean, required: false, default: false },
     simpleList: { type: Boolean, required: false, default: false },
     simpleMulti: { type: Boolean, required: false, default: true },
     allowSelect: { type: Boolean, required: false, default: true },
     manager: { type: Boolean, required: false, default: false },
   },
-  setup() {
+  setup( props ) {
     const user: NotifiUser | undefined = inject("user");
     const intSearch = ref("");
     const selectedProtocol = ref<Protocol | undefined>(undefined);
@@ -101,6 +104,9 @@ export default defineComponent({
     const filteredProtocols = ref<Protocol[]>([]);
     const queryLimit = ref<number>(20);
     const loading = ref(false);
+    const showFavs = computed((): boolean => {
+      return props.showFavorites;
+    });
 
     return {
       user,
@@ -112,6 +118,7 @@ export default defineComponent({
       filteredProtocols,
       queryLimit,
       loading,
+      showFavs,
     };
   },
   async mounted() {
