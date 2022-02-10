@@ -89,12 +89,13 @@ export default defineComponent({
     showSubscribe: { type: Boolean, required: false, default: false },
     showFavorites: { type: Boolean, required: false, default: true },
     showUserInfo: { type: Boolean, required: false, default: false },
+    autoSelect: { type: Boolean, required: false, default: false },
     simpleList: { type: Boolean, required: false, default: false },
     simpleMulti: { type: Boolean, required: false, default: true },
     allowSelect: { type: Boolean, required: false, default: true },
     manager: { type: Boolean, required: false, default: false },
   },
-  setup( props ) {
+  setup(props) {
     const user: NotifiUser | undefined = inject("user");
     const intSearch = ref("");
     const selectedProtocol = ref<Protocol | undefined>(undefined);
@@ -122,12 +123,14 @@ export default defineComponent({
     };
   },
   async mounted() {
-    userModule.fetchUserTokens();
+    if (this.showUserInfo) {
+      userModule.fetchUserTokens();
+    }
     this.fetchProtocols();
   },
   computed: {
     protocols(): Protocol[] {
-      let prots = this.rawProtocols;
+      let prots = this.filteredProtocols;
       if (this.search) {
         const result = prots.filter((e: Protocol) => {
           const idx = e.name.toLowerCase().indexOf(this.search.toLowerCase());
@@ -204,10 +207,12 @@ export default defineComponent({
       } else {
         res = this.rawProtocols;
       }
+      if (this.autoSelect && res.length == 1) {
+        this.select(res[0]);
+      }
       let res2: Protocol[] = [];
       if (this.search) {
         const test = this.search.toLowerCase();
-        console.log(`Search term ${this.search}`);
         for (let i=0; i++; i< res.length) {
           if (res[i].name.search(test) != -1) {
             res2.push(res[i]);

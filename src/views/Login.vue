@@ -1,6 +1,6 @@
 <template>
+  <Header></Header>
   <div class="container p-3 gutter--md">
-    <Header></Header>
     <div class="container">
       <div class="row pb-4">
         <div class="large flex sm8">
@@ -82,6 +82,7 @@
       </div>
     </div>
   </div>
+  <Footer></Footer>
 </template>
 
 <script lang="ts">
@@ -90,11 +91,12 @@ import { defineComponent } from "vue";
 import { NotifiUser } from "../models/NotifiUser";
 import { userModule } from "../store/user";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
+import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
 
 export default defineComponent({
   name: "Login",
-  components: { ProtocolSelector, Header },
+  components: { ProtocolSelector, Header, Footer },
   methods: {
     async walletConnectLogin(): Promise<void> {
       return;

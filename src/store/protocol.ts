@@ -130,7 +130,6 @@ const setupProtocolsSub = async () => {
 
   const refresh = (): void => {
     query.find().then((results: Array<Protocol>) => {
-      console.log("Refresh Protocols");
       protocolsModule.SetMyProtocols(results);
     });
   };

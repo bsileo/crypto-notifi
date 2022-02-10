@@ -1,45 +1,5 @@
 <template>
   <div>
-    <va-collapse v-model="showProtocolSelect" class="pb-3" icon="info">
-      <template #header>
-        <div class="ml-2 mr-2 va-collapse__header">
-          <div
-            v-if="this.selectedProtocol"
-            class="row va-collapse__header__content"
-          >
-            <va-icon class="flex sm1 pr-3" name="info"></va-icon>
-            <div class="flex sm10">
-              Manage <strong>{{ this.selectedProtocol.name }}</strong>
-            </div>
-            <va-icon
-              v-if="showProtocolSelect"
-              class="flex sm1"
-              name="expand_less"
-            ></va-icon>
-            <va-icon v-else class="flex sm1" name="expand_more"></va-icon>
-          </div>
-          <div
-            v-if="!this.selectedProtocol"
-            class="row va-collapse__header__content"
-          >
-            <va-icon class="flex sm1" name="info"></va-icon>
-            <span class="flex sm10">Select the Protcol to Manage</span>
-            <va-icon
-              v-if="showProtocolSelect"
-              class="flex sm1"
-              name="expand_less"
-            ></va-icon>
-            <va-icon v-else class="flex sm1" name="expand_more"></va-icon>
-          </div>
-        </div>
-      </template>
-      <ProtocolSelector
-        :showSearch="false"
-        :showUserInfo="false"
-        :manager="true"
-        @selection="selectProtocol"
-      ></ProtocolSelector>
-    </va-collapse>
     <va-collapse
       class="pb-3"
       v-model="showAlert"
@@ -180,7 +140,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, reactive, ref } from "vue";
 import { Alert } from "@/models/Alert";
 import { alertsModule } from "@/store/alerts";
 import {
@@ -189,23 +149,40 @@ import {
 } from "@/models/SubscriptionType";
 import { Protocol } from "@/models/Protocol";
 import Moralis from "moralis";
-import EditCategory from "./EditCategory.vue";
-import SendAlert from "./SendAlert.vue";
-import EditContract from "./EditContract.vue";
-import ProtocolSelector from "./ProtocolSelector.vue";
-import ProtocolSettings from "./ProtocolSettings.vue";
-import ProtocolSubscription from "./ProtocolSubscription.vue";
+import EditCategory from "@/components/EditCategory.vue";
+import SendAlert from "@/components/SendAlert.vue";
+import EditContract from "@/components/EditContract.vue";
+import ProtocolSettings from "@/components/ProtocolSettings.vue";
+import ProtocolSubscription from "@/components/ProtocolSubscription.vue";
 import { Contract } from "@/models/Contract";
 
 export default defineComponent({
   name: "ProtocolManager",
+  props: {
+    id: { type: String, required: true },
+  },
   components: {
     EditCategory,
     SendAlert,
     EditContract,
-    ProtocolSelector,
     ProtocolSettings,
     ProtocolSubscription,
+  },
+  setup(props, context) {
+    const selectedProtocol = ref<Protocol>(new Protocol());
+
+    const fetchProtocol = async (id: string): Promise<Protocol> => {
+      if (id) {
+        const p = await Protocol.fetch(id);
+        selectedProtocol.value = p;
+        return p;
+      }
+      console.log("NO ID");
+      return new Protocol();
+    };
+
+    fetchProtocol(props.id);
+    return { selectedProtocol };
   },
   data() {
     const alertColumns = [
@@ -229,7 +206,6 @@ export default defineComponent({
       showAddContract2: false,
       sortBy: "shortDateTime",
       sortingOrder: "desc",
-      selectedProtocol: undefined as Protocol | undefined,
       subCategories: [] as SubscriptionType[],
       newCategory: { name: "", type: "", description: "" },
       contracts: [] as Contract[],
@@ -242,7 +218,9 @@ export default defineComponent({
       this.alertCategory = undefined;
       this.showProtocolSelect = false;
       this.showAlert = true;
-      alertsModule.SET_PROTOCOL(this.selectedProtocol);
+      if (this.selectedProtocol.className == "Protocol") {
+        alertsModule.SET_PROTOCOL(this.selectedProtocol as Protocol);
+      }
       await this.fetchsubCategories();
       await this.fetchContracts();
     },

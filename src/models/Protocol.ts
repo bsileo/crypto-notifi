@@ -227,6 +227,12 @@ export class Protocol extends Moralis.Object {
     });
   }
 
+  static async fetch(id: string): Promise<Protocol> {
+    const q = new Moralis.Query(Protocol);
+    const p = await q.get(id);
+    return p;
+  }
+
   static spawn(name: string, website: string, iconURL: string): Protocol {
     const a = new Protocol();
     a.set("name", name);
@@ -458,7 +464,6 @@ export class Protocol extends Moralis.Object {
     const currentUser = Moralis.User.current();
     for (let i = 0; i < mans.length; i++) {
       const man = mans[i];
-      console.log(man.id == currentUser?.id);
       if (man.id == currentUser?.id) return true;
     }
     return false;

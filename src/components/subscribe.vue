@@ -324,10 +324,8 @@ export default defineComponent({
   },
   data() {
     const app = getCurrentInstance();
-    const vaToast = app?.appContext.config.globalProperties.$vaToast;
     return {
       showSectionProtocolsVal: true,
-      showToast: vaToast?.init,
       intSelectedProtocol: this.protocol,
       subName: "My Subscription",
       subType: SubscriptionTypes.protocol as SubscriptionTypes,
@@ -362,9 +360,12 @@ export default defineComponent({
   },
   setup(props) {
     const user: NotifiUser | undefined = inject("user");
+    const app = getCurrentInstance();
+    const vaToast = app?.appContext.config.globalProperties.$vaToast;
+    const showToast = vaToast.init;
 
     return {
-      user,
+      user, showToast,
     };
   },
   emits: ["saved", "cancel"],
@@ -794,15 +795,17 @@ export default defineComponent({
       const context = { insert: true };
       try {
         const uc = await c.save(null, { context: context });
-        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
+        this.showToast({
           message: "Subscription added successfully!",
           color: "success",
         });
-        this.$emit("saved");
+        this.$router.push({name: "Home"});
       } catch (error: any) {
-        getCurrentInstance()?.appContext.config.globalProperties.$vaToast.init({
-          message: "Subscription failed " + error.message,
+        console.log("ERROR-" + error.message);
+        this.showToast({
+          message: "Subscription failed - " + error.message,
           color: "danger",
+          icon: "error",
         });
       }
     },

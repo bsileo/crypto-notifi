@@ -148,7 +148,7 @@ export default defineComponent({
     };
 
     watchEffect(() => {
-      if (props.protocol) {
+      if (props.protocol != undefined && props.showFavorites) {
         refreshFavorite();
       }
     });
@@ -195,7 +195,9 @@ export default defineComponent({
       if (props.showPositions) {
         fetchPositions();
       }
-      refreshFavorite();
+      if (props.showFavorites) {
+        refreshFavorite();
+      }
     });
 
     const fetchPositions = async () => {

@@ -27,9 +27,6 @@ export class AlertsModule extends VuexModule {
     if (protocol) {
       query.equalTo("protocol", protocol);
     }
-    console.log(`Query with Prot=${protocol}`);
-    console.log(protocol);
-    console.log(query);
     this.context.commit("ClearAlerts");
     this.context.commit("SetAlerts", await query.find());
   }

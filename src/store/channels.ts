@@ -59,7 +59,9 @@ export const refreshChannels = (): void => {
 };
 
 export const setupMyChannelsSub = async (): Promise<void> => {
-  query.equalTo("userID", Moralis.User.current().id);
+  const u = Moralis.User.current();
+  if (!u) return;
+  query.equalTo("User", u);
   const subscription = await query.subscribe();
   subscription.on("open", () => {
     query.find().then((results: Array<UserChannel>) => {

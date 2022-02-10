@@ -12,7 +12,7 @@
       <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
       <va-popover message="Add a new Subscription">
         <va-button
-          @click.prevent="this.$emit('subscribe')"
+          @click.prevent="addSubscription"
           icon-right="add"
           size="medium"
           class="ml-4"
@@ -73,8 +73,8 @@ import Moralis from "moralis";
 import { defineComponent } from "vue";
 import { Subscription } from "@/models/Subscription";
 import Subscribe from "@/components/subscribe.vue";
-import SubscriptionCard from "./Subscription.vue";
-import ProtocolSelector from "./ProtocolSelector.vue";
+import SubscriptionCard from "@/components/Subscription.vue";
+import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import { Protocol } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import { channelsModule } from "@/store/channels";
@@ -135,6 +135,9 @@ export default defineComponent({
     },
   },
   methods: {
+    addSubscription(): void {
+      this.$router.push({name: "Subscribe"});
+    },
     setSearchProtocols(prots: Protocol[]): void {
       this.searchProtocols = prots;
     },

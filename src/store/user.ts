@@ -56,6 +56,8 @@ export class UserModule extends VuexModule {
 
   @Action
   async fetchUserTokens(chain?: Chain): Promise<void> {
+    const user = Moralis.User.current();
+    if (!user) return;
     const options = {
       chain: chain ? chain : "avalanche",
     };

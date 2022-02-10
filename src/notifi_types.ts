@@ -9,3 +9,8 @@ export enum DisplayMode {
   "subscriptions" = "Subscriptions",
   "subscribe" = "Subscribe",
 }
+
+export enum UserMode {
+  "user" = "user",
+  "manager" = "manager",
+}

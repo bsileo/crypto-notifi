@@ -1,12 +1,21 @@
 <template>
+  <Header></Header>
   <router-view />
+  <Footer></Footer>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { defineComponent } from "vue";
+import Footer from "@/components/footer.vue";
+import Header from "@/components/header.vue";
 
-@Options({})
-export default class ProtectedPages extends Vue {}
+export default defineComponent({
+  name: "ProtectedPages",
+  components: {
+    Header,
+    Footer,
+  },
+});
 </script>
 
 <style scoped></style>
