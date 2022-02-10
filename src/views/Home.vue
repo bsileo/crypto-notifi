@@ -124,7 +124,7 @@ import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import Account from "@/components/Account.vue";
 import Header from "@/components/header.vue";
 import { computed } from "vue";
-import { channelsModule } from "@/store/channels";
+import { channelsModule, refreshChannels } from "@/store/channels";
 import { Protocol } from "@/models/Protocol";
 import { DisplayMode } from "@/notifi_types";
 
@@ -151,11 +151,11 @@ export default defineComponent({
       showTransactions: false,
       showChannels: false,
       showAccount: false,
-      mode: DisplayMode.subscriptions as DisplayMode,
+      mode: DisplayMode.protocols as DisplayMode,
       modeOptions: [
-        { value: DisplayMode.subscriptions, label: "Subscriptions" },
-        { value: DisplayMode.positions, label: "Positions" },
         { value: DisplayMode.protocols, label: "Protocols" },
+        { value: DisplayMode.positions, label: "Positions" },
+        { value: DisplayMode.subscriptions, label: "Subscriptions" },
       ],
     };
   },
@@ -163,6 +163,9 @@ export default defineComponent({
     return {
       user: computed(() => userModule.user as NotifiUser),
     };
+  },
+  mounted(): void {
+    refreshChannels();
   },
   computed: {
     showProtocols(): boolean {

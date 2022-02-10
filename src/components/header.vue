@@ -13,7 +13,12 @@
       </template>
       <template #center>
         <h2 style="font-size: large; color: red">
-          ALPHA Version <br />No Real Alerts
+          ALPHA Version<br/><a
+            style="font-size: small; font-color: red"
+            target="_blank"
+            href="mailto:info@cryptonotifi.xyz"
+            >info@cryptonotifi.xyz</a
+          >
         </h2>
       </template>
       <template #right>

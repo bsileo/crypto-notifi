@@ -49,16 +49,18 @@ export class ChannelsModule extends VuexModule {
 
 export const channelsModule = getModule(ChannelsModule);
 
-const setupMyChannelsSub = async (): Promise<void> => {
-  const query = new Moralis.Query("UserChannel");
+const query = new Moralis.Query("UserChannel");
+
+export const refreshChannels = (): void => {
+  query.find().then((results: Array<UserChannel>) => {
+    console.log("Initial objects created");
+    channelsModule.SetMyChannels(results);
+  });
+};
+
+export const setupMyChannelsSub = async (): Promise<void> => {
   query.equalTo("userID", Moralis.User.current().id);
   const subscription = await query.subscribe();
-  const refresh = (): void => {
-    query.find().then((results: Array<UserChannel>) => {
-      console.log("Initial objects created");
-      channelsModule.SetMyChannels(results);
-    });
-  };
   subscription.on("open", () => {
     query.find().then((results: Array<UserChannel>) => {
       channelsModule.SetMyChannels(results);
@@ -66,27 +68,27 @@ const setupMyChannelsSub = async (): Promise<void> => {
   });
   subscription.on("create", (object: UserChannel) => {
     console.log(`UserChannel object created - add it = ${object.id}`);
-    refresh();
+    refreshChannels();
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("update", (object: UserChannel) => {
     // console.log("object updated");
-    refresh();
+    refreshChannels();
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("enter", (object: UserChannel) => {
     // console.log("object entered");
-    refresh();
+    refreshChannels();
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("leave", (object: UserChannel) => {
     // console.log("object left");
-    refresh();
+    refreshChannels();
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   subscription.on("delete", (object: UserChannel) => {
     // console.log("object deleted");
-    refresh();
+    refreshChannels();
   });
   subscription.on("close", () => {
     console.log("UserChannel subscription closed");
