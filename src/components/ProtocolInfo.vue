@@ -53,13 +53,23 @@
     </div>
     <div v-if="showPositions">
       <va-list>
-        <va-list-label> Positions: </va-list-label>
+        <va-list-label>
+          Positions:
+          <va-button
+            icon="refresh"
+            size="small"
+            @click="fetchPositions"
+          ></va-button>
+        </va-list-label>
         <va-inner-loading :loading="loadingPositions">
           <PositionVue
             v-for="(position, idx) in positions"
             v-bind:key="idx"
             :position="position"
           ></PositionVue>
+          <div style="text-align: center" v-if="showNoPositions">
+            <strong>None Found</strong>
+          </div>
         </va-inner-loading>
       </va-list>
     </div>
@@ -106,7 +116,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from "vue";
+import { computed, defineComponent, onMounted, ref, watchEffect } from "vue";
 import Moralis from "moralis";
 import { Protocol } from "@/models/Protocol";
 import ProtocolClaim from "./ProtocolClaim.vue";
@@ -135,6 +145,12 @@ export default defineComponent({
       isFavorite.value = await props.protocol.isFavorite();
     };
 
+    watchEffect(() => {
+      if (props.protocol) {
+        refreshFavorite();
+      }
+    });
+
     const toggleFavorite = async (): Promise<void> => {
       await props.protocol.toggleFavorite();
       refreshFavorite();
@@ -142,6 +158,10 @@ export default defineComponent({
 
     const positions = ref<Position[]>([]);
     const loadingPositions = ref(false);
+    const showNoPositions = computed((): boolean => {
+      return !loadingPositions.value && positions.value.length == 0;
+    });
+
     const wide = computed(() => {
       return props.displayMode == "wide";
     });
@@ -170,7 +190,9 @@ export default defineComponent({
     });
 
     onMounted(async () => {
-      fetchPositions();
+      if (props.showPositions) {
+        fetchPositions();
+      }
       refreshFavorite();
     });
 
@@ -188,6 +210,7 @@ export default defineComponent({
       positions,
       loadingPositions,
       fetchPositions,
+      showNoPositions,
       cardClass,
     };
   },

@@ -145,35 +145,42 @@ export class Protocol extends Moralis.Object {
 
   public async toggleFavorite(): Promise<boolean> {
     const fav = await this.isFavorite();
+    console.log("FAV:" + fav);
     const u = Moralis.User.current();
     if (fav) {
       u.relation("FavoriteProtocols").remove(this);
-      u.save();
+      await u.save();
       return false;
     } else {
       u.relation("FavoriteProtocols").add(this);
-      u.save();
+      await u.save();
       return true;
     }
   }
 
   public async positions(): Promise<Position[]> {
+    const config = await Moralis.Config.get();
+    const cookieAPI = config.get("cookieAPIURL");
     const chain = this.chains[0];
     const name = this.get("cookieName");
     const addr = Moralis.User.current().get("accounts")[0];
     const res: Position[] = [];
     if (name && addr) {
-      const url = `https://api.cookietrack.io/${chain}/${name}?address=${addr}`;
+      const url = `${cookieAPI}/${chain}/${name}?address=${addr}`;
       console.log(url);
-      const resp = await fetch(url);
-      const result = await resp.json() as APIResponse;
-      console.log(result);
-      if (result.status == "ok") {
-        result.data.forEach(async (aPos: any) => {
-          const pos = new Position(aPos, this);
-          res.push(pos);
-          await pos.fetchSubscription();
-        });
+      try {
+        const resp = await fetch(url);
+        const result = await resp.json() as APIResponse;
+        console.log(result);
+        if (result.status == "ok") {
+          result.data.forEach(async (aPos: any) => {
+            const pos = new Position(aPos, this);
+            res.push(pos);
+            await pos.fetchSubscription();
+          });
+        }
+      } catch (err: any) {
+        console.log("Fetch failed - " + err.message);
       }
     }
     return res;

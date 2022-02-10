@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "..\\notifi-moralis-cloud"
+		},
+		{
+			"path": "..\\cookietrack-api"
 		}
 	],
 	"settings": {}

@@ -135,11 +135,12 @@ export default defineComponent({
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       subscription.on("enter", (sub: Protocol) => {
-        // console.log("object entered");
+        console.log("Positions - Protocols object entered");
         this.rawProtocols.push(sub);
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       subscription.on("leave", (sub: Protocol) => {
+        console.log("Positions - Protocols object left");
         const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
         if (index > -1) {
           this.rawProtocols.splice(index, 1);
