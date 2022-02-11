@@ -2,7 +2,7 @@ import { DisplayMode } from "@/notifi_types";
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Login from "@/views/Login.vue";
 const Positions = () =>
-  import(/* webpackChunkName: "group-user" */ "@/components/positions.vue");
+  import(/* webpackChunkName: "group-user" */ "@/views/Positions.vue");
 const Subscriptions = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/Subscriptions.vue");
 const Protocols = () =>

@@ -38,8 +38,8 @@ import { Protocol } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 
 export default defineComponent({
-  name: "positions",
-  components: { ProtocolInfo},
+  name: "Positions",
+  components: { ProtocolInfo },
   props: {
     showAdd: Boolean,
   },
