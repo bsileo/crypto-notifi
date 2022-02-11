@@ -36,7 +36,8 @@
         class="mb-4"
         v-model="userID"
         label="Telegram UserID"
-        disabled
+        :disabled="!this.userID"
+        readonly
         placeholder="@telegram"
       />
     </div>
@@ -81,7 +82,7 @@ export default defineComponent({
     });
 
     const valid = computed(() => {
-      return true;
+      return userID.value && chatID.value;
     });
 
     const updateProviderData = (): void => {
@@ -103,7 +104,7 @@ export default defineComponent({
     const runPoll = async () => {
       const params = { userTag: userTag.value };
       const telegramRes = await Moralis.Cloud.run("telegramMonitor", params);
-      if (telegramRes.success) {
+      if (telegramRes.success && telegramRes.userid && telegramRes.chatID) {
         userID.value = `@${telegramRes.userid}`;
         chatID.value = telegramRes.chatID;
         updateProviderData();

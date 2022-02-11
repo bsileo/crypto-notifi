@@ -35,6 +35,21 @@
         </div>
       </div>
     </va-inner-loading>
+    <div v-if="showNoChannels" class="pt-3">
+      <div class="flex sm12" style="text-align: center">
+        <h2>
+          Welcome to Crypto Notifi. The first step is to setup one or more
+          channels where you will recieve alerts.
+        </h2>
+        <h2 class="pt-3">
+          You can access
+          <va-button color="primary" @click.prevent="showChannels">
+            My Channels
+          </va-button>
+          under the My Account menu above.
+        </h2>
+      </div>
+    </div>
     <div v-if="showNoSubscriptions" class="pt-3">
       <h2>
         Welcome to Crypto Notifi! You have not created any subscriptions yet,
@@ -43,7 +58,7 @@
       <h2>
         To get started, click the Add Button to create your first subscription!
         <va-button
-          @click.prevent="this.$emit('subscribe')"
+          @click.prevent="addSubscription"
           icon-right="add"
           size="large"
           color="success"
@@ -53,26 +68,12 @@
       </h2>
     </div>
   </div>
-  <va-modal
-    fullscreen
-    hide-default-actions
-    v-model="showSubscribe"
-    title="Update this Subscription"
-  >
-    <slot>
-      <Subscribe
-        :subscription="selectedSubscription"
-        @saved="showSubscribe = false"
-      ></Subscribe>
-    </slot>
-  </va-modal>
 </template>
 
 <script lang="ts">
 import Moralis from "moralis";
 import { defineComponent } from "vue";
 import { Subscription } from "@/models/Subscription";
-import Subscribe from "@/components/subscribe.vue";
 import SubscriptionCard from "@/components/Subscription.vue";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import { Protocol } from "@/models/Protocol";
@@ -81,14 +82,14 @@ import { channelsModule } from "@/store/channels";
 
 export default defineComponent({
   name: "Subscriptions",
-  components: { Subscribe, SubscriptionCard, ProtocolSelector },
+  components: { SubscriptionCard, ProtocolSelector },
+  emits: ["showChannels"],
   props: {
     showAdd: Boolean,
   },
   data() {
     return {
       validation: null,
-      showSubscribe: false,
       intSearch: "",
       searchProtocols: [] as Protocol[],
       rawSubscriptions: [] as Subscription[],
@@ -98,10 +99,8 @@ export default defineComponent({
     };
   },
   async created() {
-    console.log("Created");
     this.fetchSubscriptions();
   },
-  emits: ["subscribe"],
   computed: {
     subscriptions(): Subscription[] {
       let subs = this.rawSubscriptions;
@@ -113,8 +112,14 @@ export default defineComponent({
       }
       return subs;
     },
+    showNoChannels(): boolean {
+      return (
+        !this.subscriptionsLoading && channelsModule.MYCHANNELS.length == 0
+      );
+    },
     showNoSubscriptions(): boolean {
       return (
+        !this.showNoChannels &&
         this.rawCount == 0 &&
         this.rawSubscriptions.length == 0 &&
         !this.subscriptionsLoading
@@ -136,14 +141,17 @@ export default defineComponent({
   },
   methods: {
     addSubscription(): void {
-      this.$router.push({name: "Subscribe"});
+      this.$router.push({ name: "Subscribe" });
+    },
+    showChannels(): void {
+      this.$emit("showChannels");
     },
     setSearchProtocols(prots: Protocol[]): void {
       this.searchProtocols = prots;
     },
     edit(id: string): void {
       console.log(`Edit ${id}`);
-      this.showSubscribe = true;
+      this.$router.push({ name: "Subscribe", params: { id: id } });
     },
     remove(id: string): void {
       console.log(`remove ${id}`);

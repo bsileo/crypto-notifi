@@ -23,8 +23,8 @@
     <div v-if="showNoPositions" class="pt-3">
       <h2>
         Welcome to Crypto Notifi! You have not created any Favorites yet. Go to
-        the Protocols section and select those you have positions in to get
-        started.
+        the <va-chip to="/protocols">Protocols Section</va-chip> and select
+        those you have positions in to get started.
       </h2>
     </div>
   </div>
