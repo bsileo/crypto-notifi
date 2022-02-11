@@ -19,7 +19,7 @@ import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import { Protocol } from "@/models/Protocol";
 
 export default defineComponent({
-  name: "Login",
+  name: "Protocols",
   components: { ProtocolSelector },
   methods: {
     protocolSubscribe(aProtocol: Protocol) {

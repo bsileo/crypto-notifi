@@ -1,7 +1,7 @@
 <template>
   <Header></Header>
   <router-view v-slot="{ Component }">
-    <keep-alive>
+    <keep-alive exclude="Subscribe">
       <component :is="Component" />
     </keep-alive>
   </router-view>
