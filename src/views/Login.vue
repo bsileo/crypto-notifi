@@ -27,42 +27,9 @@
           <div class="layout gutter-md" style="max-width: 300px">
             <div class="row pb-3">
               <div class="flex">
-                <va-button color="primary" @click.prevent="metamaskLogin">
-                  Login with MetaMask
+                <va-button color="primary" @click.prevent="doLogin">
+                  Login
                 </va-button>
-              </div>
-            </div>
-            <div class="row pb-3">
-              <div class="flex">
-                <va-popover
-                  message="Coming Soon"
-                  color="primary"
-                  placement="right"
-                >
-                  <va-button
-                    color="primary"
-                    @click.prevent="walletConnectLogin"
-                  >
-                    Login with WalletConnect
-                  </va-button>
-                </va-popover>
-              </div>
-            </div>
-            <div class="row pb-3">
-              <div class="flex">
-                <va-popover
-                  message="Coming Soon"
-                  color="primary"
-                  placement="right"
-                >
-                  <va-button
-                    color="primary"
-                    style="float: right"
-                    @click.prevent="emailLogin"
-                  >
-                    Login with Email
-                  </va-button>
-                </va-popover>
               </div>
             </div>
           </div>
@@ -93,25 +60,27 @@ import { userModule } from "../store/user";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
+import Chain from "moralis"
 
 export default defineComponent({
   name: "Login",
   components: { ProtocolSelector, Header, Footer },
   methods: {
-    async walletConnectLogin(): Promise<void> {
-      return;
-    },
-    async emailLogin(): Promise<void> {
-      return;
-    },
-    async metamaskLogin(): Promise<void> {
+    async doLogin(): Promise<void> {
       try {
+       // const user = await Moralis.authenticate({
+       //   signingMessage: "Sign to create an account on CryptoNotifi",
+       // });
         const user = await Moralis.authenticate({
-          signingMessage: "Sign to create an account on CryptoNotifi",
+          provider: "web3Auth",
+          theme: "light",
+          clientId:
+            "BNAltJRis6TNpbJxvM4WwENUZbgdzE5sGXZ8bCYYHEXlxTrtLVVxwe6WrX80y6IvH14l_clPo_Eqs7ay3TLGKow",
         });
         if (user) {
           const q = new Moralis.Query(NotifiUser);
           const newUser = await q.get(user.id);
+          user.setACL(new Moralis.ACL(user));
           newUser.setACL(new Moralis.ACL(newUser));
           userModule.SET_USER(user);
           this.$router.push({ name: "Home" });

@@ -33,7 +33,8 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: "/",
         name: "Home",
-        redirect: { name: DisplayMode.positions },
+        beforeEnter: RouterGuard.returningUser,
+        redirect: { name: DisplayMode.protocols },
       },
       {
         path: "/positions",

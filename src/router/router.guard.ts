@@ -1,3 +1,4 @@
+import { DisplayMode } from "@/notifi_types";
 import { NavigationGuardNext } from "vue-router";
 import MoralisConfig from "../config/moralis";
 import { userModule } from "../store/user";
@@ -30,6 +31,18 @@ export default class RouterGuard {
     try {
       await CheckLogin();
       next("/");
+    } catch (error) {
+      next();
+    }
+  }
+  static async returningUser(
+    _: unknown,
+    __: unknown,
+    next: NavigationGuardNext
+  ): Promise<void> {
+    try {
+      await CheckLogin();
+      next({ name: DisplayMode.protocols });
     } catch (error) {
       next();
     }
