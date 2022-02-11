@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="pl-4">
     <div v-if="simpleList">
       <va-select
         :options="protocols"

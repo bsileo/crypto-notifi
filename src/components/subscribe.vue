@@ -20,7 +20,7 @@
       </div>
       <va-collapse
         v-model="showSectionProtocols"
-        v-if="showProtocols"
+        v-show="showProtocols"
         :header="selectProtocolHeader"
         class="pb-3"
       >
@@ -32,10 +32,11 @@
           ></ProtocolSelector>
         </div>
       </va-collapse>
+      <va-divider inset />
       <div>
         <div v-if="showSubGeneral" class="row pt-2">
           <va-select
-            class="flex sm12"
+            class="flex xs12 sm8 md6"
             label="Subscription Category"
             v-model="subGeneralTypeID"
             :options="subGeneralTypes"
@@ -48,14 +49,16 @@
           />
           <div
             v-if="this.selectedSubGeneralTypeDescription"
-            class="flex sm12 pt-2 pl-4"
+            class="row pt-2 pl-4"
           >
-            <va-card :bordered="false">
-              <va-card-title>About these Alerts:</va-card-title>
-              <va-card-content>
-                <span v-html="this.selectedSubGeneralTypeDescription"></span>
-              </va-card-content>
-            </va-card>
+            <div class="flex xs12 sm8 md6">
+              <va-card :bordered="false">
+                <va-card-title>About these Alerts:</va-card-title>
+                <va-card-content>
+                  <span v-html="this.selectedSubGeneralTypeDescription"></span>
+                </va-card-content>
+              </va-card>
+            </div>
           </div>
         </div>
         <div class="row pt-2" v-if="showContracts">
@@ -200,7 +203,7 @@
       <div class="row pt-2">
         <va-divider inset />
         <va-input
-          class="flex sm11"
+          class="flex xs12 sm8 md6"
           label="Subscription Name"
           v-model="subName"
           :rules="[this.validName || 'Enter a valid name']"
@@ -365,7 +368,8 @@ export default defineComponent({
     const showToast = vaToast.init;
 
     return {
-      user, showToast,
+      user,
+      showToast,
     };
   },
   emits: ["saved", "cancel"],
@@ -799,7 +803,7 @@ export default defineComponent({
           message: "Subscription added successfully!",
           color: "success",
         });
-        this.$router.push({name: "Home"});
+        this.$router.push({ name: "Home" });
       } catch (error: any) {
         console.log("ERROR-" + error.message);
         this.showToast({
@@ -825,7 +829,6 @@ export default defineComponent({
       return tokenMetadata[0]?.thumbnail;
     },
     selectProtocol(prot: Protocol) {
-      this.selectedProtocolName = prot.name;
       this.selectedProtocol = prot;
     },
   },
