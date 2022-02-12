@@ -755,10 +755,6 @@ export default defineComponent({
       this.contractActivityID = undefined;
       this.contractActivities = res;
     },
-    isValidContractAddress(address: string) {
-      const web3 = new Moralis.Web3();
-      return web3.utils.isAddress(address);
-    },
     async subscribe(): Promise<void> {
       const c = await Subscription.spawn(
         this.subName,

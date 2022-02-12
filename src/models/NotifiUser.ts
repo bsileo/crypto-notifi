@@ -35,16 +35,17 @@ export class NotifiUser extends Moralis.User {
   }
 
   static async tokenBalance(): Promise<number> {
-    const address = "0xd3CF2281e6d8C445905c859b3AbE692a707286cf";
-    //const ethers = Moralis.web3Library;
+    const bal = Moralis.Cloud.run("NotifiBalance");
+    return bal;
+
+    /*const address = "0xd3CF2281e6d8C445905c859b3AbE692a707286cf";
     const options = { chain: "avalanche" };
     const tokens = await Moralis.Web3API.account.getTokenBalances(options);
     const info = tokens.find(
       (tok: any) => tok.token_address.toLowerCase() == address.toLowerCase()
     );
-    //console.log(info);
     const result = Moralis.Units.FromWei(info.balance, info.decimals);
-    return result;
+    return result;*/
   }
 }
 

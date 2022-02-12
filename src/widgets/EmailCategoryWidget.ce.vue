@@ -47,6 +47,7 @@ import { SubscriptionType } from "@/models/SubscriptionType";
 import { NotifiUser } from "@/models/NotifiUser";
 import Moralis from "moralis";
 import { computed, onMounted, ref } from "vue";
+import { VaInput, VaButton, VaSelect, VaIcon, VaAlert, VaDivider } from "vuestic-ui";
 
 interface UserResult {
   user: NotifiUser;
@@ -55,7 +56,9 @@ interface UserResult {
 
 export default {
   name: "EmailCategoryWidget",
-  components: {},
+
+  // eslint-disable-next-line vue/no-unused-components
+  components: { VaInput, VaButton, VaSelect, VaIcon, VaAlert, VaDivider },
   props: {
     protocol: { type: String, required: true },
   },

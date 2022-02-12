@@ -12606,7 +12606,7 @@
     "randombytes" "^2.1.0"
     "utf8" "3.0.0"
 
-"web3@*", "web3@^1.6.0":
+"web3@*":
   "integrity" "sha512-c299lLiyb2/WOcxh7TinwvbATaMmrgNIeAzbLbmOKHI0LcwyfsB1eu2ReOIrfrCYDYRW2KAjYr7J7gHawqDNPQ=="
   "resolved" "https://registry.npmjs.org/web3/-/web3-1.6.1.tgz"
   "version" "1.6.1"
