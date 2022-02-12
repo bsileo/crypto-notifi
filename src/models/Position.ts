@@ -83,7 +83,7 @@ export class Position extends Object {
   public get value(): number {
     if (this._type == "lpToken") {
       if (this.token0 && this.token1) {
-        const bal0 = this.token0.price || 0;
+        const bal0 = this.token0.balance || 0;
         const price0 = this.token0.price || 0;
         const bal1 = this.token1.balance || 0;
         const price1 = this.token1.price || 0;
