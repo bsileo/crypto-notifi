@@ -7,6 +7,7 @@ import { Contract } from "./Contract";
 import { ContractActivity } from "./ContractActivity";
 import { Protocol } from "./Protocol";
 import { Position } from "./Position";
+import { ChainEndpoint } from "cookietrack-types";
 
 export enum SubscriptionStatus {
   "active" = "active",
@@ -161,7 +162,7 @@ export class Subscription extends Moralis.Object {
       position.protocol
     );
     sub.set("contractAddress", position.address);
-    sub.set("contractChain", position.chain);
+    sub.set("contractChain", ChainEndpoint[position.chain]);
     sub.set("positionStatus", position.status);
     sub.setACL(this.getACL(user));
     return sub;
