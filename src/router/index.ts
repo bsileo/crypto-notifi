@@ -8,7 +8,7 @@ const Subscriptions = () =>
 const Protocols = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/Protocols.vue");
 const Subscribe = () =>
-  import(/* webpackChunkName: "group-user" */ "@/components/subscribe.vue");
+  import(/* webpackChunkName: "subscribe" */ "@/components/subscribe.vue");
 const ManagerSelect = () =>
   import(/* webpackChunkName: "group-manager" */ "@/views/ManagerSelect.vue");
 const ProtocolManager = () =>
@@ -52,22 +52,23 @@ const routes: Array<RouteRecordRaw> = [
         component: Protocols,
       },
       {
-        path: "/subscribe",
+        path: "/subscription",
         name: "Subscribe",
         component: Subscribe,
+        props: true,
       },
       {
         path: "manager/select",
         name: "ManageSelectProtocol",
         component: ManagerSelect,
-        meta: { manager: true}
+        meta: { manager: true },
       },
       {
         path: "protocol/:id",
         name: "ManageProtocol",
         component: ProtocolManager,
         props: true,
-        meta: { manager: true}
+        meta: { manager: true },
       },
     ],
   },
