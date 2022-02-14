@@ -8,7 +8,7 @@ import {
 import { store } from ".";
 
 import { ChannelModel, UserChannel } from "@/models/Channel";
-import Moralis from "@/config/moralis";
+import Moralis from "moralis";
 
 @Module({ dynamic: true, store: store, namespaced: true, name: "Channels" })
 export class ChannelsModule extends VuexModule {
@@ -18,6 +18,7 @@ export class ChannelsModule extends VuexModule {
     { id: "telegram", name: "Telegram", multiple: true },
   ];
   MYCHANNELS: Array<UserChannel> = [];
+  QUERY: any = undefined;
 
   get myChannels(): Array<UserChannel> {
     return this.MYCHANNELS;
@@ -29,8 +30,19 @@ export class ChannelsModule extends VuexModule {
 
   @Mutation
   public ADD_MY_CHANNEL(channel: UserChannel): void {
-    this.MYCHANNELS.push(channel);
-    channel.initialize();
+    const index = this.MYCHANNELS.findIndex((e) => e.id == channel.id);
+    if (index > -1) {
+      this.MYCHANNELS.splice(index, 1, channel);
+    } else {
+      this.MYCHANNELS.push(channel);
+    }
+  }
+  @Mutation
+  public RemoveMyChannel(channel: UserChannel): void {
+    const index = this.MYCHANNELS.findIndex((e) => e.id == channel.id);
+    if (index > -1) {
+      this.MYCHANNELS.splice(index, 1);
+    }
   }
 
   @Mutation
@@ -40,10 +52,52 @@ export class ChannelsModule extends VuexModule {
       c.initialize();
     });
   }
+  @Mutation
+  public SetQuery(q: any): void {
+    this.QUERY = q;
+  }
 
   @Action
   public AddMyChannel(channel: UserChannel): void {
     this.context.commit("ADD_MY_CHANNEL", channel);
+  }
+
+  @Action
+  async setupChannels(): Promise<void> {
+    const u = Moralis.User.current();
+    if (!u) {
+      this.SetMyChannels([]);
+      this.context.commit("SetQuery", undefined);
+      return;
+    }
+    query.equalTo("User", u);
+    this.context.commit("SetQuery", query);
+    const subscription = await query.subscribe();
+    subscription.on("open", () => {
+      query.find().then((results: Array<UserChannel>) => {
+        this.SetMyChannels(results);
+      });
+    });
+    subscription.on("create", (chan: UserChannel) => {
+      this.AddMyChannel(chan);
+    });
+    subscription.on("update", (chan: UserChannel) => {
+      // console.log("object updated");
+      this.AddMyChannel(chan);
+    });
+    subscription.on("enter", (chan: UserChannel) => {
+      // console.log("object entered");
+      this.AddMyChannel(chan);
+    });
+    subscription.on("leave", (chan: UserChannel) => {
+      this.RemoveMyChannel(chan);
+    });
+    subscription.on("delete", (chan: UserChannel) => {
+      this.RemoveMyChannel(chan);
+    });
+    subscription.on("close", () => {
+      console.log("UserChannel subscription closed");
+    });
   }
 }
 
@@ -96,4 +150,4 @@ export const setupMyChannelsSub = async (): Promise<void> => {
     console.log("UserChannel subscription closed");
   });
 };
-setupMyChannelsSub();
+//setupMyChannelsSub();

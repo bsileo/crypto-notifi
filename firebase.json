@@ -1,0 +1,60 @@
+{
+  "functions": {
+    "predeploy": "npm --prefix functions run build",
+    "source": "../cookietrack-api/functions"
+  },
+  "hosting": {
+    "public": "./dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/routes",
+        "function": "app"
+      },
+      {
+        "source": "/avalanche/**",
+        "function": "app"
+      },
+      {
+        "source": "/bsc/**",
+        "function": "app"
+      },
+      {
+        "source": "/ethereum/**",
+        "function": "app"
+      },
+      {
+        "source": "/fantom/**",
+        "function": "app"
+      },
+      {
+        "source": "/polygon/**",
+        "function": "app"
+      },
+      {
+        "source": "/solana/**",
+        "function": "app"
+      },
+      {
+        "source": "/terra/**",
+        "function": "app"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [ {
+      "source": "/api",
+      "headers": [ {
+        "key": "Cache-Control",
+        "value": "max-age=600"
+      } ]
+     }
+    ]
+  }
+}

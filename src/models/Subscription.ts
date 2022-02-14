@@ -30,6 +30,13 @@ export class Subscription extends Moralis.Object {
   get generalType(): SubscriptionType {
     return this.get("GeneralSubType");
   }
+  get category(): SubscriptionType {
+    return this.get("GeneralSubType");
+  }
+  set category(cat: SubscriptionType) {
+    this.set("GeneralSubType"), cat;
+  }
+
   // Return the name of the Subscription Type I am associated with.
   generalTypeName(): string {
     const ty = this.generalType;
@@ -45,10 +52,21 @@ export class Subscription extends Moralis.Object {
   get subscriptionType(): SubscriptionTypes {
     return this.get("subscriptionType") as SubscriptionTypes;
   }
+  set subscriptionType(st: SubscriptionTypes) {
+    this.set("subscriptionType", st);
+  }
 
   get userID(): string | undefined {
     return this.get("userID");
   }
+  get user(): NotifiUser {
+    return this.get("User");
+  }
+  set user(u: NotifiUser) {
+    this.set("User", u);
+    this.set("userID", u.id); // legacy code compatibility
+  }
+
   get fromAddress(): string {
     return this.get("fromAddress");
   }

@@ -1,4 +1,3 @@
-import { userModule } from "@/store/user";
 import Moralis from "moralis";
 
 export type TokenBalance = {
