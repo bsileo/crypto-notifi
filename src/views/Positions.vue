@@ -1,12 +1,16 @@
 <template>
-  <div v-if="!showNoPositions" class="row pb-1 pt-1">
-    <va-input class="flex xs5" label="Search Names" v-model="search">
-    </va-input>
-    <div class="flex xs2">
-      <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
+  <div class="container gutter--sm">
+    <div v-if="!showNoPositions" class="row pb-1 pt-1">
+      <va-input class="flex xs5" label="Search Names" v-model="search">
+      </va-input>
+      <div class="flex xs2">
+        <va-button
+          icon="refresh"
+          color="secondary"
+          @click="refresh"
+        ></va-button>
+      </div>
     </div>
-  </div>
-  <div class="layout gutter--sm">
     <va-inner-loading :loading="protocolsLoading" :size="60">
       <div class="row">
         <ProtocolInfo
@@ -51,7 +55,7 @@ export default defineComponent({
     const rawCount = ref(0);
 
     const showNoPositions = computed(() => {
-      return rawProtocols.value.length == 0 && !protocolsLoading.value;
+      return rawCount.value == 0 && !protocolsLoading.value;
     });
 
     return {
