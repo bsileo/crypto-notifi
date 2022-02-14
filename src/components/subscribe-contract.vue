@@ -151,6 +151,12 @@ export default defineComponent({
     const user: NotifiUser | undefined = inject("user");
     const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
 
+    const clearProtocol = () => {
+      selectedProtocol.value = undefined;
+    };
+    const selectProtocol = (prot: Protocol) => {
+      selectedProtocol.value = prot;
+    };
     const selectedProtocol = computed({
       get(): Protocol | undefined {
         return intSelectedProtocol.value;
@@ -191,6 +197,8 @@ export default defineComponent({
     return {
       user,
       selectedProtocol,
+      selectProtocol,
+      clearProtocol,
       protocols,
       protocolChains,
       chains,
@@ -332,9 +340,6 @@ export default defineComponent({
         options
       );
       return tokenMetadata[0]?.thumbnail;
-    },
-    selectProtocol(prot: Protocol) {
-      this.selectedProtocol = prot;
     },
   },
 });
