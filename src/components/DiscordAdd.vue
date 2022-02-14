@@ -42,7 +42,7 @@ export default defineComponent({
   },
   methods: {
     updateProviderData(): void {
-      console.log(`Update PD ${this.valid}--${this.providerdata}`);
+      //console.log(`Update PD ${this.valid}--${this.providerdata}`);
       if (this.valid) {
         this.$emit("providerData", this.providerdata);
       } else {
