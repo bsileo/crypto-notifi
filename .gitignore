@@ -26,3 +26,5 @@ pnpm-debug.log*
 *.sw?
 server.log
 deploy-godaddy.js
+.firebaserc
+.firebase/*
