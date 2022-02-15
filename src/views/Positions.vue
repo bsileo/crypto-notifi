@@ -18,7 +18,7 @@
           v-bind:key="protocol.id"
           :allowSelect="false"
           :protocol="protocol"
-          :displayMode="wide"
+          displayMode="wide"
           :showPositions="true"
         >
         </ProtocolInfo>

@@ -127,7 +127,6 @@ export default defineComponent({
     });
 
     const setupValues = async (): Promise<void> => {
-      console.log("Setup");
       const low =
         subscription.value != undefined &&
         subscription.value.positionLow !== undefined;
