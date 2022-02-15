@@ -64,6 +64,21 @@
               @subscribe="subscribe"
             >
             </ProtocolInfo>
+
+            <va-card
+              v-if="!loading && showAdder"
+              href="#"
+              class="flex mb-1 xs12 sm4 lg3 xl2"
+              @click.prevent="$emit('add')"
+            >
+              <va-card-title>
+                <va-chip>Recommend</va-chip>
+              </va-card-title>
+              <va-card-content style="text-align-center;">
+                Submit a protocal
+                <va-icon name="add" :size="80" color="primary"></va-icon>
+              </va-card-content>
+            </va-card>
           </div>
         </va-inner-loading>
       </va-infinite-scroll>
@@ -72,7 +87,7 @@
 </template>
 
 <script lang="ts">
-import { Protocol } from "@/models/Protocol";
+import { Protocol, SiteStatus } from "@/models/Protocol";
 import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Moralis from "moralis";
@@ -82,7 +97,7 @@ import ProtocolInfo from "@/components/ProtocolInfo.vue";
 export default defineComponent({
   name: "ProtocolSelector",
   components: { ProtocolInfo },
-  emits: ["selection", "subscribe"],
+  emits: ["selection", "subscribe", "add"],
   props: {
     showSearch: { type: Boolean, required: false, default: true },
     showVote: { type: Boolean, required: false, default: false },
@@ -93,6 +108,8 @@ export default defineComponent({
     simpleList: { type: Boolean, required: false, default: false },
     simpleMulti: { type: Boolean, required: false, default: true },
     allowSelect: { type: Boolean, required: false, default: true },
+    showRequested: { type: Boolean, required: false, default: false },
+    showAdd: { type: Boolean, required: false, default: false },
     manager: { type: Boolean, required: false, default: false },
   },
   setup(props) {
@@ -105,6 +122,7 @@ export default defineComponent({
     const filteredProtocols = ref<Protocol[]>([]);
     const queryLimit = ref<number>(20);
     const loading = ref(false);
+    const showAdder = ref(props.showAdd);
     const showFavs = computed((): boolean => {
       return props.showFavorites;
     });
@@ -120,6 +138,7 @@ export default defineComponent({
       queryLimit,
       loading,
       showFavs,
+      showAdder,
     };
   },
   async mounted() {
@@ -184,6 +203,9 @@ export default defineComponent({
         query.matches("name", this.search);
         console.log(`Search term ${this.search}`);
       }*/
+      if (!this.showRequested) {
+        query.notEqualTo("siteStatus", SiteStatus.requested);
+      }
       query.include("ProtocolStatus");
       query.limit(this.queryLimit);
       if (!refresh) {
@@ -213,7 +235,7 @@ export default defineComponent({
       let res2: Protocol[] = [];
       if (this.search) {
         const test = this.search.toLowerCase();
-        for (let i=0; i++; i< res.length) {
+        for (let i = 0; i++; i < res.length) {
           if (res[i].name.search(test) != -1) {
             res2.push(res[i]);
           }
