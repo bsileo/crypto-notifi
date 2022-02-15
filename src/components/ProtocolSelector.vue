@@ -66,7 +66,7 @@
             </ProtocolInfo>
 
             <va-card
-              v-if="!loading && showAdd"
+              v-if="!loading && showAdder"
               href="#"
               class="flex mb-1 xs12 sm4 lg3 xl2"
               @click.prevent="$emit('add')"
@@ -122,6 +122,7 @@ export default defineComponent({
     const filteredProtocols = ref<Protocol[]>([]);
     const queryLimit = ref<number>(20);
     const loading = ref(false);
+    const showAdder = ref(props.showAdd);
     const showFavs = computed((): boolean => {
       return props.showFavorites;
     });
@@ -137,6 +138,7 @@ export default defineComponent({
       queryLimit,
       loading,
       showFavs,
+      showAdder,
     };
   },
   async mounted() {
