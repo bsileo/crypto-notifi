@@ -7,7 +7,7 @@ import { TokenBalance } from "@/models/NotifiUser";
 import { SubscriptionType } from "./SubscriptionType";
 import { Position } from "./Position";
 import { APIResponse } from "cookietrack-types";
-
+import { ProtocolStatus } from "./ProtocolStatus";
 
 export enum ProtocolLevel {
   "Free" = "Free",
@@ -22,6 +22,7 @@ export enum StakingLevel {
 }
 
 export enum SiteStatus {
+  "requested" = "Requested",
   "pending" = "Pending",
   "inprogress" = "In-Progress",
   "active" = "Active",
@@ -50,6 +51,19 @@ enum LimitType {
 
 type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends Moralis.Object {
+  constructor() {
+    // Pass the ClassName to the Moralis.Object constructor
+    super("Protocol");
+    // All other initialization
+    this.set("tokendata", {
+      symbol: "",
+      contractAddress: "",
+      chain: "",
+      basicQuantity: 0,
+      goldQuantity: 0,
+    });
+  }
+
   get name(): string {
     return this.get("name");
   }
@@ -90,6 +104,9 @@ export class Protocol extends Moralis.Object {
       }
     });
     return res;
+  }
+  set chains(chains: Chain[]) {
+    this.set("chains", chains);
   }
 
   get tokenData(): TokenData {
@@ -214,30 +231,17 @@ export class Protocol extends Moralis.Object {
     return await q.count();
   }
 
-  constructor() {
-    // Pass the ClassName to the Moralis.Object constructor
-    super("Protocol");
-    // All other initialization
-    this.set("tokendata", {
-      symbol: "",
-      contractAddress: "",
-      chain: "",
-      basicQuantity: 0,
-      goldQuantity: 0,
-    });
-  }
-
   static async fetch(id: string): Promise<Protocol> {
     const q = new Moralis.Query(Protocol);
     const p = await q.get(id);
     return p;
   }
 
-  static spawn(name: string, website: string, iconURL: string): Protocol {
+  static spawn(name: string, website: string, iconURL?: string): Protocol {
     const a = new Protocol();
     a.set("name", name);
     a.set("website", website);
-    a.set("iconURL", iconURL);
+    if (iconURL) a.set("iconURL", iconURL);
     return a;
   }
 
@@ -324,6 +328,9 @@ export class Protocol extends Moralis.Object {
   get protocolSiteStatus(): SiteStatus {
     return this.get("siteStatus");
   }
+  set protocolSiteStatus(s: SiteStatus) {
+    this.set("siteStatus", s);
+  };
 
   get protocolPendingVotes(): number {
     const ps = this.get("ProtocolStatus");
@@ -353,10 +360,7 @@ export class Protocol extends Moralis.Object {
   }
 
   async makeProtocolStatus(): Promise<any> {
-    const pStatus = Moralis.Object.extend("ProtocolStatus");
-    let ps = new pStatus();
-    ps.set("sitePendingVotes", 0);
-    ps.set("Protocol", this);
+    let ps = ProtocolStatus.spawn(this);
     ps = await ps.save();
     this.set("ProtocolStatus", ps);
     this.save();
