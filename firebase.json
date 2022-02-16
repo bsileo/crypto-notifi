@@ -1,7 +1,6 @@
 {
   "functions": {
-    "predeploy": "npm --prefix functions run build",
-    "source": "../cookietrack-api/functions"
+    "source": "node_modules/cookietrack-api/functions"
   },
   "hosting": {
     "public": "./dist",

@@ -42,7 +42,7 @@ import { prettyNumber } from "@/Utilities";
 import { TokenStatus } from "cookietrack-types";
 
 export default defineComponent({
-  name: "position",
+  name: "PositionListItem",
   components: { PositionSubscription },
   props: {
     position: { type: Position, required: true },
