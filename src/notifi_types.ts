@@ -14,3 +14,13 @@ export enum UserMode {
   "user" = "user",
   "manager" = "manager",
 }
+
+
+export type ValueOperator = ">" | "<" | "=";
+
+// ZRecords
+export const ValueOperatorNames: Record<ValueOperator, string> = {
+  ">": "Great Than",
+  "<": "Less Than",
+  "=": "Equal To",
+}

@@ -74,11 +74,19 @@
           </va-popover>
         </div>
       </div>
-      <div v-if="valueDescription" class="row ml-2 pb-1">
-        <div class="flex xs3"><strong>Value is:</strong></div>
-        <div class="flex xs9">
-          {{ valueDescription }}
-        </div>
+    </div>
+    <div v-if="subscriptionType == 'Position'" class="row ml-2 pb-1">
+      <div class="flex xs3"><strong>Contract:</strong></div>
+      <div class="flex xs9">
+        <a :href="internalContractURL" target="_blank">{{
+          internalContractShortAddress
+        }}</a>
+      </div>
+    </div>
+    <div v-if="valueDescription" class="row ml-2 pb-1">
+      <div class="flex xs3"><strong>Value is:</strong></div>
+      <div class="flex xs9">
+        {{ valueDescription }}
       </div>
     </div>
     <div v-if="showProtocol" class="row ml-2 pb-1">
@@ -157,6 +165,7 @@ import { Subscription } from "@/models/Subscription";
 import { SubscriptionTypes } from "@/models/Subscription";
 import { UserChannel } from "@/models/Channel";
 import { channelsModule } from "@/store/channels";
+import { ValueOperatorNames } from "@/notifi_types";
 
 export default defineComponent({
   name: "SubscriptionCard",
@@ -224,6 +233,8 @@ export default defineComponent({
         return "announcement";
       } else if (t == SubscriptionTypes.contract) {
         return "gavel";
+      } else if (t == SubscriptionTypes.position) {
+        return "radar";
       }
       return "";
     },
@@ -249,6 +260,20 @@ export default defineComponent({
     contractURL(): string {
       if (this.currentSubscription.contract) {
         return this.currentSubscription.contract.contractURL;
+      } else {
+        return "";
+      }
+    },
+    internalContractShortAddress(): string {
+      if (this.currentSubscription) {
+        return this.currentSubscription.internalShortContractAddress();
+      } else {
+        return "";
+      }
+    },
+    internalContractURL(): string {
+      if (this.currentSubscription) {
+        return this.currentSubscription.internalContractURL();
       } else {
         return "";
       }
@@ -286,11 +311,22 @@ export default defineComponent({
       }
     },
     valueDescription(): string {
-      if (this.currentSubscription) {
-        return `${this.currentSubscription.valueOperator} ${this.currentSubscription.value}`;
-      } else {
-        return "";
+      const sub = this.currentSubscription;
+      if (!sub) return "";
+      const t = sub.subscriptionType;
+      if (t == SubscriptionTypes.position) {
+        if (sub.positionLow && sub.positionHigh)
+          return `Below $${sub.positionLow} / Above $${sub.positionHigh}`;
+        if (sub.positionLow) return `less than $${sub.positionLow}`;
+        if (sub.positionHigh) return `greater than $${sub.positionHigh}`;
       }
+      if (t == SubscriptionTypes.wallet) {
+        if (sub.valueOperator) {
+          const op = ValueOperatorNames[sub.valueOperator];
+          return `${op} ${sub.value}`;
+        }
+      }
+      return "";
     },
     name: {
       get(): string {
