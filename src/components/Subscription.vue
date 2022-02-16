@@ -315,10 +315,7 @@ export default defineComponent({
       if (!sub) return "";
       const t = sub.subscriptionType;
       if (t == SubscriptionTypes.position) {
-        if (sub.positionLow && sub.positionHigh)
-          return `Below $${sub.positionLow} / Above $${sub.positionHigh}`;
-        if (sub.positionLow) return `less than $${sub.positionLow}`;
-        if (sub.positionHigh) return `greater than $${sub.positionHigh}`;
+        return sub.positionDescription();
       }
       if (t == SubscriptionTypes.wallet) {
         if (sub.valueOperator) {

@@ -1,26 +1,38 @@
 <template>
   <div class="row">
-    <va-button
-      v-if="subscription"
-      icon="edit"
-      @click="edit"
-      size="small"
-    ></va-button>
-    <va-button
-      v-if="subscription"
-      icon="delete"
-      @click="deleteSub"
-      color="danger"
-      class="ml-1"
-      size="small"
-    ></va-button>
-    <va-button
-      v-if="!subscription"
-      icon="add"
-      @click="add"
-      size="small"
-    ></va-button>
+    <div v-if="subscription" class="flex xs6" style="font-size: smaller">
+      <div v-if="subscription.positionLow" :style="lowPositionStyle">
+        <va-icon
+          name="arrow_drop_down"
+          :color="lowPositionViolated ? 'danger' : ''"
+        />
+        ${{ subscription.positionLow }}
+      </div>
+      <div v-if="subscription.positionHigh" :style="highPositionStyle">
+        <va-icon
+          name="arrow_drop_up"
+          :color="highPositionViolated ? 'danger' : ''"
+        />
+        ${{ subscription.positionHigh }}
+      </div>
+    </div>
+    <div v-if="subscription" class="flex xs6">
+      <va-button icon="edit" @click="edit" size="small"></va-button>
+      <va-button
+        icon="delete"
+        @click="deleteSub"
+        color="danger"
+        class="ml-1"
+        size="small"
+      ></va-button>
+    </div>
   </div>
+  <va-button
+    v-if="!subscription"
+    icon="add"
+    @click="add"
+    size="small"
+  ></va-button>
   <va-modal v-model="show" no-dismiss hide-default-actions>
     <div class="row">
       <va-input
@@ -42,8 +54,8 @@
         class="flex xs3"
         label="Less Than"
         :rules="lowRules"
+        :error="newLowPositionViolated"
         @change="setLowPercent"
-        
       ></va-input>
       <va-slider
         v-model="lowValuePercent"
@@ -74,6 +86,7 @@
         label="Greater Than"
         class="flex xs3"
         :rules="highRules"
+        :error="newHighPositionViolated"
         @change="setHighPercent"
       ></va-input>
     </div>
@@ -200,7 +213,7 @@ export default defineComponent({
     const lowRules = computed(() => {
       return [
         (val: number) => {
-          return val - props.position.value > 0.009
+          return val - roundToTwo(props.position.value) > 0.001
             ? "Must be lower than current value"
             : true;
         },
@@ -244,6 +257,53 @@ export default defineComponent({
       },
     });
 
+    const lowPositionViolated = computed((): boolean => {
+      if (
+        subscription.value == undefined ||
+        subscription.value.positionLow == undefined
+      )
+        return false;
+      return subscription.value.positionLow > props.position.value;
+    });
+
+    const lowPositionStyle = computed(() => {
+      return {
+        color: lowPositionViolated.value ? "red" : "",
+      };
+    });
+    const highPositionViolated = computed((): boolean => {
+      if (
+        subscription.value == undefined ||
+        subscription.value.positionHigh == undefined
+      )
+        return false;
+      return subscription.value.positionHigh < props.position.value;
+    });
+    const newHighPositionViolated = computed((): boolean => {
+      return intHighValue.value < roundToTwo(props.position.value);
+    });
+    const newLowPositionViolated = computed((): boolean => {
+      return intLowValue.value > roundToTwo(props.position.value);
+    });
+
+    const highPositionStyle = computed(() => {
+      return {
+        color: highPositionViolated.value ? "red" : "",
+      };
+    });
+    const positionSummary = computed((): string => {
+      let res = "";
+      if (!subscription.value) return res;
+      const sub = subscription.value;
+      if (subscription.value.positionLow) {
+        res = `${res} <va-icon name="arrow_drop_down"></va-icon> $${sub.positionLow}`;
+      }
+      if (sub.positionHigh) {
+        res = `${res} <va-icon name="arrow_drop_up" :size="16"></va-icon> $${sub.positionHigh}`;
+      }
+      return res;
+    });
+
     const highRules = computed(() => {
       return [
         (val: number) => {
@@ -275,7 +335,13 @@ export default defineComponent({
     };
 
     const validSave = computed(() => {
-      return channels.value.length > 0;
+      return (
+        valueChk.value &&
+        !newHighPositionViolated.value &&
+        valueChk.value &&
+        !newLowPositionViolated.value &&
+        channels.value.length > 0
+      );
     });
     const save = async () => {
       let sub = subscription.value;
@@ -286,7 +352,7 @@ export default defineComponent({
       if (valueChk.value) {
         sub.positionHigh = highValue.value;
         sub.positionLow = lowValue.value;
-        //sub.set("positionBaseline", currentValue.value);
+        sub.positionBaseline = props.position.value;
       } else {
         sub.positionHigh = undefined;
         sub.positionLow = undefined;
@@ -325,6 +391,13 @@ export default defineComponent({
       save,
       prettyNumber,
       setChannels,
+      positionSummary,
+      lowPositionStyle,
+      lowPositionViolated,
+      highPositionStyle,
+      highPositionViolated,
+      newHighPositionViolated,
+      newLowPositionViolated,
     };
   },
 });
