@@ -27,7 +27,7 @@
           <div v-else>{{ balance }} @ ${{ price }}</div>
         </va-list-item-label>
       </va-list-item-section>
-      <va-list-item-section icon>
+      <va-list-item-section>
         <PositionSubscription :position="position"></PositionSubscription>
       </va-list-item-section>
     </va-list-item>

@@ -108,13 +108,15 @@ export class Subscription extends Moralis.Object {
 
   internalContractURL(): string {
     const chain = this.contractChain;
-    if (chain == "avalanche" ) {
+    if (chain == "avalanche") {
       return `https://snowtrace.io/address/${this.contractAddress}`;
     } else if (chain == "eth") {
       return `https://etherscan.io/address/${this.contractAddress}`;
     } else {
       //throw `Chain not configured in contract.contractURL() for ${this.id} = ${chain}`;
-      console.log(`Chain not configured in subscription.contractURL() for ${this.id} = ${chain}`);
+      console.log(
+        `Chain not configured in subscription.contractURL() for ${this.id} = ${chain}`
+      );
     }
     return "";
   }
@@ -140,6 +142,23 @@ export class Subscription extends Moralis.Object {
   set positionHigh(val: number | undefined) {
     if (val) this.set("positionHigh", parseFloat(val.toString()));
     else this.unset("positionHigh");
+  }
+  get positionBaseline(): number | undefined {
+    return this.get("positionBaseline");
+  }
+  set positionBaseline(val: number | undefined) {
+    if (val) this.set("positionBaseline", parseFloat(val.toString()));
+    else this.unset("positionBaseline");
+  }
+
+  positionDescription(): string {
+    if (this.subscriptionType == SubscriptionTypes.position)
+      if (this.positionLow && this.positionHigh) {
+        return `Below $${this.positionLow} / Above $${this.positionHigh}`;
+      }
+    if (this.positionLow) return `less than $${this.positionLow}`;
+    if (this.positionHigh) return `greater than $${this.positionHigh}`;
+    return "";
   }
 
   async channelCount(): Promise<number> {
@@ -246,7 +265,9 @@ export class Subscription extends Moralis.Object {
     const q = myChans.query();
     const current = await q.find();
     current.forEach((curChan: UserChannel) => {
-      const idx = channels.findIndex( (newChan: UserChannel) => newChan.id == curChan.id)
+      const idx = channels.findIndex(
+        (newChan: UserChannel) => newChan.id == curChan.id
+      );
       if (idx == -1) {
         myChans.remove(curChan);
       }
