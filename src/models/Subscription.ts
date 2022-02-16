@@ -1,3 +1,4 @@
+import { ValueOperator } from "@/notifi_types";
 import { NotifiUser } from "@/models/NotifiUser";
 import { SubscriptionType } from "@/models/SubscriptionType";
 import { Chain } from "@/models/Contract";
@@ -77,7 +78,7 @@ export class Subscription extends Moralis.Object {
   get value(): number {
     return this.get("value");
   }
-  get valueOperator(): string {
+  get valueOperator(): ValueOperator {
     return this.get("valueOperator");
   }
   get description(): string {
@@ -95,6 +96,27 @@ export class Subscription extends Moralis.Object {
 
   get contractAddress(): string {
     return this.get("contractAddress");
+  }
+
+  internalShortContractAddress(): string {
+    return (
+      this.contractAddress.slice(1, 6) +
+      "..." +
+      this.contractAddress.substring(this.contractAddress.length - 4)
+    );
+  }
+
+  internalContractURL(): string {
+    const chain = this.contractChain;
+    if (chain == "avalanche" ) {
+      return `https://snowtrace.io/address/${this.contractAddress}`;
+    } else if (chain == "eth") {
+      return `https://etherscan.io/address/${this.contractAddress}`;
+    } else {
+      //throw `Chain not configured in contract.contractURL() for ${this.id} = ${chain}`;
+      console.log(`Chain not configured in subscription.contractURL() for ${this.id} = ${chain}`);
+    }
+    return "";
   }
 
   get contractActivity(): ContractActivity {
