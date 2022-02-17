@@ -1,7 +1,7 @@
 <template>
   <div class="pl-4">
     <div v-show="!selectedProtocol" class="row">
-      <div v-show="subType == undefined" class="pb-3">
+      <div class="pb-3">
         <h1>Select a Protocol:</h1>
       </div>
       <ProtocolSelector
@@ -34,10 +34,31 @@
     </div>
   </div>
   <va-divider inset />
-  <div>
-    <div class="flex row pt-2">
+  <div v-if="selectedProtocol">
+    <div v-if="protocolNoTypes" class="flex row pt-2">
+      <div class="flex xs12 sm8 md6">
+        <va-card :bordered="false">
+          <va-card-title>Vote for this Protocol!</va-card-title>
+          <va-card-content>
+            This protocol has not joined up with Notifi yet. Click to Vote and
+            help encourage them to share News and Information here!
+          </va-card-content>
+          <va-card-actions>
+            <va-popover
+              color="primary"
+              message="Request support for this Protocol on Notifi"
+            >
+              <va-button size="large" @click="voteFor(protocol)"
+                >Vote</va-button
+              >
+            </va-popover>
+          </va-card-actions>
+        </va-card>
+      </div>
+    </div>
+    <div v-else class="flex row pt-2">
       <va-select
-        class="flex xs12 sm8 md6"
+        class="flex xs12 sm8 md6 lg3"
         label="Subscription Category"
         v-model="subGeneralTypeID"
         :options="subGeneralTypes"
@@ -62,136 +83,128 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, inject, computed, ref, watch } from "vue";
-
+<script setup lang="ts">
+import ProtocolSelector from "./ProtocolSelector.vue";
+import ProtocolInfo from "./ProtocolInfo.vue";
 import { Subscription } from "@/models/Subscription";
 import {
   SubscriptionType,
   SubscriptionTypeStatus,
 } from "@/models/SubscriptionType";
 import { Protocol } from "@/models/Protocol";
-
+import { inject, computed, ref, watch } from "vue";
 import Moralis from "moralis";
 import { NotifiUser } from "@/models/NotifiUser";
-import ProtocolSelector from "./ProtocolSelector.vue";
-import ProtocolInfo from "./ProtocolInfo.vue";
 
-export default defineComponent({
-  name: "SubscribeProtocol",
-  components: { ProtocolSelector, ProtocolInfo },
-  props: {
-    subscription: { type: Subscription, required: false },
-    protocol: { type: Protocol, required: false },
+// eslint-disable-next-line no-undef
+const props = defineProps({
+  subscription: { type: Subscription, required: false },
+  protocol: { type: Protocol, required: false },
+});
+// eslint-disable-next-line no-undef
+const emit = defineEmits(["changed"]);
+
+//const user: NotifiUser | undefined = inject("user");
+const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
+const subGeneralTypes = ref<SubscriptionType[]>([]);
+const intSubGeneralTypeID = ref("");
+
+const subGeneralTypeID = computed({
+  get(): string {
+    return intSubGeneralTypeID.value;
   },
-  emits: ["changed"],
-  setup(props, { emit }) {
-    const user: NotifiUser | undefined = inject("user");
-    const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
-    const subGeneralTypes = ref<SubscriptionType[]>([]);
-
-    const intSubGeneralTypeID = ref("");
-    const subGeneralTypeID = computed({
-      get(): string {
-        return intSubGeneralTypeID.value;
-      },
-      set(val: string): void {
-        intSubGeneralTypeID.value = val;
-        emit("changed");
-      },
-    });
-
-    const selectedProtocol = computed({
-      get(): Protocol | undefined {
-        return intSelectedProtocol.value;
-      },
-      set(val: Protocol | undefined): void {
-        intSelectedProtocol.value = val;
-        emit("changed");
-      },
-    });
-    const selectedSubGeneralTypeName = computed((): string | undefined => {
-      const t = selectedSubGeneralType.value;
-      return t?.name;
-    });
-
-    const selectedSubGeneralTypeDescription = computed(
-      (): string | undefined => {
-        const t = selectedSubGeneralType.value;
-        return t?.description;
-      }
-    );
-
-    const selectedSubGeneralType = computed(
-      (): SubscriptionType | undefined => {
-        const t = subGeneralTypes.value.find(
-          (e) => e.id == subGeneralTypeID.value
-        );
-        return t;
-      }
-    );
-
-    const fetchSubGeneralTypes = async (): Promise<void> => {
-      const q = new Moralis.Query(SubscriptionType);
-      q.equalTo("protocol", selectedProtocol.value);
-      q.equalTo("status", SubscriptionTypeStatus.active);
-      const res = await q.find();
-      subGeneralTypeID.value = "";
-      subGeneralTypes.value.length = 0;
-      subGeneralTypes.value.push(...res);
-    };
-
-    const irrigate = (s: Subscription): void => {
-      if (selectedSubGeneralType.value != undefined)
-        s.category = selectedSubGeneralType.value;
-      if (selectedProtocol.value != undefined)
-        s.protocol = selectedProtocol.value;
-    };
-
-    const message = computed((): string => {
-      const info = selectedSubGeneralTypeName.value || "[Select a Type above]";
-      return `the <strong>${selectedProtocolName.value}</strong> Protocol about <strong>${info}</strong>`;
-    });
-
-    const selectedProtocolName = computed((): string => {
-      const p = intSelectedProtocol.value;
-      if (!p) {
-        return "";
-      } else {
-        return p.name;
-      }
-    });
-
-    const validSubmit = computed((): boolean => {
-      return selectedProtocolName.value != "" && subGeneralTypeID.value != "";
-    });
-
-    const clearProtocol = () => {
-      selectedProtocol.value = undefined;
-    };
-    const selectProtocol = (prot: Protocol) => {
-      selectedProtocol.value = prot;
-    };
-
-    watch(selectedProtocol, async (newProt, oldProt) => {
-      fetchSubGeneralTypes();
-    });
-
-    return {
-      user,
-      subGeneralTypes,
-      subGeneralTypeID,
-      message,
-      clearProtocol,
-      selectProtocol,
-      validSubmit,
-      selectedProtocol,
-      selectedProtocolName,
-      selectedSubGeneralType,
-      selectedSubGeneralTypeDescription,
-      irrigate,
-    };
+  set(val: string): void {
+    intSubGeneralTypeID.value = val;
+    emit("changed");
   },
+});
+
+const selectedProtocol = computed({
+  get(): Protocol | undefined {
+    return intSelectedProtocol.value;
+  },
+  set(val: Protocol | undefined): void {
+    intSelectedProtocol.value = val;
+    emit("changed");
+  },
+});
+const selectedSubGeneralTypeName = computed((): string | undefined => {
+  const t = selectedSubGeneralType.value;
+  return t?.name;
+});
+
+const protocolNoTypes = computed(() => {
+  return subGeneralTypes.value.length == 0;
+});
+
+const selectedSubGeneralTypeDescription = computed((): string | undefined => {
+  if (protocolNoTypes.value) {
+    return "";
+  }
+  const t = selectedSubGeneralType.value;
+  return t?.description;
+});
+
+const selectedSubGeneralType = computed((): SubscriptionType | undefined => {
+  const t = subGeneralTypes.value.find((e) => e.id == subGeneralTypeID.value);
+  return t;
+});
+
+const fetchSubGeneralTypes = async (): Promise<void> => {
+  const q = new Moralis.Query(SubscriptionType);
+  q.equalTo("protocol", selectedProtocol.value);
+  q.equalTo("status", SubscriptionTypeStatus.active);
+  const res = await q.find();
+  subGeneralTypeID.value = "";
+  subGeneralTypes.value.length = 0;
+  subGeneralTypes.value.push(...res);
+};
+
+const irrigate = (s: Subscription): void => {
+  if (selectedSubGeneralType.value != undefined)
+    s.category = selectedSubGeneralType.value;
+  if (selectedProtocol.value != undefined) s.protocol = selectedProtocol.value;
+};
+
+const message = computed((): string => {
+  const info = selectedSubGeneralTypeName.value || "[Select a Type above]";
+  return `the <strong>${selectedProtocolName.value}</strong> Protocol about <strong>${info}</strong>`;
+});
+
+const validSubmit = computed((): boolean => {
+  return selectedProtocolName.value != "" && subGeneralTypeID.value != "";
+});
+
+const canComplete = computed((): boolean => {
+  return protocolNoTypes.value != true;
+});
+
+// eslint-disable-next-line no-undef
+defineExpose({ irrigate, message, validSubmit, canComplete });
+
+const selectedProtocolName = computed((): string => {
+  const p = intSelectedProtocol.value;
+  if (!p) {
+    return "";
+  } else {
+    return p.name;
+  }
+});
+
+const clearProtocol = () => {
+  selectedProtocol.value = undefined;
+};
+const selectProtocol = (prot: Protocol) => {
+  selectedProtocol.value = prot;
+};
+const voteFor = async (): Promise<void> => {
+  if (!selectedProtocol.value) return undefined;
+  const newVotes = await selectedProtocol.value.siteVote();
+  //this.$forceUpdate();
+};
+
+watch(selectedProtocol, async (newProt, oldProt) => {
+  fetchSubGeneralTypes();
 });
 </script>
 

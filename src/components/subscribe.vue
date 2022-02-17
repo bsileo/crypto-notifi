@@ -97,11 +97,6 @@ interface channelInfo {
   channel: UserChannel;
 }
 
-interface Breadcrumb {
-  label: string;
-  to: string;
-}
-
 export default defineComponent({
   name: "Subscribe",
   props: {
@@ -120,11 +115,19 @@ export default defineComponent({
     const contract = ref(null);
 
     const showDefinition = computed((): boolean => {
-      return section.value != "type" && section.value != undefined;
+      return (
+        section.value != "type" &&
+        section.value != undefined &&
+        showCompletion.value
+      );
     });
 
     const showCompletion = computed((): boolean => {
-      return section.value != "type" && section.value != undefined;
+      return (
+        section.value != "type" &&
+        section.value != undefined &&
+        canComplete.value == true
+      );
     });
 
     const showContract = computed(() => {
@@ -181,6 +184,17 @@ export default defineComponent({
       return subName.value != undefined && subName.value.length > 3;
     });
 
+    // Returns false if there is no way to get to success based on current Selections
+    const canComplete = computed((): boolean => {
+      if (
+        activeSection.value &&
+        !(typeof activeSection.value.canComplete == "undefined")
+      ) {
+        return activeSection.value.canComplete;
+      }
+      return true;
+    });
+
     const validSubmit = computed((): boolean => {
       return (
         activeSection.value != undefined &&
@@ -220,7 +234,9 @@ export default defineComponent({
         const sectionMsg = activeSection.value.message;
         msg = `${msg} ${sectionMsg}`;
       }
-      msg = `${msg}<br/>Name this subscription <strong>${subName.value || "[Enter a Name]"}</strong>`;
+      msg = `${msg}<br/>Name this subscription <strong>${
+        subName.value || "[Enter a Name]"
+      }</strong>`;
 
       return msg;
     });

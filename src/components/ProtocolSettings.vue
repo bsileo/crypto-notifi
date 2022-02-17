@@ -18,7 +18,7 @@
           :initialAddress="stakingAddress"
           :showToken="true"
           :chainPrompt="true"
-          :chainsList="protocolChains"
+          :protocol="protocol"
           @contractInfo="setContract"
         ></ContractInput>
       </div>

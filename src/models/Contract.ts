@@ -87,7 +87,7 @@ export class Contract extends Moralis.Object {
     );
   }
   get description(): string {
-    return `${this.name} (${this.short_address})`;
+    return `${this.name} (${this.short_address}) on ${this.chain}`;
   }
   set description(newVal: string) {
     this.set("description", newVal);

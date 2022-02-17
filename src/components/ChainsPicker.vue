@@ -4,17 +4,16 @@
     :label="label"
     v-model="selected"
     @update:model-value="select"
-    :multiple="false"
+    multiple
     :messages="messages"
-    :success="valid"
+    :success="selected.length > 0"
   ></va-select>
 </template>
 
 <script setup lang="ts">
 import { Chain } from "@/models/Contract";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { Protocol } from "@/models/Protocol";
-import { contractsModule } from "@/store/contracts";
 
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["selected"]);
@@ -25,19 +24,17 @@ const props = defineProps({
   protocol: Protocol,
   selectedChain: String,
 });
-const valid = computed(() => {
-  return !props.required || selected.value != undefined;
-});
-const selected = ref<Chain>();
+
+const selected = ref<Chain[]>([]);
 const label = "Chains";
 const messages = props.required ? "Required" : "";
-let initialChains: Chain[] = contractsModule.CHAINS;
-if (props.protocol && props.protocol.chains) {
+let initialChains: Chain[] = ["avalanche", "eth"];
+if (props.protocol) {
   // eslint-disable-next-line vue/no-setup-props-destructure
   initialChains = props.protocol.chains;
 }
 const chains = ref<Chain[]>(initialChains);
-const select = (chain: Chain) => {
-  emit("selected", chain);
+const select = (chains: Chain) => {
+  emit("selected", selected.value);
 };
 </script>

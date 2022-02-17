@@ -75,12 +75,13 @@ import useDebouncedRef from "@/composables/useDebouncedRef";
 import SubscriptionCard from "@/components/Subscription.vue";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import Moralis from "moralis";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import { channelsModule } from "@/store/channels";
 import { useRouter } from "vue-router";
+const router = useRouter();
 
 const rawCount = ref(0);
 const rawSubscriptions = ref<Subscription[]>([]);
@@ -202,7 +203,6 @@ const showNoSubscriptions = computed((): boolean => {
 });
 
 const addSubscription = (): void => {
-  const router = useRouter();
   router.push({ name: "Subscribe" });
 };
 const showChannels = (): void => {

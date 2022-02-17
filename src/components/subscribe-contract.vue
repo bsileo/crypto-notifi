@@ -1,7 +1,7 @@
 <template>
   <div class="pl-4">
     <div v-show="!selectedProtocol" class="row">
-      <div v-show="subType == undefined" class="pb-3">
+      <div class="pb-3">
         <h1>Select a Protocol:</h1>
       </div>
       <ProtocolSelector
@@ -34,15 +34,27 @@
     </div>
   </div>
   <va-divider inset />
-  <div>
+  <div v-if="protocolNoContracts" class="flex row pt-2">
+    <div class="flex xs12 sm8 md6">
+      <va-card :bordered="false">
+        <va-card-title>Vote for this Protocol!</va-card-title>
+        <va-card-content>
+          This protocol has not joined up with Notifi yet. Click to Vote and
+          help encourage them to enroll their Contract Events!
+        </va-card-content>
+        <va-card-actions>
+          <va-popover
+            color="primary"
+            message="Request support for this Protocol on Notifi"
+          >
+            <va-button size="large" @click="voteFor(protocol)">Vote</va-button>
+          </va-popover>
+        </va-card-actions>
+      </va-card>
+    </div>
+  </div>
+  <div v-show="showCompletion">
     <div class="row pt-2">
-      <va-select
-        class="flex sm2"
-        label="Chain"
-        v-model="chain"
-        :options="protocolChains"
-        :rules="[this.chain != undefined || 'Select a chain']"
-      />
       <va-select
         class="flex sm6"
         label="Contract Name"
@@ -85,70 +97,38 @@
         </va-alert>
       </div>
     </div>
-    <div class="row pt-2">
-      <va-switch
-        class="flex xs2 lg1"
-        color="primary"
-        :disabled="true"
-        v-model="chkChain"
-      />
-      <va-select
-        class="flex xs8"
-        label="Chain"
-        v-model="chain"
-        :options="protocolChains"
-        :rules="[this.chain !== undefined || 'Select a chain']"
-      />
-    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, computed, ref } from "vue";
+import { defineComponent, computed, ref } from "vue";
 
-import { userModule } from "@/store/user";
 import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
-import { protocolsModule } from "@/store/protocol";
 import { ContractActivity } from "@/models/ContractActivity";
 
 import Moralis from "moralis";
 import { contractsModule } from "@/store/contracts";
-import { Contract, Chain } from "@/models/Contract";
-import { NotifiUser } from "@/models/NotifiUser";
+import { Contract } from "@/models/Contract";
 import ProtocolSelector from "./ProtocolSelector.vue";
 import ProtocolInfo from "./ProtocolInfo.vue";
-
-let tx: Record<string, unknown> | null = null;
-
-interface protocolInfo {
-  name: string;
-  iconURL: string;
-  protocol: Protocol;
-}
 
 export default defineComponent({
   name: "SubscribeContract",
   components: { ProtocolSelector, ProtocolInfo },
   props: {
-    transaction: { type: tx, required: false },
     subscription: { type: Subscription, required: false },
     protocol: { type: Protocol, required: false },
   },
   data() {
     return {
-      chain: "avalanche" as Chain,
-      validation: null,
-      chkChain: true,
       contractAddress: "",
       contractIcon: "" as string | undefined,
-      chkContract: false,
       contractActivities: [] as Array<ContractActivity>,
       contractActivityID: undefined as string | undefined,
     };
   },
   setup(props) {
-    const user: NotifiUser | undefined = inject("user");
     const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
 
     const clearProtocol = () => {
@@ -165,46 +145,19 @@ export default defineComponent({
         intSelectedProtocol.value = val;
       },
     });
-
-    const protocols = computed((): protocolInfo[] => {
-      return protocolsModule.allProtocols.map((e: Protocol) => {
-        return {
-          name: e.get("name"),
-          iconURL: e.get("iconURL"),
-          id: e.id,
-          protocol: e,
-        };
-      });
-    });
-
-    const chains = computed((): Chain[] => {
-      return contractsModule.CHAINS;
-    });
-    const protocolChains = computed((): Chain[] => {
-      const res = [] as Chain[];
-      if (selectedProtocol.value) {
-        const chainNames: string[] = selectedProtocol.value.get("chains");
-        chainNames.forEach((cn) => {
-          const aChain = chains.value.find((c) => c == cn);
-          if (aChain) {
-            res.push(aChain);
-          }
-        });
-      }
-      return res;
-    });
-
+    const voteFor = async (): Promise<void> => {
+      if (!selectedProtocol.value) return undefined;
+      await selectedProtocol.value.siteVote();
+      //this.$forceUpdate();
+    };
     return {
-      user,
       selectedProtocol,
       selectProtocol,
       clearProtocol,
-      protocols,
-      protocolChains,
-      chains,
+      voteFor,
     };
   },
-  emits: ["saved", "cancel"],
+  emits: ["changed"],
   watch: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     selectedProtocol(newProtocol: string, oldProtocol: string) {
@@ -253,6 +206,16 @@ export default defineComponent({
     validContract(): boolean {
       return true;
     },
+    protocolNoContracts(): boolean {
+      if (this.selectedProtocol) return this.contracts.length == 0;
+      return false;
+    },
+    showCompletion(): boolean {
+      return this.selectedProtocol != undefined && this.contracts.length > 0;
+    },
+    canComplete(): boolean {
+      return this.selectedProtocol != undefined && this.contracts.length > 0;
+    },
     contracts(): Contract[] {
       if (this.selectedProtocol) {
         return contractsModule.allContracts.filter(
@@ -281,21 +244,13 @@ export default defineComponent({
         msg = `${msg} <strong>Transactions</strong>`;
         if (this.selectedContract) {
           msg = `${msg} for the contract <strong>${this.selectedContract.description}</strong>`;
+          msg = `${msg} on the <strong>${this.selectedContract.chain} blockchain</strong>`;
         }
-        msg = `${msg} on the <strong>${this.chain} blockchain</strong>`;
       }
       return msg;
     },
   },
   methods: {
-    userID(): string {
-      if (userModule.user?.id) {
-        return userModule.user.id;
-      } else {
-        console.error("UserID is unset");
-        throw "UserID is unset";
-      }
-    },
     async fetchContractActivities(): Promise<void> {
       const res: ContractActivity[] = [];
       const ci = this.selectedContract;
@@ -309,13 +264,9 @@ export default defineComponent({
       this.contractActivityID = undefined;
       this.contractActivities = res;
     },
-
     async irrigate(s: Subscription): Promise<void> {
       if (this.selectedProtocol != undefined) {
         s.protocol = this.selectedProtocol;
-      }
-      if (this.chkChain) {
-        s.set("chain", this.chain);
       }
       if (this.selectedContract) {
         s.set("contract", this.selectedContract);

@@ -38,7 +38,7 @@
         :success="websiteValid"
       ></va-input>
       <div class="flex xs12">
-        <ChainPicker @selected="setNewChains" multiple required></ChainPicker>
+        <ChainsPicker @selected="setNewChains" required></ChainsPicker>
       </div>
       <va-input
         class="flex xs12"
@@ -97,7 +97,7 @@
 
 <script setup lang="ts">
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
-import ChainPicker from "@/components/chainPicker.vue";
+import ChainsPicker from "@/components/ChainsPicker.vue";
 import { Chain } from "@/models/Contract";
 import { Protocol, SiteStatus } from "@/models/Protocol";
 import { computed, ref } from "vue";

@@ -85,11 +85,11 @@ export default defineComponent({
     },
     typeContent(t: SubscriptionTypes): string {
       if (t == SubscriptionTypes.wallet) {
-        return "Alerts for your wallets.";
+        return "Alerts for transactions that occur in your wallet(s).";
       } else if (t == SubscriptionTypes.protocol) {
-        return "Ad Hoc from Protocols";
+        return "Ad Hoc updates and information from your Protocols";
       } else if (t == SubscriptionTypes.contract) {
-        return "Smart contract alerts for events on the chain";
+        return "Smart contract alerts for Events which occur on chain";
       }
       return "";
     },

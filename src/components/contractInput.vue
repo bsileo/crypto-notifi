@@ -2,12 +2,7 @@
   <div class="flex">
     <div class="row">
       <div v-if="chainPrompt" class="flex sm4">
-        <va-select
-          label="Chain"
-          v-model="selectedChain"
-          :options="chains"
-          :rules="[this.chain != undefined || 'Select a chain']"
-        />
+        <ChainPicker @selected="selectChain" :protocol="protocol"></ChainPicker>
       </div>
       <div class="flex" :class="this.chainPrompt ? 'sm8' : 'sm12'">
         <va-input
@@ -36,9 +31,12 @@ import { defineComponent, PropType } from "vue";
 import Moralis from "moralis";
 import { ref } from "vue";
 import { Chain, Contract, ContractInfo } from "@/models/Contract";
+import { Protocol } from "@/models/Protocol";
+import ChainPicker from "@/components/ChainPicker.vue";
 
 export default defineComponent({
   name: "contractInput",
+  components: { ChainPicker },
   props: {
     initialAddress: {
       type: String,
@@ -67,10 +65,9 @@ export default defineComponent({
       required: false,
       default: false,
     },
-    chainsList: {
-      type: [] as PropType<Chain[]>,
+    protocol: {
+      type: Protocol,
       required: false,
-      default: false,
     },
   },
   emits: ["address", "contractInfo"],
@@ -87,7 +84,11 @@ export default defineComponent({
     const result = ref({});
     const address = ref(props.initialAddress);
     const selectedChain = ref(props.chain);
-    return { result, selectedChain, address };
+    const selectChain = (c: Chain) => {
+      selectedChain.value = c;
+    };
+
+    return { result, selectedChain, selectChain, address };
   },
   data() {
     return {
@@ -112,13 +113,6 @@ export default defineComponent({
     icon(): { name: string; color: string } {
       if (this.symbol) return { name: "check", color: "success" };
       else return { name: "error", color: "danger" };
-    },
-    chains(): Chain[] {
-      if (this.chainsList) {
-        return this.chainsList;
-      } else {
-        return Contract.supportedChains();
-      }
     },
     err_messages(): string[] {
       const res = [];

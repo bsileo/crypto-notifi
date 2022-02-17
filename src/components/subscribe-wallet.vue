@@ -82,13 +82,9 @@
         :disabled="true"
         v-model="chkChain"
       />
-      <va-select
-        class="flex xs8 md6 lg4"
-        label="Chain"
-        v-model="chain"
-        :options="protocolChains"
-        :rules="[this.chain !== undefined || 'Select a chain']"
-      />
+      <div class="flex xs3">
+        <ChainPicker @selected="setChain" required></ChainPicker>
+      </div>
     </div>
   </div>
 </template>
@@ -104,10 +100,11 @@ import { contractsModule } from "@/store/contracts";
 import { Chain } from "@/models/Contract";
 import { NotifiUser } from "@/models/NotifiUser";
 import ContractInput from "./contractInput.vue";
+import ChainPicker from "./ChainPicker.vue";
 
 export default defineComponent({
   name: "SubscribeWallet",
-  components: { ContractInput },
+  components: { ContractInput, ChainPicker },
   props: {
     subscriptionID: { type: String, required: false },
   },
@@ -267,6 +264,9 @@ export default defineComponent({
     },
     setToAddress(address: string) {
       this.to_address = address;
+    },
+    setChain(c: Chain) {
+      this.chain = c;
     },
     irrigate(s: Subscription): Subscription {
       if (this.chkFrom) {
