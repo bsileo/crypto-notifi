@@ -23,11 +23,11 @@
       </va-popover>
     </div>
   </div>
-  <div class="layout gutter--sm">
+  <div class="gutter--sm">
     <va-inner-loading :loading="subscriptionsLoading" :size="60">
       <div class="row">
         <div
-          class="flex xs12 sm6 md6 lg4 xl3"
+          class="flex xs12 sm6 md6 lg4 xl3 pb-3"
           v-for="subscription in subscriptions"
           v-bind:key="subscription.id"
         >
@@ -94,11 +94,12 @@ const emit = defineEmits(["showChannels"]);
 // eslint-disable-next-line no-undef
 const props = defineProps({ showAdd: Boolean });
 
-watch(search, (newSearch: string) => {
+// Using local search
+/* watch(search, (newSearch: string) => {
   console.log(`Search=${newSearch}`);
   rawSubscriptions.value.length = 0;
   fetchSubscriptions();
-});
+});*/
 
 const refresh = () => {
   rawSubscriptions.value.length = 0;
@@ -114,9 +115,10 @@ const fetchSubscriptions = async (): Promise<void> => {
   const query = new Moralis.Query(Subscription);
   query.equalTo("userID", userModule.user?.id);
   rawCount.value = await query.count();
-  if (search.value) {
-    query.matches("name", search.value);
-  }
+  // Running local browser search for more flexibility right now e.g. case insensitve
+  //if (search.value) {
+  //  query.matches("name", search.value);
+  //}
   query.limit(queryLimit.value);
   query.skip(rawSubscriptions.value.length);
   query.include("contractActivity");
@@ -170,6 +172,11 @@ const subscribe = async (query: any) => {
 
 const subscriptions = computed((): Subscription[] => {
   let subs = rawSubscriptions.value;
+  if (search.value) {
+    subs = subs.filter((s) => {
+      return s.name.toLowerCase().includes(search.value.toLowerCase());
+    });
+  }
   if (searchProtocols.value.length > 0) {
     const prots = searchProtocols.value.map((e) => e.id);
     subs = subs.filter((s) => {
