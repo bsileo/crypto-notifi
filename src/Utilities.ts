@@ -14,4 +14,4 @@ export function roundToTwo(num: number): number {
   const val = num * 100;
   const res = Math.round(val);
   return res / 100;
-};
+}

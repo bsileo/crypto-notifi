@@ -70,161 +70,143 @@
   </div>
 </template>
 
-<script lang="ts">
-import Moralis from "moralis";
-import { defineComponent } from "vue";
-import { Subscription } from "@/models/Subscription";
+<script setup lang="ts">
+import useDebouncedRef from "@/composables/useDebouncedRef";
 import SubscriptionCard from "@/components/Subscription.vue";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
+import Moralis from "moralis";
+import { computed, onMounted, ref, watch } from "vue";
+import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import { channelsModule } from "@/store/channels";
+import { useRouter } from "vue-router";
 
-export default defineComponent({
-  name: "Subscriptions",
-  components: { SubscriptionCard, ProtocolSelector },
-  emits: ["showChannels"],
-  props: {
-    showAdd: Boolean,
-  },
-  data() {
-    return {
-      validation: null,
-      intSearch: "",
-      searchProtocols: [] as Protocol[],
-      rawSubscriptions: [] as Subscription[],
-      queryLimit: 25,
-      subscriptionsLoading: false,
-      rawCount: 0,
-    };
-  },
-  async created() {
-    this.fetchSubscriptions();
-  },
-  computed: {
-    subscriptions(): Subscription[] {
-      let subs = this.rawSubscriptions;
-      if (this.searchProtocols.length > 0) {
-        const prots = this.searchProtocols.map((e) => e.name);
-        subs = subs.filter((s) => {
-          return prots.includes(s.protocol.name);
-        });
+const rawCount = ref(0);
+const rawSubscriptions = ref<Subscription[]>([]);
+const subscriptionsLoading = ref(false);
+const search = useDebouncedRef("");
+const queryLimit = ref(25);
+const searchProtocols = ref<Protocol[]>([]);
+
+// eslint-disable-next-line no-undef
+const emit = defineEmits(["showChannels"]);
+// eslint-disable-next-line no-undef
+const props = defineProps({ showAdd: Boolean });
+
+watch(search, (newSearch: string) => {
+  console.log(`Search=${newSearch}`);
+  rawSubscriptions.value.length = 0;
+  fetchSubscriptions();
+});
+
+const refresh = () => {
+  rawSubscriptions.value.length = 0;
+  fetchSubscriptions();
+};
+
+const appendSubscriptions = (): Promise<void> => {
+  return fetchSubscriptions();
+};
+const fetchSubscriptions = async (): Promise<void> => {
+  if (!userModule.user) return;
+  subscriptionsLoading.value = true;
+  const query = new Moralis.Query(Subscription);
+  query.equalTo("userID", userModule.user?.id);
+  rawCount.value = await query.count();
+  if (search.value) {
+    query.matches("name", search.value);
+  }
+  query.limit(queryLimit.value);
+  query.skip(rawSubscriptions.value.length);
+  query.include("contractActivity");
+  query.include("contract");
+  query.include("GeneralSubType");
+  let subs = await query.find();
+  subscribe(query);
+  rawSubscriptions.value.push(...subs);
+  subscriptionsLoading.value = false;
+};
+
+onMounted(() => {
+  fetchSubscriptions();
+});
+
+const subscribe = async (query: any) => {
+  const subscription = await query.subscribe();
+  subscription.on("create", (sub: Subscription) => {
+    rawSubscriptions.value.push(sub);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("update", (sub: Subscription) => {
+    const index = rawSubscriptions.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawSubscriptions.value.splice(index, 1, sub);
+    }
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("enter", (sub: Subscription) => {
+    // console.log("object entered");
+    rawSubscriptions.value.push(sub);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("leave", (sub: Subscription) => {
+    const index = rawSubscriptions.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawSubscriptions.value.splice(index, 1);
+    }
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("delete", (sub: Subscription) => {
+    const index = rawSubscriptions.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawSubscriptions.value.splice(index, 1);
+    }
+  });
+  subscription.on("close", () => {
+    console.log("Subscriptions subscription closed");
+  });
+};
+
+const subscriptions = computed((): Subscription[] => {
+  let subs = rawSubscriptions.value;
+  if (searchProtocols.value.length > 0) {
+    const prots = searchProtocols.value.map((e) => e.id);
+    subs = subs.filter((s) => {
+      const p = s.protocol;
+      if (!p) {
+        return false;
       }
-      return subs;
-    },
-    showNoChannels(): boolean {
-      return (
-        !this.subscriptionsLoading && channelsModule.MYCHANNELS.length == 0
-      );
-    },
-    showNoSubscriptions(): boolean {
-      return (
-        !this.showNoChannels &&
-        this.rawCount == 0 &&
-        this.rawSubscriptions.length == 0 &&
-        !this.subscriptionsLoading
-      );
-    },
-    search: {
-      get(): string {
-        return this.intSearch;
-      },
-      set(newVal: string) {
-        this.intSearch = newVal;
-        this.rawSubscriptions.length = 0;
-        this.fetchSubscriptions();
-      },
-    },
-    allowAdd(): boolean {
-      return channelsModule.myChannels.length > 0;
-    },
-  },
-  methods: {
-    addSubscription(): void {
-      this.$router.push({ name: "Subscribe" });
-    },
-    showChannels(): void {
-      this.$emit("showChannels");
-    },
-    setSearchProtocols(prots: Protocol[]): void {
-      this.searchProtocols = prots;
-    },
-    edit(id: string): void {
-      console.log(`Edit ${id}`);
-      this.$router.push({ name: "Subscribe", params: { id: id } });
-    },
-    remove(id: string): void {
-      console.log(`remove ${id}`);
-      const query = new Moralis.Query("Subscription");
-      query.get(id).then((s: { destroy: () => Promise<unknown> }) => {
-        s.destroy().then((oldS) => {
-          console.log(`Success remove ${oldS}`);
-        });
-      });
-    },
-    refresh() {
-      this.rawSubscriptions.length = 0;
-      this.fetchSubscriptions();
-    },
-    async appendSubscriptions(): Promise<void> {
-      //console.log("Append");
-      this.fetchSubscriptions();
-    },
-    async fetchSubscriptions(): Promise<void> {
-      if (!userModule.user) return;
-      this.subscriptionsLoading = true;
-      const query = new Moralis.Query(Subscription);
-      query.equalTo("userID", userModule.user?.id);
-      this.rawCount = await query.count();
-      if (this.search) {
-        query.matches("name", this.search);
-      }
-      query.limit(this.queryLimit);
-      query.skip(this.rawSubscriptions.length);
-      query.include("contractActivity");
-      query.include("contract");
-      query.include("GeneralSubType");
-      let subs = await query.find();
-      this.subscribe(query);
-      this.rawSubscriptions.push(...subs);
-      this.subscriptionsLoading = false;
-    },
-    async subscribe(query: any) {
-      const subscription = await query.subscribe();
-      subscription.on("create", (sub: Subscription) => {
-        this.rawSubscriptions.push(sub);
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("update", (sub: Subscription) => {
-        const index = this.rawSubscriptions.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawSubscriptions.splice(index, 1, sub);
-        }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("enter", (sub: Subscription) => {
-        // console.log("object entered");
-        this.rawSubscriptions.push(sub);
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("leave", (sub: Subscription) => {
-        const index = this.rawSubscriptions.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawSubscriptions.splice(index, 1);
-        }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("delete", (sub: Subscription) => {
-        const index = this.rawSubscriptions.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawSubscriptions.splice(index, 1);
-        }
-      });
-      subscription.on("close", () => {
-        console.log("Subscriptions subscription closed");
-      });
-    },
-  },
+      return prots.includes(p.id);
+    });
+  }
+  return subs;
+});
+const showNoChannels = computed((): boolean => {
+  return !subscriptionsLoading.value && channelsModule.MYCHANNELS.length == 0;
+});
+const showNoSubscriptions = computed((): boolean => {
+  return (
+    !showNoChannels.value &&
+    rawCount.value == 0 &&
+    rawSubscriptions.value.length == 0 &&
+    !subscriptionsLoading.value
+  );
+});
+
+const addSubscription = (): void => {
+  const router = useRouter();
+  router.push({ name: "Subscribe" });
+};
+const showChannels = (): void => {
+  emit("showChannels");
+};
+const setSearchProtocols = (prots: Protocol[]): void => {
+  searchProtocols.value = prots;
+};
+
+const allowAdd = computed((): boolean => {
+  return channelsModule.myChannels.length > 0;
 });
 </script>
 
