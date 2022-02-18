@@ -166,7 +166,8 @@ export default defineComponent({
       // this is a hack till we can pass the records in.
       const id = data[0].source;
       const uc = this.myChannels.find((chan) => chan.id == id);
-      if (uc && uc?.sendVerification()) {
+      if (uc) {
+        const res = await uc.sendVerification();
         this.showToast({
           message: "Verification Sent",
           duration: 2000,
