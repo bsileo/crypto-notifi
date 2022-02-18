@@ -47,26 +47,6 @@
               </va-card-actions>
             </va-card>
           </va-button-dropdown>
-          <div v-if="userIsManager" class="flex float-end pl-2">
-            <va-switch
-              true-inner-label="Manager"
-              false-inner-label="User"
-              true-value="manager"
-              false-value="user"
-              :color="userMode == 'manager' ? 'danger' : 'success'"
-              size="large"
-              v-model="userMode"
-            >
-            </va-switch>
-          </div>
-          <div v-if="userMode != 'manager'" class="flex float-end pl-2">
-            <va-button-toggle
-              color="secondary"
-              toggle-color="warning"
-              v-model="mode"
-              :options="modeOptions"
-            />
-          </div>
         </va-navbar-item>
       </template>
     </va-navbar>

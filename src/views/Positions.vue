@@ -1,5 +1,5 @@
 <template>
-  <div class="container gutter--sm">
+  <div class="gutter--sm">
     <div v-if="!showNoPositions" class="row pb-1 pt-1">
       <va-input class="flex xs5" label="Search Names" v-model="search">
       </va-input>

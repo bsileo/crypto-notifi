@@ -1,5 +1,5 @@
 <template>
-  <div class="container p-3 gutter--md">
+  <div class="p-3 gutter--md">
     <ProtocolSelector
       :showSearch="true"
       :showVote="true"
