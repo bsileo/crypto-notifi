@@ -8,6 +8,12 @@
         width="10rem"
         minimizedWidth="52px"
       >
+        <va-sidebar-item @click="minimized = !minimized">
+          <va-sidebar-item-content>
+            <va-sidebar-item-title></va-sidebar-item-title>
+            <va-icon name="menu" /> 
+          </va-sidebar-item-content>
+        </va-sidebar-item>
         <template v-for="item in items" :key="item.to">
           <va-sidebar-item :active="item.active" :to="item.to">
             <va-sidebar-item-content>
