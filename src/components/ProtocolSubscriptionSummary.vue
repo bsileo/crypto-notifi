@@ -4,39 +4,28 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Protocol, SummaryItem } from "@/models/Protocol";
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { Protocol } from "@/models/Protocol";
+import { SummaryItem } from "@/notifi_types";
+import { ref } from "vue";
 
-export default defineComponent({
-  name: "ProtocolSubscriptionSummary",
-  components: {},
-  emits: [],
-  props: {
-    protocol: { type: Protocol, required: false },
-  },
-  data() {
-    return {
-      items: [] as SummaryItem[],
-      loading: false as boolean,
-    };
-  },
-  watch: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protocol(newP: Protocol, oldP: Protocol): void {
-      this.fetchItems();
-    },
-  },
-  computed: {},
-  methods: {
-    async fetchItems(): Promise<void> {
-      if (this.protocol) {
-        this.loading = true;
-        this.items = [];
-        this.items = await this.protocol.subscriptionSummary();
-        this.loading = false;
-      }
-    },
-  },
+const items = ref<SummaryItem[]>([]);
+const loading = ref(false);
+
+// eslint-disable-next-line no-undef
+const props = defineProps({
+  protocol: { type: Protocol, required: false },
 });
+const activeProtocol = ref(props.protocol || new Protocol());
+
+const fetchItems = async (): Promise<void> => {
+  if (activeProtocol.value) {
+    loading.value = true;
+    const newItems = await activeProtocol.value.subscriptionSummary();
+    items.value.length = 0;
+    items.value.push(...newItems);
+    loading.value = false;
+  }
+};
+await fetchItems();
 </script>

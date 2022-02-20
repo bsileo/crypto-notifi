@@ -135,9 +135,8 @@ import { ContractActivity } from "@/models/ContractActivity";
 import { defineComponent, reactive } from "vue";
 import { DataParameter } from "@/models/ContractActivity";
 import Editor from "@tinymce/tinymce-vue";
-import LevelSelector from "./LevelSelector.vue"
-import { ProtocolLevel } from "@/models/Protocol";
-
+import LevelSelector from "./LevelSelector.vue";
+import { ProtocolLevel } from "@/notifi_types";
 
 export default defineComponent({
   name: "EditContractActivity",

@@ -28,8 +28,8 @@ const props = defineProps({
 const valid = computed(() => {
   return !props.required || selected.value != undefined;
 });
-const selected = ref<Chain>();
-const label = "Chains";
+const selected = ref<Chain>(props.selectedChain as Chain);
+const label = "Chain";
 const messages = props.required ? "Required" : "";
 let initialChains: Chain[] = contractsModule.CHAINS;
 if (props.protocol && props.protocol.chains) {

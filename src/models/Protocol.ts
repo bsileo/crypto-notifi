@@ -1,3 +1,4 @@
+import { SubscriptionLimiter } from "./lib/subscriptionLimits";
 import { ContractActivity } from "./ContractActivity";
 import { Chain, Contract } from "./Contract";
 import Moralis from "moralis";
@@ -8,53 +9,21 @@ import { SubscriptionType } from "./SubscriptionType";
 import { Position } from "./Position";
 import { APIResponse } from "cookietrack-types";
 import { ProtocolStatus } from "./ProtocolStatus";
-
-export enum ProtocolLevel {
-  "Free" = "Free",
-  "Basic" = "Basic",
-  "Gold" = "Gold",
-}
-
-export enum StakingLevel {
-  "free" = "Free",
-  "basic" = "Basic",
-  "gold" = "Gold",
-}
-
-export enum SiteStatus {
-  "requested" = "Requested",
-  "pending" = "Pending",
-  "inprogress" = "In-Progress",
-  "active" = "Active",
-}
-
-export type SummaryItem = {
-  name: string;
-  quantity: number;
-  limit: number;
-};
-
-export type TokenData = {
-  symbol: string;
-  contractAddress: string;
-  chain: string;
-  basicQuantity: number;
-  goldQuantity: number;
-};
-
-enum LimitType {
-  "category" = "Category",
-  "contracts" = "Contracts",
-  "events" = "Events",
-  "managers" = "Managers",
-}
+import {
+  LimitType,
+  ProtocolLevel,
+  SiteStatus,
+  StakingLevel,
+  SummaryItem,
+  TokenData,
+} from "@/notifi_types";
+import { Subscription } from "./Subscription";
 
 type RefreshCallbackFunction = (obj: any) => void;
-export class Protocol extends Moralis.Object {
+export class Protocol extends SubscriptionLimiter {
   constructor() {
-    // Pass the ClassName to the Moralis.Object constructor
     super("Protocol");
-    // All other initialization
+
     this.set("tokendata", {
       symbol: "",
       contractAddress: "",
@@ -187,7 +156,7 @@ export class Protocol extends Moralis.Object {
       console.log(url);
       try {
         const resp = await fetch(url);
-        const result = await resp.json() as APIResponse;
+        const result = (await resp.json()) as APIResponse;
         console.log(result);
         if (result.status == "ok") {
           result.data.forEach(async (aPos: any) => {
@@ -211,6 +180,12 @@ export class Protocol extends Moralis.Object {
   async managersCount(): Promise<number> {
     const r = this.relation("Managers");
     return await r.query().count();
+  }
+
+  async subscriptionsCount(): Promise<number> {
+    const subs = new Moralis.Query(Subscription);
+    subs.equalTo("Protocol", this);
+    return await subs.count();
   }
 
   async categoryCount(): Promise<number> {
@@ -298,7 +273,7 @@ export class Protocol extends Moralis.Object {
     this.set("protocolStakingChain", newVal);
   }
 
-  get protocolStakingBalance(): number {
+  stakingBalance(): number {
     let token = undefined;
     const tokens = userModule.tokens;
     if (!tokens) {
@@ -313,24 +288,13 @@ export class Protocol extends Moralis.Object {
     return 0;
   }
 
-  get protocolStakingLevel(): StakingLevel {
-    const bal = this.stakingBalance;
-    if (bal < 10) {
-      return StakingLevel.free;
-    } else if (bal < 100) {
-      return StakingLevel.basic;
-    } else {
-      return StakingLevel.gold;
-    }
-  }
-
   // Status of this protocol on the overall website -  Is it active / being managed?
   get protocolSiteStatus(): SiteStatus {
     return this.get("siteStatus");
   }
   set protocolSiteStatus(s: SiteStatus) {
     this.set("siteStatus", s);
-  };
+  }
 
   get protocolPendingVotes(): number {
     const ps = this.get("ProtocolStatus");
@@ -378,64 +342,42 @@ export class Protocol extends Moralis.Object {
     return votes;
   }
 
-  async subscriptionSummary(): Promise<SummaryItem[]> {
-    return [
-      {
-        name: "Categories",
-        quantity: await this.subscriptionQuantity(LimitType.category),
-        limit: this.subscriptionLimit(LimitType.category),
-      },
-      {
-        name: "Contracts",
-        quantity: await this.subscriptionQuantity(LimitType.contracts),
-        limit: this.subscriptionLimit(LimitType.contracts),
-      },
-      {
-        name: "Events",
-        quantity: await this.subscriptionQuantity(LimitType.events),
-        limit: this.subscriptionLimit(LimitType.events),
-      },
-      {
-        name: "Managers",
-        quantity: await this.subscriptionQuantity(LimitType.managers),
-        limit: this.subscriptionLimit(LimitType.managers),
-      },
-    ];
-  }
-
-  async subscriptionQuantity(limType: LimitType): Promise<number> {
-    const quans = await this.subscriptionQuantities();
-    return quans[limType];
-  }
-
-  subscriptionLimit(limType: LimitType): number {
-    const level = this.protocolStakingLevel;
-    const limits = this.subscriptionLimits()[level];
-    return limits[limType];
-  }
-
   subscriptionLimits(): {
     [key in StakingLevel]: { [key in LimitType]: number };
   } {
     const limits: { [key in StakingLevel]: { [key in LimitType]: number } } = {
-      Free: { Category: 1, Contracts: 1, Events: 3, Managers: 1 },
-      Basic: { Category: 5, Contracts: 10, Events: 5, Managers: 3 },
-      Gold: { Category: 10, Contracts: 100, Events: 10, Managers: 10 },
+      Free: {
+        Category: 1,
+        Contracts: 1,
+        Events: 3,
+        Managers: 1,
+        Subscriptions: 10,
+      },
+      Basic: {
+        Category: 5,
+        Contracts: 10,
+        Events: 5,
+        Managers: 3,
+        Subscriptions: 100,
+      },
+      Gold: {
+        Category: 10,
+        Contracts: 100,
+        Events: 10,
+        Managers: 10,
+        Subscriptions: 1000,
+      },
     };
     return limits;
   }
 
-  async subscriptionQuantities(): Promise<{
-    Category: number;
-    Contracts: number;
-    Events: number;
-    Managers: number;
-  }> {
+  async subscriptionQuantities(): Promise<Record<LimitType, number>> {
     return {
       Category: await this.categoryCount(),
       Contracts: await this.contractsCount(),
       Events: await this.contractActivityCount(),
       Managers: await this.managersCount(),
+      Subscriptions: 0,
     };
   }
   // Returns True if the user is allowed to subscribe to aActivity
