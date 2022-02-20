@@ -16,7 +16,8 @@
         </va-sidebar-item>
         <template v-for="item in items" :key="item.to">
           <va-sidebar-item
-            :active="item.active"
+            :active="isRouteActive(item)"
+            @click="setRouteActive(item)"
             :to="item.to"
             :text-color="item.text_color"
           >
@@ -30,7 +31,8 @@
         </template>
         <template v-for="item in managerItems" :key="item.to">
           <va-sidebar-item
-            :active="item.active"
+            :active="isRouteActive(item)"
+            @click="setRouteActive(item)"
             :to="item.to"
             :text-color="item.text_color"
           >
@@ -82,6 +84,15 @@ const items = ref<SidebarDescriptor[]>([
   { title: "Subscriptions", icon: "dashboard", to: "/subscriptions" },
   { title: "Subscribe", icon: "loop", to: "/subscription" },
 ]);
+
+const activeRouteName = ref("");
+
+const isRouteActive = (item: SidebarDescriptor) => {
+  return activeRouteName.value === item.to;
+};
+const setRouteActive = (item: SidebarDescriptor) => {
+  activeRouteName.value = item.to;
+};
 
 if (userIsManager.value) {
   const manager: SidebarDescriptor = {
