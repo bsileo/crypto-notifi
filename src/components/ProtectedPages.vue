@@ -10,7 +10,7 @@
       >
         <va-sidebar-item @click="minimized = !minimized">
           <va-sidebar-item-content>
-            <va-sidebar-item-title></va-sidebar-item-title>
+            <va-sidebar-item-title v-show="!minimized"></va-sidebar-item-title>
             <va-icon name="menu" />
           </va-sidebar-item-content>
         </va-sidebar-item>
