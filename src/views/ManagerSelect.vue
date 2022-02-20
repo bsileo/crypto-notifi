@@ -1,38 +1,31 @@
 <template>
-  <h1 style="text-align: center">Select a Protocol to Manage:</h1>
-  <ProtocolSelector
-    :showSearch="false"
-    :showUserInfo="false"
-    :manager="true"
-    :autoSelect="true"
-    @selection="selectProtocol"
-  ></ProtocolSelector>
+  <div>
+    <h1 style="text-align: center">Select a Protocol to Manage:</h1>
+    <ProtocolSelector
+      :showSearch="false"
+      :showUserInfo="false"
+      :manager="true"
+      :autoSelect="true"
+      @selection="selectProtocol"
+    ></ProtocolSelector>
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import { Protocol } from "@/models/Protocol";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
-export default defineComponent({
-  name: "ManagerSelect",
-  components: {
-    ProtocolSelector,
-  },
-  data() {
-    return {
-      selectedProtocol: undefined as Protocol | undefined,
-    };
-  },
-  watch: {},
-  computed: {},
-  methods: {
-    selectProtocol(aProtocol: Protocol): void {
-      this.selectedProtocol = aProtocol;
-      this.$router.push(`/protocol/${aProtocol.id}`);
-    },
-  },
-});
+const selectedProtocol = ref<Protocol>();
+const selectProtocol = (aProtocol: Protocol): void => {
+  selectedProtocol.value = aProtocol;
+  router.push(`/manager/${aProtocol.id}`);
+};
+const id = "select";
+// eslint-disable-next-line no-undef
+defineExpose({ id });
 </script>
 
 <style scoped></style>

@@ -87,12 +87,13 @@
 </template>
 
 <script lang="ts">
-import { Protocol, SiteStatus } from "@/models/Protocol";
+import { Protocol } from "@/models/Protocol";
 import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Moralis from "moralis";
 import { computed, defineComponent, inject, ref } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
+import { SiteStatus } from "@/notifi_types";
 
 export default defineComponent({
   name: "ProtocolSelector",

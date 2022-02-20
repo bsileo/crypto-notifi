@@ -1,4 +1,5 @@
 import Moralis from "moralis";
+import { LimitType, SummaryItem } from "@/notifi_types";
 
 export type TokenBalance = {
   token_address: string;
@@ -27,7 +28,7 @@ export class NotifiUser extends Moralis.User {
 
   static async currentLevel(): Promise<UserLevel> {
     const bal = await this.tokenBalance();
-    if (bal < 100 ) return UserLevel.Free;
+    if (bal < 100) return UserLevel.Free;
     else if (bal <= 500) return UserLevel.Basic;
     else if (bal >= 500) return UserLevel.Gold;
     return UserLevel.Free;
@@ -46,6 +47,18 @@ export class NotifiUser extends Moralis.User {
     const result = Moralis.Units.FromWei(info.balance, info.decimals);
     return result;*/
   }
+
+  async subscriptionSummary(): Promise<SummaryItem[]> {
+    return [
+      {
+        name: "Subscriptions",
+        quantity: await this.subscriptionQuantity(LimitType.subscriptions),
+        limit: this.subscriptionLimit(LimitType.subscriptions),
+      },
+    ];
+  }
+
+  
 }
 
 Moralis.Object.registerSubclass("_User", NotifiUser);

@@ -31,76 +31,64 @@
       </div>
       <div class="flex sm6">
         <ProtocolSubscriptionSummary
-          :protocol="protocol"
+          :protocol="activeProtocol"
         ></ProtocolSubscriptionSummary>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { Protocol, StakingLevel } from "@/models/Protocol";
+<script setup lang="ts">
+import { Protocol } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import ProtocolSubscriptionSummary from "@/components/ProtocolSubscriptionSummary.vue";
-import { defineComponent, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import ContractInput from "./contractInput.vue";
 import { Chain, ContractInfo } from "@/models/Contract";
+import { StakingLevel } from "@/notifi_types";
 
-export default defineComponent({
-  name: "ProtocolSubscription",
-  components: { ProtocolSubscriptionSummary, ContractInput },
-  emits: ["protocolUpdate"],
-  props: {
-    protocol: { type: Protocol, required: false },
-  },
-  setup(props) {
-    const activeProtocol = ref(props.protocol || new Protocol());
+// eslint-disable-next-line no-undef
+const emit = defineEmits(["protocolUpdate"]);
+// eslint-disable-next-line no-undef
+const props = defineProps({
+  protocol: { type: Protocol, required: false },
+});
 
-    watch(
-      () => props.protocol,
-      (newProt) => {
-        if (newProt) {
-          activeProtocol.value = newProt;
-        }
-      },
-      { deep: true }
-    );
+const activeProtocol = ref(props.protocol || new Protocol());
 
-    return { activeProtocol };
+const wallet = computed({
+  get(): string {
+    return activeProtocol.value.protocolStakingWallet;
   },
-  data() {
-    return {};
-  },
-  computed: {
-    wallet: {
-      get(): string {
-        return this.activeProtocol.protocolStakingWallet;
-      },
-      set(newVal: string): void {
-        this.activeProtocol.protocolStakingWallet = newVal;
-        this.$emit("protocolUpdate", this.protocol);
-      },
-    },
-    protocolChains(): Chain[] {
-      return this.activeProtocol.chains;
-    },
-    stakingLevel(): StakingLevel {
-      return this.activeProtocol.protocolStakingLevel;
-    },
-    stakingBalance(): number {
-      return this.activeProtocol.protocolStakingBalance;
-    },
-  },
-  methods: {
-    async setStakingWallet(ci: ContractInfo): Promise<void> {
-      this.activeProtocol.protocolStakingWallet = ci.address;
-      this.activeProtocol.protocolStakingChain = ci.chain;
-      this.$emit("protocolUpdate", this.protocol);
-      this.refresh();
-    },
-    async refresh(): Promise<void> {
-      userModule.fetchUserTokens();
-    },
+  set(newVal: string): void {
+    activeProtocol.value.protocolStakingWallet = newVal;
+    emit("protocolUpdate", activeProtocol.value);
   },
 });
+
+const walletChain = computed({
+  get(): Chain {
+    return activeProtocol.value.protocolStakingChain;
+  },
+  set(c: Chain): void {
+    activeProtocol.value.protocolStakingChain = c;
+  },
+});
+
+const stakingLevel = computed((): StakingLevel => {
+  return activeProtocol.value.protocolStakingLevel;
+});
+const stakingBalance = computed((): number => {
+  return activeProtocol.value.protocolStakingBalance;
+});
+
+const setStakingWallet = async (ci: ContractInfo): Promise<void> => {
+  activeProtocol.value.protocolStakingWallet = ci.address;
+  activeProtocol.value.protocolStakingChain = ci.chain;
+  emit("protocolUpdate", activeProtocol.value);
+  refresh();
+};
+const refresh = async (): Promise<void> => {
+  userModule.fetchUserTokens();
+};
 </script>

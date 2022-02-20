@@ -11,12 +11,31 @@
         <va-sidebar-item @click="minimized = !minimized">
           <va-sidebar-item-content>
             <va-sidebar-item-title></va-sidebar-item-title>
-            <va-icon name="menu" /> 
+            <va-icon name="menu" />
           </va-sidebar-item-content>
         </va-sidebar-item>
         <template v-for="item in items" :key="item.to">
-          <va-sidebar-item :active="item.active" :to="item.to">
+          <va-sidebar-item
+            :active="item.active"
+            :to="item.to"
+            :text-color="item.text_color"
+          >
             <va-sidebar-item-content>
+              <va-icon :name="item.icon" />
+              <va-sidebar-item-title v-if="!minimized" style="height: 24px">
+                {{ item.title }}
+              </va-sidebar-item-title>
+            </va-sidebar-item-content>
+          </va-sidebar-item>
+        </template>
+        <template v-for="item in managerItems" :key="item.to">
+          <va-sidebar-item
+            :active="item.active"
+            :to="item.to"
+            :text-color="item.text_color"
+          >
+            <va-sidebar-item-content>
+              <div>&nbsp;&nbsp;</div>
               <va-icon :name="item.icon" />
               <va-sidebar-item-title v-if="!minimized" style="height: 24px">
                 {{ item.title }}
@@ -29,7 +48,10 @@
     <div class="flex xs10 ml-3">
       <router-view v-slot="{ Component }">
         <keep-alive exclude="Subscribe">
-          <component :is="Component" />
+          <Suspense>
+            <component :is="Component" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </keep-alive>
       </router-view>
     </div>
@@ -41,6 +63,7 @@
 import { computed, inject, ref } from "vue";
 import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
+import { SidebarDescriptor } from "@/notifi_types";
 
 const moralis: any = inject("Moralis");
 const userIsManager = computed((): boolean => {
@@ -48,7 +71,12 @@ const userIsManager = computed((): boolean => {
   return u && u.get("ProtocolManager");
 });
 
-const items = ref([
+// eslint-disable-next-line no-undef
+const props = defineProps({
+  protocolID: { type: String, required: false },
+});
+
+const items = ref<SidebarDescriptor[]>([
   { title: "Protocols", icon: "announcement", to: "/protocols" },
   { title: "Positions", icon: "radar", to: "/positions" },
   { title: "Subscriptions", icon: "dashboard", to: "/subscriptions" },
@@ -56,11 +84,61 @@ const items = ref([
 ]);
 
 if (userIsManager.value) {
-  const manager = [
-    { title: "Manager", icon: "admin_panel_settings", to: "/manager/select" },
-  ];
-  items.value.push(...manager);
+  const manager: SidebarDescriptor = {
+    title: "Manager",
+    icon: "admin_panel_settings",
+    to: "/manager/select",
+    text_color: "warning",
+  };
+  items.value.push(manager);
 }
+
+const managerItems = computed(() => {
+  const items: SidebarDescriptor[] = [];
+  if (props.protocolID != undefined && userIsManager.value) {
+    items.push(
+      ...[
+        {
+          title: "Send",
+          icon: "notifications",
+          to: `/manager/${props.protocolID}/send`,
+          text_color: "warning",
+        },
+        {
+          title: "Settings",
+          icon: "settings",
+          to: `/manager/${props.protocolID}/settings`,
+          text_color: "warning",
+        },
+        {
+          title: "Subscription",
+          icon: "point_of_sale",
+          to: `/manager/${props.protocolID}/subscription`,
+          text_color: "warning",
+        },
+        {
+          title: "Categories",
+          icon: "tune",
+          to: `/manager/${props.protocolID}/categories`,
+          text_color: "warning",
+        },
+        {
+          title: "History",
+          icon: "view_list",
+          to: `/manager/${props.protocolID}/history`,
+          text_color: "warning",
+        },
+        {
+          title: "Contracts",
+          icon: "alt_route",
+          to: `/manager/${props.protocolID}/contracts`,
+          text_color: "warning",
+        },
+      ]
+    );
+  }
+  return items;
+});
 
 const minimized = ref(false);
 </script>

@@ -2,7 +2,11 @@
   <div class="flex">
     <div class="row">
       <div v-if="chainPrompt" class="flex sm4">
-        <ChainPicker @selected="selectChain" :protocol="protocol"></ChainPicker>
+        <ChainPicker
+          @selected="selectChain"
+          :selectedChain="selectedChain"
+          :protocol="protocol"
+        ></ChainPicker>
       </div>
       <div class="flex" :class="this.chainPrompt ? 'sm8' : 'sm12'">
         <va-input
