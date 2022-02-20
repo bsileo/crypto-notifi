@@ -273,19 +273,14 @@ export class Protocol extends SubscriptionLimiter {
     this.set("protocolStakingChain", newVal);
   }
 
-  stakingBalance(): number {
-    let token = undefined;
-    const tokens = userModule.tokens;
-    if (!tokens) {
-      return 0;
-    }
-    if (this.get("tokenData")) {
-      token = userModule.tokens.find((e: TokenBalance) => e.symbol == "Notifi");
-    }
-    if (token) {
-      return parseFloat((token.balance / 10 ** token.decimals).toFixed(2));
-    }
-    return 0;
+  // Gets the token balances for me StakingWallet/StakingChain for Protocol level staking
+  async getStakingTokens(): Promise<TokenBalance[]> {
+    const options = {
+      chain: this.protocolStakingChain,
+      address: this.protocolStakingWallet,
+    };
+    const balances = await Moralis.Web3API.account.getTokenBalances(options);
+    return balances;
   }
 
   // Status of this protocol on the overall website -  Is it active / being managed?

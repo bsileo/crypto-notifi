@@ -1,6 +1,6 @@
 import { LimitType } from "@/notifi_types";
 
 export interface StakingLevelLimits {
-  stakingBalance(): number;
+  stakingBalance(): Promise<number>;
   subscriptionQuantities(): Promise<Record<LimitType, number>>;
 }

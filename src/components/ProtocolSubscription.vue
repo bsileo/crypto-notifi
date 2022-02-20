@@ -4,8 +4,9 @@
       <div class="flex sm6">
         <div class="row">
           <div class="flex sm12">
-            Protocol Staking Level <strong>{{ stakingLevel }}</strong> with a
-            balance of <strong>{{ stakingBalance }} Notifi</strong>
+            Protocol Staking Level
+            <strong>{{ protocolStakingLevel }}</strong> with a balance of
+            <strong>{{ protocolStakingBalance }} Notifi</strong>
             <span class="pl-4"
               ><va-button
                 size="small"
@@ -75,12 +76,8 @@ const walletChain = computed({
   },
 });
 
-const stakingLevel = computed((): StakingLevel => {
-  return activeProtocol.value.protocolStakingLevel;
-});
-const stakingBalance = computed((): number => {
-  return activeProtocol.value.protocolStakingBalance;
-});
+const protocolStakingLevel = ref<StakingLevel>();
+const protocolStakingBalance = ref<number>(0);
 
 const setStakingWallet = async (ci: ContractInfo): Promise<void> => {
   activeProtocol.value.protocolStakingWallet = ci.address;
@@ -88,7 +85,11 @@ const setStakingWallet = async (ci: ContractInfo): Promise<void> => {
   emit("protocolUpdate", activeProtocol.value);
   refresh();
 };
+
 const refresh = async (): Promise<void> => {
-  userModule.fetchUserTokens();
+  protocolStakingLevel.value = await activeProtocol.value.stakingLevel();
+  protocolStakingBalance.value = await activeProtocol.value.stakingBalance();
 };
+refresh();
+
 </script>

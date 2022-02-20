@@ -1,6 +1,8 @@
+import { TokenBalance } from './../NotifiUser';
 import { LimitType, StakingLevel, SummaryItem } from "@/notifi_types";
 import Moralis from "moralis";
 import { StakingLevelLimits } from "./StakinglevelLimits";
+import { userModule } from '@/store/user';
 
 export class SubscriptionLimiter
   extends Moralis.Object
@@ -9,11 +11,31 @@ export class SubscriptionLimiter
   constructor(name: string) {
     super(name);
   }
-  stakingBalance(): number {
-    throw new Error("Method not implemented.");
-  }
   subscriptionQuantities(): Promise<Record<LimitType, number>> {
     throw new Error("Method not implemented.");
+  }
+
+  async stakingBalance(): Promise<number> {
+    let token = undefined;
+    const tokens = await this.getStakingTokens();
+    console.log(tokens);
+    if (!tokens) {
+      return 0;
+    }
+    token = tokens.find(
+      (e: TokenBalance) =>
+        e.token_address == "0xd3cf2281e6d8c445905c859b3abe692a707286cf"
+    );
+    console.log(token);
+    if (token) {
+      return parseFloat((token.balance / 10 ** token.decimals).toFixed(2));
+    }
+    return 0;
+  }
+
+  // return a collection of Token balances for the wallet used to track staking for this entity
+  async getStakingTokens(): Promise<TokenBalance[]> {
+    return userModule.tokens;
   }
 
   async subscriptionSummary(): Promise<SummaryItem[]> {
@@ -21,27 +43,27 @@ export class SubscriptionLimiter
       {
         name: "Categories",
         quantity: await this.subscriptionQuantity(LimitType.category),
-        limit: this.subscriptionLimit(LimitType.category),
+        limit: await this.subscriptionLimit(LimitType.category),
       },
       {
         name: "Contracts",
         quantity: await this.subscriptionQuantity(LimitType.contracts),
-        limit: this.subscriptionLimit(LimitType.contracts),
+        limit: await this.subscriptionLimit(LimitType.contracts),
       },
       {
         name: "Events",
         quantity: await this.subscriptionQuantity(LimitType.events),
-        limit: this.subscriptionLimit(LimitType.events),
+        limit: await this.subscriptionLimit(LimitType.events),
       },
       {
         name: "Managers",
         quantity: await this.subscriptionQuantity(LimitType.managers),
-        limit: this.subscriptionLimit(LimitType.managers),
+        limit: await this.subscriptionLimit(LimitType.managers),
       },
       {
         name: "Subscriptions",
         quantity: await this.subscriptionQuantity(LimitType.subscriptions),
-        limit: this.subscriptionLimit(LimitType.subscriptions),
+        limit: await this.subscriptionLimit(LimitType.subscriptions),
       },
     ];
   }
@@ -51,14 +73,14 @@ export class SubscriptionLimiter
     return quans[limType];
   }
 
-  subscriptionLimit(limType: LimitType): number {
-    const level = this.stakingLevel();
+  async subscriptionLimit(limType: LimitType): Promise<number> {
+    const level = await this.stakingLevel();
     const limits = this.subscriptionLimits()[level];
     return limits[limType];
   }
 
-  stakingLevel(): StakingLevel {
-    const bal = this.stakingBalance();
+  async stakingLevel(): Promise<StakingLevel> {
+    const bal = await this.stakingBalance();
     if (bal < this.stakingLimit(StakingLevel.free)) {
       return StakingLevel.free;
     } else if (bal < this.stakingLimit(StakingLevel.basic)) {
