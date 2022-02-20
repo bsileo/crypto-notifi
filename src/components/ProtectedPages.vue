@@ -37,7 +37,7 @@
             :text-color="item.text_color"
           >
             <va-sidebar-item-content>
-              <div>&nbsp;&nbsp;</div>
+              <div v-show="!minimized">&nbsp;&nbsp;</div>
               <va-icon :name="item.icon" />
               <va-sidebar-item-title v-if="!minimized" style="height: 24px">
                 {{ item.title }}

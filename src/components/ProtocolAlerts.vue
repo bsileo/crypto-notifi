@@ -4,6 +4,7 @@
       :items="alerts"
       v-model:sort-by="sortBy"
       v-model:sorting-order="sortingOrder"
+      striped
       :columns="alertColumns"
     >
       <template #header(shortDateTime)>Date</template>
@@ -18,12 +19,25 @@
       <template #cell(content)="{ source: content }">
         <div style="width: 50%">{{ content }}</div>
       </template>
+      <template #bodyAppend>
+        <tr>
+          <td colspan="8" class="table-example--pagination">
+            <va-pagination
+              v-model="currentPage"
+              input
+              hide-on-single-page
+              :total="total"
+              :page-size="pageSize"
+            />
+          </td>
+        </tr>
+      </template>
     </va-data-table>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { Protocol } from "@/models/Protocol";
 import { AlertHistory } from "@/models/AlertHistory";
 import Moralis from "moralis";
@@ -35,6 +49,19 @@ const props = defineProps({
 
 const sortBy = ref("shortDateTime");
 const sortingOrder = ref<"asc" | "desc">("desc");
+const total = ref(0);
+const page = ref(1);
+const pageSize = ref(15);
+
+const currentPage = computed({
+  get(): number {
+    return page.value;
+  },
+  set(p: number) {
+    page.value = p;
+    refresh();
+  },
+});
 
 const alertColumns = ref([
   { key: "shortDateTime", label: "Date", sortable: true },
@@ -47,9 +74,13 @@ const alerts = ref<AlertHistory[]>([]);
 const query = new Moralis.Query(AlertHistory);
 if (props.protocol) {
   query.equalTo("Protocol", props.protocol);
-}
+};
+
 
 const refresh = async (): Promise<void> => {
+  total.value = await query.count();
+  query.limit(pageSize.value);
+  query.skip(currentPage.value);
   const newAlerts = await query.find();
   alerts.value.length = 0;
   alerts.value.push(...newAlerts);
