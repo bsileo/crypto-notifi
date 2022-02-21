@@ -1,8 +1,14 @@
 <template>
   <div class="gutter--sm">
     <div v-if="!showNoPositions" class="row pb-1 pt-1">
-      <va-input class="flex xs5" label="Search Names" v-model="search">
+      <va-input class="flex xs7" label="Search Names" v-model="search">
       </va-input>
+      <va-checkbox
+        class="flex xs2"
+        v-model="favorites"
+        label="Favorites?"
+        :disabled="true"
+      />
       <div class="flex xs2">
         <va-button
           icon="refresh"
@@ -50,6 +56,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const rawProtocols = ref<Protocol[]>([]);
     const intSearch = ref("");
+    const favorites = ref(true);
     const queryLimit = ref(25);
     const protocolsLoading = ref(false);
     const rawCount = ref(0);
@@ -60,6 +67,7 @@ export default defineComponent({
 
     return {
       rawProtocols,
+      favorites,
       intSearch,
       queryLimit,
       rawCount,

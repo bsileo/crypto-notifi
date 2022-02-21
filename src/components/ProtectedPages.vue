@@ -66,6 +66,7 @@ import { computed, inject, ref } from "vue";
 import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
 import { SidebarDescriptor } from "@/notifi_types";
+import { useRoute } from "vue-router";
 
 const moralis: any = inject("Moralis");
 const userIsManager = computed((): boolean => {
@@ -85,7 +86,8 @@ const items = ref<SidebarDescriptor[]>([
   { title: "Subscribe", icon: "loop", to: "/subscription" },
 ]);
 
-const activeRouteName = ref("");
+const route = useRoute();
+const activeRouteName = ref(route.path);
 
 const isRouteActive = (item: SidebarDescriptor) => {
   return activeRouteName.value === item.to;

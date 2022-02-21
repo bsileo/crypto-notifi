@@ -31,10 +31,16 @@
       <div class="row pb-1">
         <va-input
           v-if="showSearch"
-          class="flex sm11"
+          class="flex sm9"
           label="Search Protocols"
           v-model="search"
         ></va-input>
+        <va-checkbox
+          v-if="showSearch"
+          class="flex sm2"
+          label="Favorites?"
+          v-model="searchFavorites"
+        />
         <div
           class="flex sm1 float-right"
           :class="showSearch ? '' : 'offset--sm11'"
@@ -53,7 +59,7 @@
               v-bind:key="protocol.id"
               v-for="protocol in protocols"
               :protocol="protocol"
-              :selected="this.selectedProtocol == protocol"
+              :selected="selectedProtocol == protocol"
               :showVote="showVote"
               :showUserInfo="showUserInfo"
               :showFavorites="showFavorites"
@@ -86,215 +92,209 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { Protocol } from "@/models/Protocol";
 import { NotifiUser } from "@/models/NotifiUser";
 import { userModule } from "@/store/user";
 import Moralis from "moralis";
-import { computed, defineComponent, inject, ref } from "vue";
+import { computed, inject, onMounted, ref } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
 import { SiteStatus } from "@/notifi_types";
 
-export default defineComponent({
-  name: "ProtocolSelector",
-  components: { ProtocolInfo },
-  emits: ["selection", "subscribe", "add"],
-  props: {
-    showSearch: { type: Boolean, required: false, default: true },
-    showVote: { type: Boolean, required: false, default: false },
-    showSubscribe: { type: Boolean, required: false, default: false },
-    showFavorites: { type: Boolean, required: false, default: true },
-    showUserInfo: { type: Boolean, required: false, default: false },
-    autoSelect: { type: Boolean, required: false, default: false },
-    simpleList: { type: Boolean, required: false, default: false },
-    simpleMulti: { type: Boolean, required: false, default: true },
-    allowSelect: { type: Boolean, required: false, default: true },
-    showRequested: { type: Boolean, required: false, default: false },
-    showAdd: { type: Boolean, required: false, default: false },
-    manager: { type: Boolean, required: false, default: false },
-  },
-  setup(props) {
-    const user: NotifiUser | undefined = inject("user");
-    const intSearch = ref("");
-    const selectedProtocol = ref<Protocol | undefined>(undefined);
-    const selectedProtocols = ref<Protocol[]>([]);
-    const query = ref<any>(undefined);
-    const rawProtocols = ref<Protocol[]>([]);
-    const filteredProtocols = ref<Protocol[]>([]);
-    const queryLimit = ref<number>(20);
-    const loading = ref(false);
-    const showAdder = ref(props.showAdd);
-    const showFavs = computed((): boolean => {
-      return props.showFavorites;
-    });
+/* global defineProps, defineEmits */
+const emit = defineEmits(["selection", "subscribe", "add"]);
+const props = defineProps({
+  showSearch: { type: Boolean, required: false, default: true },
+  showVote: { type: Boolean, required: false, default: false },
+  showSubscribe: { type: Boolean, required: false, default: false },
+  showFavorites: { type: Boolean, required: false, default: true },
+  showUserInfo: { type: Boolean, required: false, default: false },
+  autoSelect: { type: Boolean, required: false, default: false },
+  simpleList: { type: Boolean, required: false, default: false },
+  simpleMulti: { type: Boolean, required: false, default: true },
+  allowSelect: { type: Boolean, required: false, default: true },
+  showRequested: { type: Boolean, required: false, default: false },
+  showAdd: { type: Boolean, required: false, default: false },
+  manager: { type: Boolean, required: false, default: false },
+});
 
-    return {
-      user,
-      intSearch,
-      selectedProtocol,
-      selectedProtocols,
-      query,
-      rawProtocols,
-      filteredProtocols,
-      queryLimit,
-      loading,
-      showFavs,
-      showAdder,
-    };
+const user: NotifiUser | undefined = inject("user");
+
+const intSearch = ref("");
+const intSearchFavorites = ref(false);
+const selectedProtocol = ref<Protocol | undefined>(undefined);
+const selectedProtocols = ref<Protocol[]>([]);
+const query = ref<any>(undefined);
+const rawProtocols = ref<Protocol[]>([]);
+const filteredProtocols = ref<Protocol[]>([]);
+const queryLimit = ref<number>(20);
+const loading = ref(false);
+const showAdder = ref(props.showAdd);
+
+onMounted(async () => {
+  if (props.showUserInfo) {
+    userModule.fetchUserTokens();
+  }
+  fetchProtocols();
+});
+
+const protocols = computed((): Protocol[] => {
+  let prots = filteredProtocols.value;
+  if (search.value) {
+    const result = prots.filter((e: Protocol) => {
+      const idx = e.name.toLowerCase().indexOf(search.value.toLowerCase());
+      return idx != -1;
+    });
+    prots = result;
+  }
+  return prots;
+});
+
+const search = computed({
+  get(): string {
+    return intSearch.value;
   },
-  async mounted() {
-    if (this.showUserInfo) {
-      userModule.fetchUserTokens();
-    }
-    this.fetchProtocols();
-  },
-  computed: {
-    protocols(): Protocol[] {
-      let prots = this.filteredProtocols;
-      if (this.search) {
-        const result = prots.filter((e: Protocol) => {
-          const idx = e.name.toLowerCase().indexOf(this.search.toLowerCase());
-          return idx != -1;
-        });
-        return result;
-      } else {
-        return prots;
-      }
-    },
-    search: {
-      get(): string {
-        return this.intSearch;
-      },
-      set(newVal: string) {
-        this.intSearch = newVal;
-        //this.rawProtocols.length = 0;
-        //this.fetchProtocols();
-      },
-    },
-  },
-  methods: {
-    select(aProtocol: Protocol): void {
-      this.selectedProtocol = aProtocol;
-      this.$emit("selection", this.selectedProtocol);
-    },
-    subscribe(aProtocol: Protocol): void {
-      this.$emit("subscribe", aProtocol);
-    },
-    selectionChange() {
-      this.$emit("selection", this.selectedProtocols);
-    },
-    unselect(prot: Protocol) {
-      this.selectedProtocols = this.selectedProtocols.filter((v) => {
-        return v.id !== prot.id;
-      });
-      this.selectionChange();
-    },
-    setSearch(search: string) {
-      console.log("Set Search");
-      this.search = search;
-    },
-    async appendProtocols(): Promise<void> {
-      //console.log("Append");
-      this.fetchProtocols();
-    },
-    async fetchProtocols(refresh?: boolean): Promise<void> {
-      this.loading = true;
-      const query = new Moralis.Query(Protocol);
-      /*if (this.search) {
-        query.matches("name", this.search);
-        console.log(`Search term ${this.search}`);
-      }*/
-      if (!this.showRequested) {
-        query.notEqualTo("siteStatus", SiteStatus.requested);
-      }
-      query.include("ProtocolStatus");
-      query.limit(this.queryLimit);
-      if (!refresh) {
-        query.skip(this.rawProtocols.length);
-      }
-      this.querySubscribe(query);
-      let prots = await query.find();
-      if (refresh == true) {
-        this.rawProtocols = prots;
-      } else {
-        this.rawProtocols.push(...prots);
-      }
-      let res: Protocol[] = [];
-      if (this.manager) {
-        for (let i = 0; i < prots.length; i++) {
-          let man = await prots[i].managerOf();
-          if (man) {
-            res.push(prots[i]);
-          }
-        }
-      } else {
-        res = this.rawProtocols;
-      }
-      if (this.autoSelect && res.length == 1) {
-        this.select(res[0]);
-      }
-      let res2: Protocol[] = [];
-      if (this.search) {
-        const test = this.search.toLowerCase();
-        for (let i = 0; i++; i < res.length) {
-          if (res[i].name.search(test) != -1) {
-            res2.push(res[i]);
-          }
-        }
-      } else {
-        res2 = res;
-      }
-      this.filteredProtocols = res2;
-      this.loading = false;
-    },
-    refresh(): void {
-      this.fetchProtocols(true);
-    },
-    async querySubscribe(query: any) {
-      const protocol = await query.subscribe();
-      const safeManagerPush = async (prot: Protocol) => {
-        if (this.manager) {
-          if (await prot.managerOf()) {
-            this.rawProtocols.push(prot);
-          }
-        } else {
-          this.rawProtocols.push(prot);
-        }
-      };
-      protocol.on("create", async (prot: Protocol) => {
-        safeManagerPush(prot);
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      protocol.on("update", (sub: Protocol) => {
-        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawProtocols.splice(index, 1, sub);
-        }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      protocol.on("enter", (prot: Protocol) => {
-        safeManagerPush(prot);
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      protocol.on("leave", (sub: Protocol) => {
-        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawProtocols.splice(index, 1);
-        }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      protocol.on("delete", (sub: Protocol) => {
-        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawProtocols.splice(index, 1);
-        }
-      });
-      protocol.on("close", () => {
-        console.log("Protocols Subscription closed");
-      });
-    },
+  set(newVal: string) {
+    intSearch.value = newVal;
+    //this.rawProtocols.length = 0;
+    //this.fetchProtocols();
   },
 });
+
+const searchFavorites = computed({
+  get(): boolean {
+    return intSearchFavorites.value;
+  },
+  set(newVal: boolean) {
+    intSearchFavorites.value = newVal;
+    fetchProtocols(true);
+  },
+});
+
+const select = (aProtocol: Protocol): void => {
+  selectedProtocol.value = aProtocol;
+  emit("selection", selectedProtocol.value);
+};
+const subscribe = (aProtocol: Protocol): void => {
+  emit("subscribe", aProtocol);
+};
+const selectionChange = () => {
+  emit("selection", selectedProtocols.value);
+};
+const unselect = (prot: Protocol) => {
+  selectedProtocols.value = selectedProtocols.value.filter((v) => {
+    return v.id !== prot.id;
+  });
+  selectionChange();
+};
+const setSearch = (s: string) => {
+  console.log("Set Search");
+  search.value = s;
+};
+const appendProtocols = async (): Promise<void> => {
+  //console.log("Append");
+  fetchProtocols();
+};
+const fetchProtocols = async (refresh?: boolean): Promise<void> => {
+  loading.value = true;
+  if (searchFavorites.value) {
+    const u = Moralis.User.current();
+    const rel = u.relation("FavoriteProtocols");
+    query.value = rel.query();
+  } else {
+    query.value = new Moralis.Query(Protocol);
+  }
+  if (!props.showRequested) {
+    query.value.notEqualTo("siteStatus", SiteStatus.requested);
+  }
+  query.value.include("ProtocolStatus");
+  query.value.limit(queryLimit.value);
+  if (!refresh) {
+    query.value.skip(rawProtocols.value.length);
+  }
+  querySubscribe(query.value);
+  let prots = await query.value.find();
+  if (refresh == true) {
+    rawProtocols.value.length = 0;
+  }
+  rawProtocols.value.push(...prots);
+  let res: Protocol[] = [];
+  if (props.manager) {
+    for (let i = 0; i < prots.length; i++) {
+      let man = await prots[i].managerOf();
+      if (man) {
+        res.push(prots[i]);
+      }
+    }
+  } else {
+    res = rawProtocols.value;
+  }
+  
+  if (props.autoSelect && res.length == 1) {
+    select(res[0]);
+  }
+  let res2: Protocol[] = [];
+  if (search.value) {
+    const test = search.value.toLowerCase();
+    for (let i = 0; i++; i < res.length) {
+      if (res[i].name.search(test) != -1) {
+        res2.push(res[i]);
+      }
+    }
+  } else {
+    res2 = res;
+  }
+  filteredProtocols.value = res2;
+  loading.value = false;
+};
+
+const refresh = (): void => {
+  fetchProtocols(true);
+};
+
+const querySubscribe = async (query: any) => {
+  const protocol = await query.subscribe();
+  const safeManagerPush = async (prot: Protocol) => {
+    if (props.manager) {
+      if (await prot.managerOf()) {
+        rawProtocols.value.push(prot);
+      }
+    } else {
+      rawProtocols.value.push(prot);
+    }
+  };
+  protocol.on("create", async (prot: Protocol) => {
+    safeManagerPush(prot);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protocol.on("update", (sub: Protocol) => {
+    const index = rawProtocols.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawProtocols.value.splice(index, 1, sub);
+    }
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protocol.on("enter", (prot: Protocol) => {
+    safeManagerPush(prot);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protocol.on("leave", (sub: Protocol) => {
+    const index = rawProtocols.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawProtocols.value.splice(index, 1);
+    }
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protocol.on("delete", (sub: Protocol) => {
+    const index = rawProtocols.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawProtocols.value.splice(index, 1);
+    }
+  });
+  protocol.on("close", () => {
+    console.log("Protocols Subscription closed");
+  });
+};
 </script>
 
 <style scoped>
