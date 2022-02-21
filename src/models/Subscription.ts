@@ -1,4 +1,5 @@
-import { ValueOperator } from "@/notifi_types";
+import { UserFrequency } from './../notifi_types';
+import { ValueOperatorSymbol } from "@/notifi_types";
 import { NotifiUser } from "@/models/NotifiUser";
 import { SubscriptionType } from "@/models/SubscriptionType";
 import { Chain } from "@/models/Contract";
@@ -36,7 +37,14 @@ export class Subscription extends Moralis.Object {
     return this.get("GeneralSubType");
   }
   set category(cat: SubscriptionType) {
-    this.set("GeneralSubType"), cat;
+    this.set("GeneralSubType", cat);
+  }
+
+  get frequency(): typeof UserFrequency {
+    return this.get("userFrequency");
+  }
+  set frequency(f: typeof UserFrequency) {
+    this.set("userFrequency", f);
   }
 
   // Return the name of the Subscription Type I am associated with.
@@ -78,7 +86,7 @@ export class Subscription extends Moralis.Object {
   get value(): number {
     return this.get("value");
   }
-  get valueOperator(): ValueOperator {
+  get valueOperator(): ValueOperatorSymbol {
     return this.get("valueOperator");
   }
   get description(): string {

@@ -21,8 +21,6 @@ export enum UserMode {
   "manager" = "manager",
 }
 
-export type ValueOperator = ">" | "<" | "=";
-
 export type SidebarDescriptor = {
   title: string;
   icon: string;
@@ -68,18 +66,26 @@ export enum LimitType {
   "contracts" = "Contracts",
   "events" = "Events",
   "managers" = "Managers",
-  "subscriptions" = "Subscriptions"
+  "subscriptions" = "Subscriptions",
 }
 
+export type UserFrequenciesValue = "day" | "hour";
+export type UserFrequenciesName = "Once a Day" | "Once an Hour";
 
-export enum UserFrequency {
-  "Once a Day",
-  "Once an Hour",
-}
-// Records
-export const ValueOperatorNames: Record<ValueOperator, string> = {
+export const UserFrequency: Record<UserFrequenciesValue, UserFrequenciesName> =
+  {
+    day: "Once a Day",
+    hour: "Once an Hour",
+  };
+
+export type ValueOperatorSymbol = ">" | "<" | "=";
+export type ValueOperatorName = "Great Than" | "Less Than" | "Equal To";
+
+export const ValueOperatorNames: Record<
+  ValueOperatorSymbol,
+  ValueOperatorName
+> = {
   ">": "Great Than",
   "<": "Less Than",
   "=": "Equal To",
 };
-
