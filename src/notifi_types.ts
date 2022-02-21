@@ -79,13 +79,13 @@ export const UserFrequency: Record<UserFrequenciesValue, UserFrequenciesName> =
   };
 
 export type ValueOperatorSymbol = ">" | "<" | "=";
-export type ValueOperatorName = "Great Than" | "Less Than" | "Equal To";
+export type ValueOperatorName = "Greater Than" | "Less Than" | "Equal To";
 
 export const ValueOperatorNames: Record<
   ValueOperatorSymbol,
   ValueOperatorName
 > = {
-  ">": "Great Than",
+  ">": "Greater Than",
   "<": "Less Than",
   "=": "Equal To",
 };

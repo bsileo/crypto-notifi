@@ -166,6 +166,7 @@ import { SubscriptionTypes } from "@/models/Subscription";
 import { UserChannel } from "@/models/Channel";
 import { channelsModule } from "@/store/channels";
 import { ValueOperatorNames } from "@/notifi_types";
+import { prettyNumber } from "@/Utilities";
 
 export default defineComponent({
   name: "SubscriptionCard",
@@ -318,9 +319,10 @@ export default defineComponent({
         return sub.positionDescription();
       }
       if (t == SubscriptionTypes.wallet) {
-        if (sub.valueOperator) {
+        if (sub.valueOperator && sub.value) {
+          const val = prettyNumber(sub.value);
           const op = ValueOperatorNames[sub.valueOperator];
-          return `${op} ${sub.value}`;
+          return `${op} ${val}`;
         }
       }
       return "";

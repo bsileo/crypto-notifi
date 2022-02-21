@@ -6,14 +6,14 @@
           name="arrow_drop_down"
           :color="lowPositionViolated ? 'danger' : ''"
         />
-        ${{ subscription.positionLow }}
+        ${{ prettyNumber(subscription.positionLow) }}
       </div>
       <div v-if="subscription.positionHigh" :style="highPositionStyle">
         <va-icon
           name="arrow_drop_up"
           :color="highPositionViolated ? 'danger' : ''"
         />
-        ${{ subscription.positionHigh }}
+        ${{ prettyNumber(subscription.positionHigh) }}
       </div>
     </div>
     <div v-if="subscription" class="flex xs6">
@@ -26,13 +26,14 @@
         size="small"
       ></va-button>
     </div>
+    <div v-if="!subscription" class="flex xs6 offset--xs6">
+      <va-button
+        icon="add"
+        @click="add"
+        size="small"
+      ></va-button>
+    </div>
   </div>
-  <va-button
-    v-if="!subscription"
-    icon="add"
-    @click="add"
-    size="small"
-  ></va-button>
   <va-modal v-model="show" no-dismiss hide-default-actions>
     <div class="row">
       <va-input
@@ -144,7 +145,8 @@ import { UserFrequency } from "@/notifi_types";
 
 /* global defineProps, defineEmits */
 const props = defineProps({
-  position: { type: Position, required: true },
+  position: { type: Position  , required: true },
+
 });
 
 const subscription = ref<Subscription | undefined>(undefined);

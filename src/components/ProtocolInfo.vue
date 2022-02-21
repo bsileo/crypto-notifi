@@ -5,7 +5,7 @@
     :stripe="selected"
     stripe-color="success"
     :href="allowSelectHref"
-    @click.prevent="this.select(protocol)"
+    @click.prevent="select(protocol)"
   >
     <va-card-title>
       <va-chip :href="protocol.website" shadow color="success" size="medium">{{
@@ -63,11 +63,23 @@
           ></va-button>
         </va-list-label>
         <va-inner-loading :loading="loadingPositions">
-          <PositionVue
+          <va-list-item>
+            <va-list-item-section avatar>
+              <va-avatar :src="protocol.iconURL" :size="25"></va-avatar>
+            </va-list-item-section>
+            <va-list-item-section>
+              <va-list-item-label>
+                <va-icon name="add" :size="16"></va-icon>
+                Protocol Total ${{ prettyNumber(protocolValue) }}
+              </va-list-item-label>
+            </va-list-item-section>
+          </va-list-item>
+          <va-list-separator></va-list-separator>
+          <PositionListItem
             v-for="(position, idx) in positions"
             v-bind:key="idx"
             :position="position"
-          ></PositionVue>
+          ></PositionListItem>
           <div style="text-align: center" v-if="showNoPositions">
             <strong>None Found</strong>
           </div>
@@ -79,7 +91,7 @@
       Level:<strong>{{ protocol.getUserLevel() }}</strong>
     </div>
     <va-card-actions>
-      <va-button v-if="allowSelect" @click="this.select(protocol)"
+      <va-button v-if="allowSelect" @click="select(protocol)"
         >Select</va-button
       >
       <va-popover
@@ -87,21 +99,21 @@
         message="Request support for this Protocol on Notifi"
       >
         <va-button
-          v-if="this.showVote && protocol.protocolSiteStatus == 'Pending'"
+          v-if="showVote && protocol.protocolSiteStatus == 'Pending'"
           size="small"
           @click="voteFor(protocol)"
           >Vote</va-button
         >
       </va-popover>
       <va-button
-        v-if="this.showSubscribe && protocol.protocolSiteStatus == 'Active'"
+        v-if="showSubscribe && protocol.protocolSiteStatus == 'Active'"
         size="small"
         color="primary"
         @click="subscribe(protocol)"
         >Subscribe</va-button
       >
       <va-button
-        v-if="this.showVote && protocol.protocolSiteStatus == 'Pending'"
+        v-if="showVote && protocol.protocolSiteStatus == 'Pending'"
         size="small"
         color="warning"
         @click="claim(protocol)"
@@ -116,18 +128,20 @@
   </va-modal>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { computed, defineComponent, onMounted, ref, watchEffect } from "vue";
 import Moralis from "moralis";
 import { Protocol } from "@/models/Protocol";
 import ProtocolClaim from "./ProtocolClaim.vue";
-import PositionVue from "./position.vue";
+import PositionListItem from "./position.vue";
 import { Position } from "@/models/Position";
-export default defineComponent({
-  name: "ProtocolInfo",
-  components: { ProtocolClaim, PositionVue },
-  emits: ["selected", "subscribe", "claimed"],
-  props: {
+import { getCurrentInstance } from 'vue'
+import { roundToTwo, prettyNumber } from "@/Utilities";
+import PositionSubscription from "./PositionSubscription.vue";
+
+/* global defineProps, defineEmits */
+  const emit = defineEmits(["selected", "subscribe", "claimed"])
+  const props = defineProps({
     showVote: { type: Boolean, required: false, default: false },
     showSubscribe: { type: Boolean, required: false, default: false },
     showUserInfo: { type: Boolean, required: false, default: false },
@@ -138,14 +152,14 @@ export default defineComponent({
     manager: { type: Boolean, required: false, default: false },
     protocol: { type: Protocol, required: true },
     selected: { type: Boolean, required: false, default: false },
-  },
-  setup(props, { emit }) {
-    const showClaim = ref(false);
+  })
 
-    const isFavorite = ref(false);
-    const refreshFavorite = async () => {
-      isFavorite.value = await props.protocol.isFavorite();
-    };
+  const showClaim = ref(false);
+
+  const isFavorite = ref(false);
+  const refreshFavorite = async () => {
+    isFavorite.value = await props.protocol.isFavorite();
+  };
 
     watchEffect(() => {
       if (props.protocol != undefined && props.showFavorites) {
@@ -206,45 +220,41 @@ export default defineComponent({
       loadingPositions.value = false;
     };
 
-    return {
-      showClaim,
-      isFavorite,
-      wide,
-      toggleFavorite,
-      positions,
-      loadingPositions,
-      fetchPositions,
-      showNoPositions,
-      cardClass,
-    };
-  },
-  computed: {
-    allowSelectHref() {
-      return this.allowSelect ? "#" : null;
-    },
-  },
-  methods: {
-    async voteFor(aProtocol: Protocol): Promise<void> {
+    const protocolValue = computed(() => {
+      let total = 0;
+      positions.value.forEach( (p: any) => {
+        total = total + p.value;
+      })
+      return roundToTwo(total);
+    });
+
+    const allowSelectHref = computed(() => {
+      return props.allowSelect ? "#" : null;
+    })
+
+    const voteFor = async (aProtocol: Protocol): Promise<void> => {
       const newVotes = await aProtocol.siteVote();
-      this.$forceUpdate();
-    },
-    claim(aProtocol: Protocol): void {
-      this.showClaim = true;
-    },
-    claimSaved(aProtcolStatus: any): void {
-      this.showClaim = false;
-      this.$emit("claimed");
-    },
-    select(aProtocol: Protocol): void {
-      if (this.allowSelect) {
-        this.$emit("selected", this.protocol);
+      const instance = getCurrentInstance();
+      instance?.proxy?.$forceUpdate();
+    };
+
+    const claim = (aProtocol: Protocol): void => {
+      showClaim.value = true;
+    };
+
+    const claimSaved = (aProtcolStatus: any): void => {
+      showClaim.value = false;
+      emit("claimed");
+    };
+
+    const select = (aProtocol: Protocol): void => {
+      if (props.allowSelect) {
+        emit("selected", props.protocol);
       }
-    },
-    subscribe(aProtocol: Protocol): void {
-      this.$emit("subscribe", this.protocol);
-    },
-  },
-});
+    };
+    const subscribe = (aProtocol: Protocol): void => {
+      emit("subscribe", props.protocol);
+    };
 </script>
 
 <style scoped></style>

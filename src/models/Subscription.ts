@@ -10,6 +10,7 @@ import { ContractActivity } from "./ContractActivity";
 import { Protocol } from "./Protocol";
 import { Position } from "./Position";
 import { ChainEndpoint } from "cookietrack-types";
+import { prettyNumber } from '@/Utilities';
 
 export enum SubscriptionStatus {
   "active" = "active",
@@ -84,7 +85,7 @@ export class Subscription extends Moralis.Object {
     return this.get("toAddress");
   }
   get value(): number {
-    return this.get("value");
+    return parseFloat(this.get("value"));
   }
   get valueOperator(): ValueOperatorSymbol {
     return this.get("valueOperator");
@@ -162,10 +163,10 @@ export class Subscription extends Moralis.Object {
   positionDescription(): string {
     if (this.subscriptionType == SubscriptionTypes.position)
       if (this.positionLow && this.positionHigh) {
-        return `Below $${this.positionLow} / Above $${this.positionHigh}`;
+        return `Below $${prettyNumber(this.positionLow)} / Above $${prettyNumber(this.positionHigh)}`;
       }
-    if (this.positionLow) return `less than $${this.positionLow}`;
-    if (this.positionHigh) return `greater than $${this.positionHigh}`;
+    if (this.positionLow) return `less than $${prettyNumber(this.positionLow)}`;
+    if (this.positionHigh) return `greater than $${prettyNumber(this.positionHigh)}`;
     return "";
   }
 

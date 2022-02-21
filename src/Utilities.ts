@@ -1,6 +1,6 @@
 export const prettyNumber = (val: number): string => {
   let res = "";
-  if (val < 0.01) {
+  if (val < 0.01 && val != 0) {
     res = val.toFixed(8);
   } else {
     //var commas = val.toLocaleString("en-US");
