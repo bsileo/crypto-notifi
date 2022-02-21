@@ -4383,6 +4383,10 @@
   "resolved" "https://registry.npmjs.org/cookiejar/-/cookiejar-2.1.3.tgz"
   "version" "2.1.3"
 
+"cookietrack-api@github:bsileo/cookietrack-api":
+  "resolved" "git+ssh://git@github.com/bsileo/cookietrack-api.git#8753d6ace0e2f3e5abf4ebe81335ad5d5c207874"
+  "version" "2.7.0"
+
 "cookietrack-types@^1.5.1":
   "integrity" "sha512-mq+eOeWZh94Cdq+C+ECg8w6fgwdkHb+fMrE2I2IzIDD30+4VTLIWIdExbm2FxapAsmnSvIxfYqI7hBHX+UwoIA=="
   "resolved" "https://registry.npmjs.org/cookietrack-types/-/cookietrack-types-1.5.1.tgz"
