@@ -31,19 +31,19 @@
       <div class="row pb-1">
         <va-input
           v-if="showSearch"
-          class="flex sm9"
-          label="Search Protocols"
+          class="flex xs6 sm9"
+          label="Search Names"
           v-model="search"
         ></va-input>
         <va-checkbox
           v-if="showSearch"
-          class="flex sm2"
+          class="flex xs4 sm2"
           label="Favorites?"
           v-model="searchFavorites"
         />
         <div
-          class="flex sm1 float-right"
-          :class="showSearch ? '' : 'offset--sm11'"
+          class="flex xs2 sm1 float-right"
+          :class="showSearch ? '' : 'offset--xs10 offset--sm11'"
         >
           <va-button
             icon="refresh"

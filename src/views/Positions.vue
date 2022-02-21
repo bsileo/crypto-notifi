@@ -3,13 +3,10 @@
     <div v-if="!showNoPositions" class="row pb-1 pt-1">
       <va-input class="flex xs7" label="Search Names" v-model="search">
       </va-input>
-      <va-checkbox
-        class="flex xs2"
-        v-model="favorites"
-        label="Favorites?"
-        :disabled="true"
-      />
       <div class="flex xs2">
+        <va-checkbox v-model="favorites" label="Favorites?" :disabled="true" />
+      </div>
+      <div class="flex xs1 float-right">
         <va-button
           icon="refresh"
           color="secondary"

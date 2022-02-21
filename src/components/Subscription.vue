@@ -1,12 +1,12 @@
 <template>
   <va-card class="subscription" color="#76b4e3" gradient>
     <va-card-title>
-      <div class="flex md7">
+      <div class="flex xs9 md7">
         <div class="title">{{ name }}</div>
       </div>
-      <div class="flex md5">
+      <div class="flex xs3 md5">
         <div class="row">
-          <div class="flex sm4">
+          <div class="flex xs4">
             <va-popover
               :message="pausePopoverText"
               placement="top"
@@ -22,7 +22,7 @@
               </va-inner-loading>
             </va-popover>
           </div>
-          <div class="flex sm4">
+          <div class="flex xs4">
             <va-inner-loading :loading="destroying" :size="18">
               <va-button
                 @click.prevent="this.destroy()"
@@ -33,7 +33,7 @@
               ></va-button>
             </va-inner-loading>
           </div>
-          <div class="flex sm4">
+          <div class="flex xs4">
             <va-popover
               message="Coming Soon"
               placement="top"
