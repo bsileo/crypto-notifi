@@ -5,7 +5,8 @@
     </div>
     <div class="row">
       <p>
-        Your account is currently on the <strong>{{ level }}</strong> Level. You hold <strong>{{tokens}}</strong> Notifi tokens.
+        Your account is currently on the <strong>{{ level }}</strong> Level. You
+        hold <strong>{{ tokens }}</strong> Notifi tokens.
       </p>
       <p class="pt-3">
         To increase levels,

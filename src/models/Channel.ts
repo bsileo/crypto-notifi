@@ -1,7 +1,7 @@
 import { NotifiUser } from "@/models/NotifiUser";
 import { channelsModule } from "@/store/channels";
 import Moralis from "moralis";
-import { Subscription } from "./Subscription";
+import { Subscription } from "@/models/Subscription";
 
 export interface ChannelModel {
   id: number | string;

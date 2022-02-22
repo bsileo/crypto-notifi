@@ -5,10 +5,9 @@
 		},
 		{
 			"path": "..\\notifi-moralis-cloud"
-		},
-		{
-			"path": "..\\cookie\\cookietrack-api"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"typescript.tsdk": "node_modules/typescript/lib"
+	}
 }

@@ -27,7 +27,7 @@
           <div v-else>{{ balance }} @ ${{ price }}</div>
         </va-list-item-label>
       </va-list-item-section>
-      <va-list-item-section>
+      <va-list-item-section v-if="showSubscription">
         <PositionSubscription :position="position"></PositionSubscription>
       </va-list-item-section>
     </va-list-item>
@@ -46,6 +46,7 @@ export default defineComponent({
   components: { PositionSubscription },
   props: {
     position: { type: Position, required: true },
+    showSubscription: { type: Boolean, required: false, default: true },
   },
   setup(props, { emit }) {
     const name = computed(() => {

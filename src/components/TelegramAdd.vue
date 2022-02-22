@@ -27,8 +27,8 @@
     </div>
     <div class="row">
       <div class="flex sm12">
-        3.<va-button @click="runPoll">Click Here </va-button>to
-        detect this message and configure the details in Notifi.
+        3.<va-button @click="runPoll">Click Here </va-button>to detect this
+        message and configure the details in Notifi.
       </div>
     </div>
     <div class="row pt-2">

@@ -60,7 +60,7 @@ import { userModule } from "../store/user";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
-import Chain from "moralis"
+import Chain from "moralis";
 
 export default defineComponent({
   name: "Login",
@@ -68,9 +68,9 @@ export default defineComponent({
   methods: {
     async doLogin(): Promise<void> {
       try {
-       // const user = await Moralis.authenticate({
-       //   signingMessage: "Sign to create an account on CryptoNotifi",
-       // });
+        // const user = await Moralis.authenticate({
+        //   signingMessage: "Sign to create an account on CryptoNotifi",
+        // });
         const user = await Moralis.authenticate({
           provider: "web3Auth",
           theme: "light",

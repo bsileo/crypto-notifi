@@ -33,15 +33,15 @@
           label="Chain"
           v-model="contractChain"
           :options="protocolChains"
-          :rules="[this.contractChain != undefined || 'Select a chain']"
+          :rules="[contractChain != undefined || 'Select a chain']"
         />
         <div class="flex sm6">
           <ContractInput
-          :initialAddress="contractAddress"
-          :showToken="true"
-          :chain="contractChain"
-          @address="setContractAddress"
-        ></ContractInput>
+            :initialAddress="contractAddress"
+            :showToken="true"
+            :chain="contractChain"
+            @address="setContractAddress"
+          ></ContractInput>
         </div>
       </div>
     </div>
@@ -171,11 +171,11 @@ export default defineComponent({
     setContractAddress(address: string) {
       this.contractAddress = address;
     },
-    async fetchContractActivities(): Promise<ContractActivity[]> {
+    async fetchContractActivities(): Promise<void> {
       const rel = this.activeContract.relation("ContractActivities");
       const q = rel.query();
       this.contractActivities = await q.find();
-      return this.contractActivities;
+      //return this.contractActivities;
     },
     async addActivity(aActivity: ContractActivity): Promise<void> {
       const rel = this.activeContract.relation("ContractActivities");

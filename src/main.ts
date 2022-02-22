@@ -17,7 +17,6 @@ const app = createApp(App);
 app.config.globalProperties.$moralis = MoralisConfig;
 app.provide("Moralis", app.config.globalProperties.$moralis);
 
-
 app.use(router);
 app.use(VuesticPlugin);
 app.use(store, key);

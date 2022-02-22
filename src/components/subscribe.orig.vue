@@ -326,7 +326,7 @@ export default defineComponent({
       );
     },
     validSubmit(): boolean {
-     return this.validWalletSubmit;
+      return this.validWalletSubmit;
     },
     validWalletSubmit(): boolean {
       let dupAddresses = false;
@@ -364,7 +364,7 @@ export default defineComponent({
         this.subName,
         this.userID(),
         SubscriptionTypes.wallet
-    );
+      );
       c.set("description", this.message);
       if (this.chkFrom) {
         c.set("fromAddress", this.from_address);

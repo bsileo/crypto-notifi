@@ -1,8 +1,8 @@
-import { TokenBalance } from './../NotifiUser';
+import { TokenBalance } from "./../NotifiUser";
 import { LimitType, StakingLevel, SummaryItem } from "@/notifi_types";
 import Moralis from "moralis";
 import { StakingLevelLimits } from "./StakinglevelLimits";
-import { userModule } from '@/store/user';
+import { userModule } from "@/store/user";
 
 export class SubscriptionLimiter
   extends Moralis.Object

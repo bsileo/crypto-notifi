@@ -1,4 +1,4 @@
-import { channelsModule } from './channels';
+import { channelsModule } from "./channels";
 import { Chain } from "@/models/Contract";
 import Moralis from "moralis";
 import {
@@ -26,7 +26,7 @@ export class UserModule extends VuexModule {
 
   get currentLevel(): UserLevel {
     const bal = this.NotifiTokens;
-    if (bal < 100 ) return UserLevel.Free;
+    if (bal < 100) return UserLevel.Free;
     else if (bal <= 500) return UserLevel.Basic;
     else if (bal >= 500) return UserLevel.Gold;
     return UserLevel.Free;

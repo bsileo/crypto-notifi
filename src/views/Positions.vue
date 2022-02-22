@@ -78,8 +78,8 @@ export default defineComponent({
   emits: ["subscribe"],
   computed: {
     protocols(): Protocol[] {
-      let subs = this.rawProtocols;
-      return subs;
+      let prots = this.rawProtocols;
+      return prots;
     },
 
     search: {

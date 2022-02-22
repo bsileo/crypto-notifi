@@ -103,7 +103,7 @@ export class ProtocolsModule extends VuexModule {
       const res: Array<Protocol> = await this.managerSubscription.find();
       const userid = userModule.user?.id;
       console.log(`Refresh Manager Protocols got ${res.length}`);
-      const mine: Protocol[] = res.filter( (p: Protocol) => {
+      const mine: Protocol[] = res.filter((p: Protocol) => {
         return (
           p.get("Managers").filter((u: NotifiUser) => {
             u.id == userid;

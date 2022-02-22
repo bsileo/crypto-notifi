@@ -74,8 +74,7 @@ const alerts = ref<AlertHistory[]>([]);
 const query = new Moralis.Query(AlertHistory);
 if (props.protocol) {
   query.equalTo("Protocol", props.protocol);
-};
-
+}
 
 const refresh = async (): Promise<void> => {
   total.value = await query.count();

@@ -91,5 +91,4 @@ const refresh = async (): Promise<void> => {
   protocolStakingBalance.value = await activeProtocol.value.stakingBalance();
 };
 refresh();
-
 </script>

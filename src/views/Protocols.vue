@@ -158,7 +158,9 @@ const ownerDiscordValid = computed(() => {
 });
 
 const ownerValid = computed(() => {
-  return owner.value == false || ownerEmailValid.value || ownerDiscordValid.value;
+  return (
+    owner.value == false || ownerEmailValid.value || ownerDiscordValid.value
+  );
 });
 
 const valid = computed(() => {

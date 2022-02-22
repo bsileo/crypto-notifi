@@ -1,7 +1,6 @@
-import { SubscriptionTypes } from "./Subscription";
 import Moralis from "moralis";
 import { Protocol } from "./Protocol";
-import { AlertHistoryStatus } from "@/notifi_types";
+import { SubscriptionTypes, AlertHistoryStatus, SubscriptionTypesName } from "@/notifi_types";
 
 export class AlertHistory extends Moralis.Object {
   constructor() {
@@ -21,7 +20,7 @@ export class AlertHistory extends Moralis.Object {
       minute: "numeric",
     });
   }
-  get subscriptionTypeName(): SubscriptionTypes {
+  get subscriptionTypeName(): SubscriptionTypesName {
     return this.get("SubscriptionType");
   }
 

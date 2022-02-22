@@ -7,8 +7,16 @@ const Subscriptions = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/Subscriptions.vue");
 const Protocols = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/Protocols.vue");
-const Subscribe = () =>
-  import(/* webpackChunkName: "subscribe" */ "@/components/subscribe.vue");
+  const Subscription = () =>
+  import(/* webpackChunkName: "subscription" */ "@/views/Subscription.vue");
+
+  const Subscribe = () =>
+  import(/* webpackChunkName: "subscription" */ "@/components/subscribe.vue");
+const PositionEditor = () =>
+  import(
+    /* webpackChunkName: "subscription" */ "@/components/PositionEditor.vue"
+  );
+
 const Manager = () =>
   import(/* webpackChunkName: "group-manager" */ "@/views/Manager.vue");
 const ManagerSelect = () =>
@@ -20,13 +28,19 @@ const ManagerSend = () =>
 const ManagerSettings = () =>
   import(/* webpackChunkName: "group-manager" */ "@/views/ManagerSettings.vue");
 const ManagerSubscription = () =>
-  import(/* webpackChunkName: "group-manager" */ "@/views/ManagerSubscription.vue");
+  import(
+    /* webpackChunkName: "group-manager" */ "@/views/ManagerSubscription.vue"
+  );
 const ManagerCategories = () =>
-  import(/* webpackChunkName: "group-manager" */ "@/views/ManagerCategories.vue");
+  import(
+    /* webpackChunkName: "group-manager" */ "@/views/ManagerCategories.vue"
+  );
 const ManagerHistory = () =>
   import(/* webpackChunkName: "group-manager" */ "@/views/ManagerHistory.vue");
 const ManagerContracts = () =>
-  import(/* webpackChunkName: "group-manager" */ "@/views/ManagerContracts.vue");
+  import(
+    /* webpackChunkName: "group-manager" */ "@/views/ManagerContracts.vue"
+  );
 
 import ProtectedPages from "@/components/ProtectedPages.vue";
 import RouterGuard from "./router.guard";
@@ -68,9 +82,25 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: "/subscription",
-        name: "Subscribe",
-        component: Subscribe,
+        name: "Subscription",
+        component: Subscription,
+        redirect: "/subscription/new",
+        sensitive: true,
         props: true,
+        children: [
+          {
+            path: ":typeName/:subscriptionID",
+            name: "SubscriptionEditor",
+            component: Subscribe,
+            props: true,
+          },
+          {
+            path: ":typeName",
+            name: "SubscriptionNew",
+            component: Subscribe,
+            props: true,
+          },
+        ],
       },
       {
         path: "/manager",

@@ -33,7 +33,7 @@
               ></va-button>
             </va-inner-loading>
           </div>
-          <div class="flex xs4">
+          <div v-if="!allowEdit" class="flex xs4">
             <va-popover
               message="Coming Soon"
               placement="top"
@@ -47,6 +47,14 @@
                 :disabled="true"
               ></va-button>
             </va-popover>
+          </div>
+          <div v-if="allowEdit" class="flex xs4">
+            <va-button
+              @click.prevent="this.edit()"
+              icon-right="edit"
+              size="small"
+              color="primary"
+            ></va-button>
           </div>
         </div>
       </div>
@@ -162,10 +170,13 @@
 <script lang="ts">
 import { computed, defineComponent, ref, watchEffect } from "vue";
 import { Subscription } from "@/models/Subscription";
-import { SubscriptionTypes } from "@/models/Subscription";
 import { UserChannel } from "@/models/Channel";
 import { channelsModule } from "@/store/channels";
-import { ValueOperatorNames } from "@/notifi_types";
+import {
+  SubscriptionTypes,
+  SubscriptionTypesName,
+  ValueOperatorNames,
+} from "@/notifi_types";
 import { prettyNumber } from "@/Utilities";
 
 export default defineComponent({
@@ -255,6 +266,9 @@ export default defineComponent({
       const act = this.currentSubscription.contractActivity;
       return act?.type == "Event" ? "Event" : "Activity" || "Activity";
     },
+    allowEdit(): boolean {
+      return this.subscriptionType == "Position";
+    },
     generalTypeName(): string {
       return this.currentSubscription.generalTypeName();
     },
@@ -335,7 +349,7 @@ export default defineComponent({
         this.currentSubscription.name = val;
       },
     },
-    subscriptionType(): SubscriptionTypes {
+    subscriptionType(): SubscriptionTypesName {
       return this.currentSubscription.subscriptionType;
     },
     description: {
@@ -379,7 +393,13 @@ export default defineComponent({
       this.currentSubscription.destroy();
     },
     async edit(): Promise<void> {
-      console.log("EDIT");
+      const path = this.$route.fullPath;
+      if (this.subscriptionType == "Position") {
+        this.$router.push({
+          path: `/subscription/position/${this.subscription?.id}`,
+          query: { returnPath: path },
+        });
+      }
     },
     async togglePause(): Promise<void> {
       this.pausing = true;

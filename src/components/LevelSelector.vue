@@ -21,14 +21,14 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   setup() {
-    return { };
+    return {};
   },
   props: {
     startingLevel: {
       type: String,
       required: false,
       default: "Free",
-    }
+    },
   },
   data() {
     return {

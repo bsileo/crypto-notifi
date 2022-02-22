@@ -1,4 +1,9 @@
-import { UserFrequency } from './../notifi_types';
+import {
+  SubscriptionStatus,
+  SubscriptionTypes,
+  SubscriptionTypesName,
+  UserFrequency,
+} from "./../notifi_types";
 import { ValueOperatorSymbol } from "@/notifi_types";
 import { NotifiUser } from "@/models/NotifiUser";
 import { SubscriptionType } from "@/models/SubscriptionType";
@@ -9,21 +14,21 @@ import { Contract } from "./Contract";
 import { ContractActivity } from "./ContractActivity";
 import { Protocol } from "./Protocol";
 import { Position } from "./Position";
-import { ChainEndpoint } from "cookietrack-types";
-import { prettyNumber } from '@/Utilities';
+import { ChainEndpoint, TokenStatus } from "cookietrack-types";
+import { prettyNumber } from "@/Utilities";
 
-export enum SubscriptionStatus {
-  "active" = "active",
-  "paused" = "paused",
-}
-export enum SubscriptionTypes {
-  protocol = "Protocol Alerts",
-  contract = "Smart Contracts",
-  wallet = "My Wallet",
-  position = "Position",
-}
 
 export class Subscription extends Moralis.Object {
+  constructor() {
+    super("Subscription");
+  }
+
+  static async fetch(id: string): Promise<Subscription> {
+    const q = new Moralis.Query(Subscription);
+    const s = await q.get(id);
+    return s;
+  }
+
   get protocol(): Protocol {
     return this.get("Protocol");
   }
@@ -60,10 +65,10 @@ export class Subscription extends Moralis.Object {
     this.set("name", val);
   }
 
-  get subscriptionType(): SubscriptionTypes {
-    return this.get("subscriptionType") as SubscriptionTypes;
+  get subscriptionType(): SubscriptionTypesName {
+    return this.get("subscriptionType") as SubscriptionTypesName;
   }
-  set subscriptionType(st: SubscriptionTypes) {
+  set subscriptionType(st: SubscriptionTypesName) {
     this.set("subscriptionType", st);
   }
 
@@ -106,6 +111,8 @@ export class Subscription extends Moralis.Object {
   get contractAddress(): string {
     return this.get("contractAddress");
   }
+
+
 
   internalShortContractAddress(): string {
     return (
@@ -160,13 +167,23 @@ export class Subscription extends Moralis.Object {
     else this.unset("positionBaseline");
   }
 
+  get positionStatus(): TokenStatus {
+    return this.get("positionStatus");
+  }
+  set positionStatus(s: TokenStatus) {
+    this.set("positioonStatus", s);
+  }
+
   positionDescription(): string {
     if (this.subscriptionType == SubscriptionTypes.position)
       if (this.positionLow && this.positionHigh) {
-        return `Below $${prettyNumber(this.positionLow)} / Above $${prettyNumber(this.positionHigh)}`;
+        return `Below $${prettyNumber(
+          this.positionLow
+        )} / Above $${prettyNumber(this.positionHigh)}`;
       }
     if (this.positionLow) return `less than $${prettyNumber(this.positionLow)}`;
-    if (this.positionHigh) return `greater than $${prettyNumber(this.positionHigh)}`;
+    if (this.positionHigh)
+      return `greater than $${prettyNumber(this.positionHigh)}`;
     return "";
   }
 
@@ -182,12 +199,6 @@ export class Subscription extends Moralis.Object {
     const c = await this.channels();
     const names = c.map((elem) => elem.name);
     return names.toString();
-  }
-
-  constructor() {
-    // Pass the ClassName to the Moralis.Object constructor
-    super("Subscription");
-    // All other initialization
   }
 
   static getACL(user: NotifiUser): any {
@@ -221,7 +232,7 @@ export class Subscription extends Moralis.Object {
   static async spawn(
     name: string,
     userID: string,
-    subType: SubscriptionTypes,
+    subType: SubscriptionTypesName,
     protocol?: Protocol
   ): Promise<Subscription> {
     const s = new Subscription();

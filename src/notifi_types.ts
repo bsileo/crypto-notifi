@@ -1,3 +1,5 @@
+import { Position } from "./models/Position";
+
 export enum CardDisplayMode {
   "narrow",
   "wide",
@@ -69,6 +71,11 @@ export enum LimitType {
   "subscriptions" = "Subscriptions",
 }
 
+export type PositionCache = {
+  time: undefined | Date;
+  data: Position[];
+};
+
 export type UserFrequenciesValue = "day" | "hour";
 export type UserFrequenciesName = "Once a Day" | "Once an Hour";
 
@@ -89,3 +96,30 @@ export const ValueOperatorNames: Record<
   "<": "Less Than",
   "=": "Equal To",
 };
+
+export type SubscriptionTypesName =
+  | "Protocol Alerts"
+  | "Smart Contracts"
+  | "My Wallet"
+  | "Position";
+
+export type SubscriptionTypesSymbol =
+  | "protocol"
+  | "contract"
+  | "wallet"
+  | "position";
+
+export const SubscriptionTypes: Record<
+  SubscriptionTypesSymbol,
+  SubscriptionTypesName
+> = {
+  protocol: "Protocol Alerts",
+  contract: "Smart Contracts",
+  wallet: "My Wallet",
+  position: "Position",
+};
+
+export enum SubscriptionStatus {
+  "active" = "active",
+  "paused" = "paused",
+}

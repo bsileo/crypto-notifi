@@ -9,7 +9,6 @@ import EmailCategory2 from "./EmailCategoryWidget.vue";
 
 export default defineComponent({
   name: "App",
-  components: {EmailCategory2 },
-
+  components: { EmailCategory2 },
 });
 </script>

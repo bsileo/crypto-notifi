@@ -31,7 +31,7 @@ export default defineComponent({
       return this.discordUser != "" && this.discordUser.length > 3;
     },
     valid(): boolean {
-       console.log(`Cleanup valid in Discord to enable this channel`);
+      console.log(`Cleanup valid in Discord to enable this channel`);
       return this.validUser && false;
     },
     providerdata(): Record<string, string | undefined> {

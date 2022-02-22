@@ -1,7 +1,9 @@
 <template>
   <div class="flex sm12">
     <div class="row pt-2">
-      <va-input class="mb-2" @change="updateProviderData()"
+      <va-input
+        class="mb-2"
+        @change="updateProviderData()"
         @keyup="updateProviderData()"
         v-model="email"
         label="Enter Email Address"
@@ -35,9 +37,9 @@ export default defineComponent({
     };
   },
   async onMount(): Promise<boolean> {
-     const val: any = await Moralis.Cloud.run("emailVerified");
+    const val: any = await Moralis.Cloud.run("emailVerified");
     this.noDefault = val;
-     return val;
+    return val;
   },
   computed: {
     noDefaultOld(): boolean {

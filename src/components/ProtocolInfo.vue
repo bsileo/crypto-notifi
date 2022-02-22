@@ -57,9 +57,10 @@
         <va-list-label>
           Positions:
           <va-button
+            class="float-right"
             icon="refresh"
             size="small"
-            @click="fetchPositions"
+            @click="fetchPositions(true)"
           ></va-button>
         </va-list-label>
         <va-inner-loading :loading="loadingPositions">
@@ -69,7 +70,7 @@
             </va-list-item-section>
             <va-list-item-section>
               <va-list-item-label>
-                <va-icon name="add" :size="16"></va-icon>
+                <va-icon name="workspaces" :size="16"></va-icon>
                 Protocol Total ${{ prettyNumber(protocolValue) }}
               </va-list-item-label>
             </va-list-item-section>
@@ -91,9 +92,7 @@
       Level:<strong>{{ protocol.getUserLevel() }}</strong>
     </div>
     <va-card-actions>
-      <va-button v-if="allowSelect" @click="select(protocol)"
-        >Select</va-button
-      >
+      <va-button v-if="allowSelect" @click="select(protocol)">Select</va-button>
       <va-popover
         color="primary"
         message="Request support for this Protocol on Notifi"
@@ -129,132 +128,131 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, onMounted, ref, watchEffect } from "vue";
+import { computed, onMounted, ref, watchEffect } from "vue";
 import Moralis from "moralis";
 import { Protocol } from "@/models/Protocol";
 import ProtocolClaim from "./ProtocolClaim.vue";
-import PositionListItem from "./position.vue";
+import PositionListItem from "./PositionListItem.vue";
 import { Position } from "@/models/Position";
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance } from "vue";
 import { roundToTwo, prettyNumber } from "@/Utilities";
-import PositionSubscription from "./PositionSubscription.vue";
 
 /* global defineProps, defineEmits */
-  const emit = defineEmits(["selected", "subscribe", "claimed"])
-  const props = defineProps({
-    showVote: { type: Boolean, required: false, default: false },
-    showSubscribe: { type: Boolean, required: false, default: false },
-    showUserInfo: { type: Boolean, required: false, default: false },
-    showPositions: { type: Boolean, required: false, default: false },
-    showFavorites: { type: Boolean, required: false, default: true },
-    allowSelect: { type: Boolean, required: false, default: true },
-    displayMode: { type: String, required: false, default: "wide" },
-    manager: { type: Boolean, required: false, default: false },
-    protocol: { type: Protocol, required: true },
-    selected: { type: Boolean, required: false, default: false },
-  })
+const emit = defineEmits(["selected", "subscribe", "claimed"]);
+const props = defineProps({
+  showVote: { type: Boolean, required: false, default: false },
+  showSubscribe: { type: Boolean, required: false, default: false },
+  showUserInfo: { type: Boolean, required: false, default: false },
+  showPositions: { type: Boolean, required: false, default: false },
+  showFavorites: { type: Boolean, required: false, default: true },
+  allowSelect: { type: Boolean, required: false, default: true },
+  displayMode: { type: String, required: false, default: "wide" },
+  manager: { type: Boolean, required: false, default: false },
+  protocol: { type: Protocol, required: true },
+  selected: { type: Boolean, required: false, default: false },
+});
 
-  const showClaim = ref(false);
+const showClaim = ref(false);
 
-  const isFavorite = ref(false);
-  const refreshFavorite = async () => {
-    isFavorite.value = await props.protocol.isFavorite();
-  };
+const isFavorite = ref(false);
+const refreshFavorite = async () => {
+  isFavorite.value = await props.protocol.isFavorite();
+};
 
-    watchEffect(() => {
-      if (props.protocol != undefined && props.showFavorites) {
-        refreshFavorite();
-      }
-    });
+watchEffect(() => {
+  if (props.protocol != undefined && props.showFavorites) {
+    refreshFavorite();
+  }
+});
 
-    const toggleFavorite = async (): Promise<void> => {
-      await props.protocol.toggleFavorite();
-      refreshFavorite();
+const toggleFavorite = async (): Promise<void> => {
+  await props.protocol.toggleFavorite();
+  refreshFavorite();
+};
+
+const positions = ref<Position[]>([]);
+const loadingPositions = ref(false);
+const showNoPositions = computed((): boolean => {
+  return !loadingPositions.value && positions.value.length == 0;
+});
+
+const wide = computed(() => {
+  return props.displayMode == "wide";
+});
+
+const cardClass = computed((): Record<string, boolean> => {
+  if (wide.value)
+    return {
+      active: props.selected,
+      flex: true,
+      "mb-1": true,
+      xs12: wide.value,
+      sm6: wide.value,
+      lg6: wide.value,
+      xl6: wide.value,
     };
-
-    const positions = ref<Position[]>([]);
-    const loadingPositions = ref(false);
-    const showNoPositions = computed((): boolean => {
-      return !loadingPositions.value && positions.value.length == 0;
-    });
-
-    const wide = computed(() => {
-      return props.displayMode == "wide";
-    });
-
-    const cardClass = computed((): Record<string, boolean> => {
-      if (wide.value)
-        return {
-          active: props.selected,
-          flex: true,
-          "mb-1": true,
-          xs12: wide.value,
-          sm6: wide.value,
-          lg6: wide.value,
-          xl6: wide.value,
-        };
-      else
-        return {
-          active: props.selected,
-          flex: true,
-          "mb-1": true,
-          xs12: !wide.value,
-          sm4: !wide.value,
-          lg3: !wide.value,
-          xl2: !wide.value,
-        };
-    });
-
-    onMounted(async () => {
-      if (props.showPositions) {
-        fetchPositions();
-      }
-      if (props.showFavorites) {
-        refreshFavorite();
-      }
-    });
-
-    const fetchPositions = async () => {
-      loadingPositions.value = true;
-      positions.value = await props.protocol.positions();
-      loadingPositions.value = false;
+  else
+    return {
+      active: props.selected,
+      flex: true,
+      "mb-1": true,
+      xs12: !wide.value,
+      sm4: !wide.value,
+      lg3: !wide.value,
+      xl2: !wide.value,
     };
+});
 
-    const protocolValue = computed(() => {
-      let total = 0;
-      positions.value.forEach( (p: any) => {
-        total = total + p.value;
-      })
-      return roundToTwo(total);
-    });
+onMounted(async () => {
+  if (props.showPositions) {
+    fetchPositions();
+  }
+  if (props.showFavorites) {
+    refreshFavorite();
+  }
+});
 
-    const allowSelectHref = computed(() => {
-      return props.allowSelect ? "#" : null;
-    })
+const fetchPositions = async (refresh?: boolean) => {
+  loadingPositions.value = true;
+  positions.value = await props.protocol.positions(refresh);
+  loadingPositions.value = false;
+};
 
-    const voteFor = async (aProtocol: Protocol): Promise<void> => {
-      const newVotes = await aProtocol.siteVote();
-      const instance = getCurrentInstance();
-      instance?.proxy?.$forceUpdate();
-    };
+const protocolValue = computed(() => {
+  let total = 0;
+  positions.value.forEach((p: any) => {
+    total = total + p.value;
+  });
+  return roundToTwo(total);
+});
 
-    const claim = (aProtocol: Protocol): void => {
-      showClaim.value = true;
-    };
+const allowSelectHref = computed(() => {
+  return props.allowSelect ? "#" : null;
+});
 
-    const claimSaved = (aProtcolStatus: any): void => {
-      showClaim.value = false;
-      emit("claimed");
-    };
+const voteFor = async (aProtocol: Protocol): Promise<void> => {
+  const newVotes = await aProtocol.siteVote();
+  const instance = getCurrentInstance();
+  instance?.proxy?.$forceUpdate();
+};
 
-    const select = (aProtocol: Protocol): void => {
-      if (props.allowSelect) {
-        emit("selected", props.protocol);
-      }
-    };
-    const subscribe = (aProtocol: Protocol): void => {
-      emit("subscribe", props.protocol);
-    };
+const claim = (aProtocol: Protocol): void => {
+  showClaim.value = true;
+};
+
+const claimSaved = (aProtocolStatus: any): void => {
+  showClaim.value = false;
+  emit("claimed", aProtocolStatus);
+};
+
+const select = (aProtocol: Protocol): void => {
+  if (props.allowSelect) {
+    emit("selected", aProtocol);
+  }
+};
+const subscribe = (aProtocol: Protocol): void => {
+  emit("subscribe", aProtocol);
+};
 </script>
 
 <style scoped></style>

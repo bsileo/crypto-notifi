@@ -1,4 +1,5 @@
-import { Subscription, SubscriptionTypes } from "@/models/Subscription";
+import { Subscription } from "@/models/Subscription";
+import { SubscriptionTypes } from "@/notifi_types";
 import { TokenType, TokenStatus, PricedToken, Chain } from "cookietrack-types";
 import Moralis from "moralis";
 import { Protocol } from "./Protocol";
@@ -160,6 +161,10 @@ export class Position extends Object {
 
   get subscription(): Subscription | undefined {
     return this._subscription;
+  }
+
+  get positionID(): string {
+    return `${this.chain}-${this._address}-${this.status}`;
   }
 
   async fetchSubscription(): Promise<Subscription | undefined> {

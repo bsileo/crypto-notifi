@@ -229,7 +229,7 @@ const fetchProtocols = async (refresh?: boolean): Promise<void> => {
   } else {
     res = rawProtocols.value;
   }
-  
+
   if (props.autoSelect && res.length == 1) {
     select(res[0]);
   }

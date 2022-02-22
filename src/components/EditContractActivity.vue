@@ -130,165 +130,164 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { ContractActivity } from "@/models/ContractActivity";
-import { defineComponent, reactive } from "vue";
+import { computed, defineComponent, ref, reactive } from "vue";
 import { DataParameter } from "@/models/ContractActivity";
 import Editor from "@tinymce/tinymce-vue";
 import LevelSelector from "./LevelSelector.vue";
 import { ProtocolLevel } from "@/notifi_types";
 
-export default defineComponent({
-  name: "EditContractActivity",
-  components: { Editor, LevelSelector },
-  emits: ["activityUpdate", "activityAdd", "activityDelete"],
-  props: {
-    contractActivity: { type: ContractActivity, required: false },
+/* global defineProps, defineEmits */
+const emit = defineEmits(["activityUpdate", "activityAdd", "activityDelete"]);
+const props = defineProps({
+  contractActivity: { type: ContractActivity, required: false },
+});
+
+// eslint-disable-next-line vue/no-setup-props-destructure
+let newAct: ContractActivity = props.contractActivity;
+if (!props.contractActivity) {
+  newAct = new ContractActivity();
+}
+const activity = ref<ContractActivity>(newAct);
+
+const intName = ref<string>("");
+
+const textType = ref<"plain" | "rich">("plain");
+
+const ABIfailed = ref(false);
+const ABIerrors = ref<string[]>([]);
+
+const activeActivity = computed((): ContractActivity => {
+  return activity.value;
+});
+const newRecord = computed((): boolean => {
+  return props.contractActivity == undefined;
+});
+const name = computed({
+  get(): string {
+    return activity.value.name;
   },
-  data() {
-    return {
-      activity: this.contractActivity || new ContractActivity(),
-      intName: undefined as undefined | string,
-      textType: "plain" as "plain" | "rich",
-      ABIfailed: true,
-      ABIerrors: [] as string[],
-    };
-  },
-  computed: {
-    activeActivity(): ContractActivity {
-      return this.activity;
-    },
-    newRecord(): boolean {
-      return this.contractActivity == undefined;
-    },
-    name: {
-      get(): string {
-        return this.activity.name;
-      },
-      set(newVal: string): void {
-        this.activity.name = newVal;
-        this.$emit("activityUpdate", this.activity);
-      },
-    },
-    description: {
-      get(): string {
-        return this.activity.description;
-      },
-      set(newDescription: string): void {
-        this.activity.description = newDescription;
-        this.$emit("activityUpdate", this.activity);
-      },
-    },
-    topic: {
-      get(): string {
-        return this.activity.topic;
-      },
-      set(newTopic: string): void {
-        this.activity.topic = newTopic;
-        this.$emit("activityUpdate", this.activity);
-      },
-    },
-    abi: {
-      get(): string {
-        return this.activity.ABI;
-      },
-      set(newABI: string): void {
-        this.ABIfailed = false;
-        try {
-          JSON.parse(newABI);
-        }
-        catch (err: any) {
-          this.ABIfailed = true;
-          this.ABIerrors = ["Parse Failed-"+ err.message];
-          return;
-        }
-        this.ABIfailed = false;
-        this.ABIerrors = [];
-        this.activity.ABI = newABI;
-        this.$emit("activityUpdate", this.activity);
-      },
-    },
-    level: {
-      get(): string {
-        return this.activity.level;
-      },
-      set(newVal: string): void {
-        this.activity.level = newVal as ProtocolLevel;
-        if (!this.newRecord) {
-          this.activity.save();
-        }
-      },
-    },
-    template: {
-      get(): string {
-        return this.activity.template;
-      },
-      set(newVal: string): void {
-        this.activity.template = newVal;
-        this.$emit("activityUpdate", this.activeActivity);
-      },
-    },
-    richTemplate: {
-      get(): string {
-        return this.activity.richTemplate;
-      },
-      set(newVal: string): void {
-        this.activity.richTemplate = newVal;
-        this.$emit("activityUpdate", this.activeActivity);
-      },
-    },
-    dataParameters(): DataParameter[] {
-      return this.activeActivity.dataParameters;
-    },
-    addAllowed(): boolean {
-      return (
-        this.validName &&
-        this.validDescription &&
-        this.validTopic &&
-        this.validABI &&
-        this.validTemplate &&
-        this.validLevel
-      );
-    },
-    validName(): boolean {
-      return (this.name || "").length > 3;
-    },
-    validTopic(): boolean {
-      return (this.topic || "").length > 3;
-    },
-    validLevel(): boolean {
-      return this.level !== "";
-    },
-    validABI(): boolean {
-      return true;
-    },
-    validDescription(): boolean {
-      return true;
-    },
-    validTemplate(): boolean {
-      return true;
-    },
-  },
-  methods: {
-    add(): void {
-      this.$emit("activityAdd", this.activity);
-      this.activity = reactive(new ContractActivity());
-    },
-    destroy(): void {
-      this.activeActivity.destroy();
-      this.$emit("activityDelete", this.activeActivity);
-    },
-    parameterClick(param: DataParameter): void {
-      console.log(`Click on ${param.name}`);
-      const cur = this.activeActivity.template || "";
-      this.template = `${cur}{{${param.name}}}`;
-    },
-    setLevel(aLevel: string): void {
-      console.log(aLevel);
-      this.level = aLevel;
-    },
+  set(newVal: string): void {
+    activity.value.name = newVal;
+    emit("activityUpdate", activity.value);
   },
 });
+const description = computed({
+  get(): string {
+    return activity.value.description;
+  },
+  set(newDescription: string): void {
+    activity.value.description = newDescription;
+    emit("activityUpdate", activity.value);
+  },
+});
+const topic = computed({
+  get(): string {
+    return activity.value.topic;
+  },
+  set(newTopic: string): void {
+    activity.value.topic = newTopic;
+    emit("activityUpdate", activity.value);
+  },
+});
+const abi = computed({
+  get(): string {
+    return activity.value.ABI;
+  },
+  set(newABI: string): void {
+    ABIfailed.value = false;
+    try {
+      JSON.parse(newABI);
+    } catch (err: any) {
+      ABIfailed.value = true;
+      ABIerrors.value = ["Parse Failed-" + err.message];
+      return;
+    }
+    ABIfailed.value = false;
+    ABIerrors.value = [];
+    activity.value.ABI = newABI;
+    emit("activityUpdate", activity.value);
+  },
+});
+const level = computed({
+  get(): string {
+    return activity.value.level;
+  },
+  set(newVal: string): void {
+    activity.value.level = newVal as ProtocolLevel;
+    if (!newRecord.value) {
+      activity.value.save();
+    }
+  },
+});
+const template = computed({
+  get(): string {
+    return activity.value.template;
+  },
+  set(newVal: string): void {
+    activity.value.template = newVal;
+    emit("activityUpdate", activeActivity.value);
+  },
+});
+const richTemplate = computed({
+  get(): string {
+    return activity.value.richTemplate;
+  },
+  set(newVal: string): void {
+    activity.value.richTemplate = newVal;
+    emit("activityUpdate", activeActivity.value);
+  },
+});
+const dataParameters = computed((): DataParameter[] => {
+  return activeActivity.value.dataParameters;
+});
+const addAllowed = computed((): boolean => {
+  return (
+    validName.value &&
+    validDescription.value &&
+    validTopic.value &&
+    validABI.value &&
+    validTemplate.value &&
+    validLevel.value
+  );
+});
+const validName = computed((): boolean => {
+  return (name.value || "").length > 3;
+});
+const validTopic = computed((): boolean => {
+  return (topic.value || "").length > 3;
+});
+const validLevel = computed((): boolean => {
+  return level.value !== "";
+});
+const validABI = computed((): boolean => {
+  return true;
+});
+const validDescription = computed((): boolean => {
+  return true;
+});
+const validTemplate = computed((): boolean => {
+  return true;
+});
+
+const add = (): void => {
+  emit("activityAdd", activity.value);
+  activity.value = reactive(new ContractActivity());
+};
+
+const destroy = (): void => {
+  activeActivity.value.destroy();
+  emit("activityDelete", activeActivity.value);
+};
+const parameterClick = (param: DataParameter): void => {
+  console.log(`Click on ${param.name}`);
+  const cur = activeActivity.value.template || "";
+  template.value = `${cur}{{${param.name}}}`;
+};
+const setLevel = (aLevel: string): void => {
+  level.value = aLevel;
+};
 </script>
 
 <style scoped lang="scss">

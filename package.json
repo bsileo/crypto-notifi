@@ -65,7 +65,6 @@
       "ecmaVersion": 2020
     },
     "rules": {
-      "vue/script-setup-uses-vars": "error"
     }
   },
   "browserslist": [

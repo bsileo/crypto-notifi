@@ -1,3 +1,4 @@
+import { PositionCache } from "@/notifi_types";
 import { SubscriptionLimiter } from "./lib/subscriptionLimits";
 import { ContractActivity } from "./ContractActivity";
 import { Chain, Contract } from "./Contract";
@@ -7,7 +8,7 @@ import { userModule } from "@/store/user";
 import { TokenBalance } from "@/models/NotifiUser";
 import { SubscriptionType } from "./SubscriptionType";
 import { Position } from "./Position";
-import { APIResponse } from "cookietrack-types";
+import { APIResponse, TokenStatus, ChainEndpoint } from "cookietrack-types";
 import { ProtocolStatus } from "./ProtocolStatus";
 import {
   LimitType,
@@ -21,6 +22,7 @@ import { Subscription } from "./Subscription";
 
 type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends SubscriptionLimiter {
+  
   constructor() {
     super("Protocol");
 
@@ -144,7 +146,10 @@ export class Protocol extends SubscriptionLimiter {
     }
   }
 
-  public async positions(): Promise<Position[]> {
+  public async positions(refresh?: boolean): Promise<Position[]> {
+    if (!refresh) {
+      if (this._positions) return this._positions.data;
+    }
     const config = await Moralis.Config.get();
     const cookieAPI = config.get("cookieAPIURL");
     const chain = this.chains[0];
@@ -169,7 +174,26 @@ export class Protocol extends SubscriptionLimiter {
         console.log("Fetch failed - " + err.message);
       }
     }
+    this._positions = { data: res, time: new Date() };
     return res;
+  }
+
+  public async getPosition(
+    chain: Chain,
+    address: string,
+    status: TokenStatus
+  ): Promise<Position | undefined> {
+    const positions = await this.positions();
+    console.log(positions);
+
+    const pos = positions.find((p: Position) => {
+      return (
+        ChainEndpoint[p.chain] == chain &&
+        p.address == address &&
+        p.status == status
+      );
+    });
+    return pos;
   }
 
   async managers(): Promise<string[]> {

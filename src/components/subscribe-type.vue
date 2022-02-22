@@ -8,7 +8,7 @@
         class="flex sm3 mr-2"
         v-for="type in subTypes"
         v-bind:key="type"
-        v-show="subType == undefined || subType == type"
+        v-show="(subType == 'new' && type != 'Position') || type == subType"
         href="#"
         :color="subType == type ? '#DDD' : '#FFF'"
         :stripe="true"
@@ -23,7 +23,7 @@
           {{ typeContent(type) }}
         </va-card-content>
       </va-card>
-      <div v-if="subType" class="flex xs1">
+      <div v-if="subType != `new`" class="flex xs1">
         <va-button
           @click="clear"
           size="small"
@@ -36,65 +36,57 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from "vue";
+<script setup lang="ts">
+import { ref } from "vue";
+import { SubscriptionTypes, SubscriptionTypesName, SubscriptionTypesSymbol } from "@/notifi_types";
 
-import { SubscriptionTypes } from "@/models/Subscription";
+/* global defineProps, defineEmits */
+const props = defineProps(["modelValue"]);
+const emit = defineEmits(["update:modelValue"]);
 
-export default defineComponent({
-  name: "SubscribeType",
-  components: {},
-  props: {},
-  emits: ["select"],
-  setup(props, { emit }) {
-    const subType = ref<SubscriptionTypes | undefined>(undefined);
-    const subTypes = ref<Record<string, SubscriptionTypes>>({
-      protocol: SubscriptionTypes.protocol,
-      wallet: SubscriptionTypes.wallet,
-      contract: SubscriptionTypes.contract,
-    });
+type SubTypeNames = SubscriptionTypesName | "new";
 
-    const clear = (): void => {
-      subType.value = undefined;
-      emit("select", undefined);
-    };
+const subTypes = ref<typeof SubscriptionTypes>(SubscriptionTypes);
+const subType = ref<SubTypeNames>(props.modelValue as SubscriptionTypesName);
 
-    const selectType = (t: SubscriptionTypes): void => {
-      subType.value = t;
-      emit("select", t);
-    };
+const clear = (): void => {
+  subType.value = "new";
+  emit("update:modelValue", "new");
+};
 
-    return {
-      subType,
-      subTypes,
-      clear,
-      selectType,
-    };
-  },
-  methods: {
-    // returns the current user or raises an error if none
-    typeIcon(t: SubscriptionTypes): string {
-      if (t == SubscriptionTypes.wallet) {
-        return "account_balance_wallet";
-      } else if (t == SubscriptionTypes.protocol) {
-        return "announcement";
-      } else if (t == SubscriptionTypes.contract) {
-        return "gavel";
-      }
-      return "";
-    },
-    typeContent(t: SubscriptionTypes): string {
-      if (t == SubscriptionTypes.wallet) {
-        return "Alerts for transactions that occur in your wallet(s).";
-      } else if (t == SubscriptionTypes.protocol) {
-        return "Ad Hoc updates and information from your Protocols";
-      } else if (t == SubscriptionTypes.contract) {
-        return "Smart contract alerts for Events which occur on chain";
-      }
-      return "";
-    },
-  },
-});
+const selectType = (t: SubTypeNames): void => {
+  subType.value = t;
+  emit("update:modelValue", t);
+};
+
+const showSubtype = (t: SubTypeNames) => {
+  if (subType.value == "new") return t != SubscriptionTypes.position;
+  return subType.value == t;
+};
+
+// returns the current user or raises an error if none
+const typeIcon = (t: SubscriptionTypesName): string => {
+  if (t == SubscriptionTypes.wallet) {
+    return "account_balance_wallet";
+  } else if (t == SubscriptionTypes.protocol) {
+    return "announcement";
+  } else if (t == SubscriptionTypes.contract) {
+    return "gavel";
+  }
+  return "";
+};
+const typeContent = (t: SubscriptionTypesName): string => {
+  if (t == SubscriptionTypes.wallet) {
+    return "Alerts for transactions that occur in your wallet(s).";
+  } else if (t == SubscriptionTypes.protocol) {
+    return "Ad Hoc updates and information from your Protocols";
+  } else if (t == SubscriptionTypes.contract) {
+    return "Smart contract alerts for Events which occur on chain";
+  } else if (t == SubscriptionTypes.position) {
+    return "Alerts for changes in a current Position";
+  }
+  return "";
+};
 </script>
 
 <style scoped>

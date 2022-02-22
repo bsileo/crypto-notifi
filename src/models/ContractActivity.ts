@@ -1,4 +1,4 @@
-import { ProtocolLevel } from '@/notifi_types';
+import { ProtocolLevel } from "@/notifi_types";
 import Moralis from "moralis";
 import { Chain, Contract } from "./Contract";
 

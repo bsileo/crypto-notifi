@@ -57,8 +57,6 @@ export class NotifiUser extends Moralis.User {
       },
     ];
   }
-
-  
 }
 
 Moralis.Object.registerSubclass("_User", NotifiUser);

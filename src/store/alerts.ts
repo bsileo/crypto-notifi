@@ -55,8 +55,6 @@ export class AlertsModule extends VuexModule {
   public SetAlerts(alerts: Alert[]): void {
     this.ALERTS = alerts;
   }
-
- 
 }
 
 export const alertsModule = getModule(AlertsModule);

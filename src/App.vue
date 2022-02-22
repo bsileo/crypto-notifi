@@ -9,13 +9,12 @@ import { userModule } from "./store/user";
 
 export default defineComponent({
   name: "App",
-  components: { },
+  components: {},
   provide() {
     return {
       user: computed(() => userModule.user as NotifiUser),
     };
   },
-
 });
 </script>
 

@@ -47,7 +47,14 @@ import { SubscriptionType } from "@/models/SubscriptionType";
 import { NotifiUser } from "@/models/NotifiUser";
 import Moralis from "moralis";
 import { computed, onMounted, ref } from "vue";
-import { VaInput, VaButton, VaSelect, VaIcon, VaAlert, VaDivider } from "vuestic-ui";
+import {
+  VaInput,
+  VaButton,
+  VaSelect,
+  VaIcon,
+  VaAlert,
+  VaDivider,
+} from "vuestic-ui";
 
 interface UserResult {
   user: NotifiUser;
@@ -111,7 +118,6 @@ export default {
       }
     };
 
-
     const subscribe = async (): Promise<void> => {
       const { user: u, status: stat } = await createFetchAccount();
       //const subName = "Widget Subscription";
@@ -123,7 +129,8 @@ export default {
           this.selectedSubscriptionType
         );*/
         if (stat == "new") {
-          alertMessage.value = "Subscription Created. Please verify your email.";
+          alertMessage.value =
+            "Subscription Created. Please verify your email.";
         } else {
           alertMessage.value = "Subscription Created for existing email.";
         }
@@ -181,9 +188,9 @@ export default {
       allowSubscribe,
       validEmail,
       selectedSubscriptionType,
-      subscribe
+      subscribe,
     };
-  }
+  },
 };
 </script>
 

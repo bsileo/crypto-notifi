@@ -19,6 +19,6 @@ module.exports = {
       entry: "src/widgets/main.ts",
       template: "public/widgets.html",
       filename: "widgets.html",
-    }
+    },
   },
 };

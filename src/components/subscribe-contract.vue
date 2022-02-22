@@ -64,7 +64,7 @@
         value-by="id"
         text-by="description"
         searchable
-        :rules="[this.validContract || 'Enter a valid contract address']"
+        :rules="[validContract || 'Enter a valid contract address']"
       />
       <va-select
         class="flex sm4"
@@ -175,9 +175,11 @@ export default defineComponent({
       return this.contracts.find((e) => e.id == this.contractAddress);
     },
     selectedContractActivity(): ContractActivity | undefined {
-      return this.contractActivities.find(
+      const ca = this.contractActivities.find(
         (e) => e.id == this.contractActivityID
       );
+      if (!ca) return undefined;
+      return ca;
     },
     activityDescription(): string {
       const act = this.selectedContractActivity;

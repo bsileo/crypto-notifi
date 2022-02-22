@@ -1,5 +1,5 @@
 import { SubscriptionType } from "@/models/SubscriptionType";
-import { SubscriptionTypes } from "./Subscription";
+import { SubscriptionTypes, SubscriptionTypesName } from "@/notifi_types";
 import Moralis from "moralis";
 import { Protocol } from "./Protocol";
 
@@ -30,7 +30,7 @@ export class Alert extends Moralis.Object {
       minute: "numeric",
     });
   }
-  get type(): SubscriptionTypes {
+  get type(): SubscriptionTypesName {
     return this.get("type");
   }
 

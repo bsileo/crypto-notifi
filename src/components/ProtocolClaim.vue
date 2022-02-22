@@ -119,7 +119,15 @@ export default defineComponent({
       }
     };
 
-    return { user, showToast, discordUser, discordServer, name, saveValid, save };
+    return {
+      user,
+      showToast,
+      discordUser,
+      discordServer,
+      name,
+      saveValid,
+      save,
+    };
   },
 });
 </script>

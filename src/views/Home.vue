@@ -21,20 +21,15 @@ export default defineComponent({
     Footer,
   },
   data() {
-    return {
-    };
+    return {};
   },
   provide() {
     return {
       user: computed(() => userModule.user as NotifiUser),
     };
   },
-  computed: {
-   
-  },
-  methods: {
-
-  },
+  computed: {},
+  methods: {},
 });
 </script>
 

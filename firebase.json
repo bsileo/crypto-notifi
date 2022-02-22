@@ -48,7 +48,7 @@
       }
     ],
     "headers": [ {
-      "source": "/api",
+      "source": "/avalanche",
       "headers": [ {
         "key": "Cache-Control",
         "value": "max-age=600"

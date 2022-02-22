@@ -27,109 +27,16 @@
       ></va-button>
     </div>
     <div v-if="!subscription" class="flex xs6 offset--xs6">
-      <va-button
-        icon="add"
-        @click="add"
-        size="small"
-      ></va-button>
+      <va-button icon="add" @click="add" size="small"></va-button>
     </div>
   </div>
   <va-modal v-model="show" no-dismiss hide-default-actions>
-    <div class="row">
-      <va-input
-        class="flex xs12 sm8 offset--sm2 pb-2"
-        label="Subscription Name"
-        v-model="name"
-        placeholder="Subscription Name"
-      ></va-input>
-    </div>
-    <div class="row">
-      <div class="flex offset-xs1 pb-2">
-        <strong>Alert if the Value is:</strong>
-      </div>
-    </div>
-    <div class="row">
-      <va-switch size="small" v-model="valueChk" class="flex xs1"></va-switch>
-      <va-input
-        v-model="lowValue"
-        class="flex xs3"
-        label="Less Than"
-        :rules="lowRules"
-        :error="newLowPositionViolated"
-        @change="setLowPercent"
-      ></va-input>
-      <va-slider
-        v-model="lowValuePercent"
-        :track-label="lowValueLabel + '%'"
-        track-label-visible
-        :max="maxValue"
-        :min="minValue"
-        class="flex xs1"
-      >
-      </va-slider>
-
-      <va-input
-        v-model="currentValue"
-        readonly
-        class="flex xs3"
-        :messages="currentValueMessages"
-        label="Current Value"
-      >
-        <template v-if="allowBaseline" #appendInner>
-         <va-popover
-          color="secondary"
-          placement="top"
-           message="Automatically re-baseline the limits to Current Value"
-          ><va-icon
-          name="horizontal_distribute"
-          @click.prevent="rebaseline"
-        /></va-popover>
-      </template>
-      </va-input>
-      <va-slider
-        v-model="highValuePercent"
-        :track-label="highValuePercent + '%'"
-        track-label-visible
-        :max="maxValue"
-        :min="minValue"
-        class="flex xs1"
-      ></va-slider>
-      <va-input
-        v-model="highValue"
-        label="Greater Than"
-        class="flex xs3"
-        :rules="highRules"
-        :error="newHighPositionViolated"
-        @change="setHighPercent"
-      ></va-input>
-    </div>
-    <div class="row pt-3">
-      <SubscriptionFrequency
-        :subscription="subscription"
-        v-model="frequency"
-      ></SubscriptionFrequency>
-    </div>
-    <va-divider dashed inset></va-divider>
-    <div class="row">
-      <ChannelsPicker
-        :subscription="subscription"
-        @channels="setChannels"
-        :autoSave="false"
-      ></ChannelsPicker>
-    </div>
-    <template #footer>
-      <va-button icon="save" @click="save" size="medium" :disabled="!validSave"
-        >Save</va-button
-      >
-      <va-button
-        icon="cancel"
-        @click="cancel"
-        size="medium"
-        color="secondary"
-        class="ml-1"
-        >Cancel</va-button
-      >
-    </template>
+    <PositionEditor
+      :position="props.position"
+      @saved="show = false"
+      @canceled="show = false"
+      @launched="show = false"
+    ></PositionEditor>
   </va-modal>
 </template>
 
@@ -138,15 +45,13 @@ import { Position } from "@/models/Position";
 import { computed, onMounted, ref } from "vue";
 import { prettyNumber, roundToTwo } from "@/Utilities";
 import { Subscription } from "@/models/Subscription";
-import ChannelsPicker from "./ChannelsPicker.vue";
 import { UserChannel } from "@/models/Channel";
-import SubscriptionFrequency from "./SubscriptionFrequency.vue";
+import PositionEditor from "@/components/PositionEditor.vue";
 import { UserFrequency } from "@/notifi_types";
 
 /* global defineProps, defineEmits */
 const props = defineProps({
-  position: { type: Position  , required: true },
-
+  position: { type: Position, required: true },
 });
 
 const subscription = ref<Subscription | undefined>(undefined);
@@ -184,17 +89,23 @@ const currentValue = computed((): string | undefined => {
 });
 
 const currentValueMessages = computed(() => {
-  if (subscription.value && subscription.value.positionBaseline && allowBaseline.value) {
+  if (
+    subscription.value &&
+    subscription.value.positionBaseline &&
+    allowBaseline.value
+  ) {
     const bl = roundToTwo(subscription.value.positionBaseline);
     return `Baseline was $${bl}`;
   }
   return undefined;
-})
+});
 
 const allowBaseline = computed(() => {
-  return subscription.value?.positionBaseline != undefined &&
-      subscription.value?.positionBaseline != props.position.value;
-})
+  return (
+    subscription.value?.positionBaseline != undefined &&
+    subscription.value?.positionBaseline != props.position.value
+  );
+});
 
 const rebaseline = () => {
   const bl = subscription.value?.positionBaseline;
@@ -207,23 +118,22 @@ const rebaseline = () => {
   if (oldHigh) {
     let newHigh = oldHigh;
     if (bl > cur) {
-      newHigh =  oldHigh - oldHigh * (bl - cur) / bl;
+      newHigh = oldHigh - (oldHigh * (bl - cur)) / bl;
     } else {
-      newHigh =  oldHigh + oldHigh * (cur - bl) / bl;
+      newHigh = oldHigh + (oldHigh * (cur - bl)) / bl;
     }
     highValue.value = roundToTwo(newHigh);
   }
   if (oldLow) {
     let newLow = oldLow;
     if (bl > cur) {
-      newLow =  oldLow - oldLow * (bl - cur) / bl;
+      newLow = oldLow - (oldLow * (bl - cur)) / bl;
     } else {
-      newLow =  oldLow + oldLow * (cur - bl) / bl;
+      newLow = oldLow + (oldLow * (cur - bl)) / bl;
     }
     lowValue.value = roundToTwo(newLow);
   }
-
-}
+};
 
 const name = ref(
   subscription.value?.name || props.position?.name || "New Position"
@@ -232,7 +142,9 @@ const valueChk = ref(false);
 
 const maxValue = ref(50);
 const minValue = ref(0);
-const frequency = ref<typeof UserFrequency>(subscription.value?.userFrequency || "day");
+const frequency = ref<typeof UserFrequency>(
+  subscription.value?.userFrequency || "day"
+);
 
 const intLowValue = ref(
   roundToTwo(subscription.value?.positionLow || props.position.value)

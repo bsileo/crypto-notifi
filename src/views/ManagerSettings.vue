@@ -8,7 +8,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Protocol } from "@/models/Protocol";
-import { fetchProtocol, protocolUpdate } from "@/composables/getProtocolByID"
+import { fetchProtocol, protocolUpdate } from "@/composables/getProtocolByID";
 import ProtocolSettings from "@/components/ProtocolSettings.vue";
 
 // eslint-disable-next-line no-undef
