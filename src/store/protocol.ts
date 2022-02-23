@@ -11,6 +11,9 @@ import Moralis from "@/config/moralis";
 import { Protocol } from "@/models/Protocol";
 import { userModule } from "./user";
 import { NotifiUser } from "@/models/NotifiUser";
+import { Position } from "@/models/Position";
+import { PositionCache } from "@/notifi_types";
+
 @Module({
   dynamic: true,
   store: store,
@@ -21,6 +24,7 @@ export class ProtocolsModule extends VuexModule {
   PROTOCOLS: Array<Protocol> = [];
   MANAGERPROTOCOLS: Array<Protocol> = [];
   MANAGER_SUBSCRIPTION: any = undefined;
+  POSITIONS: Record<string, PositionCache> = {};
 
   get allProtocols(): Array<Protocol> {
     return this.PROTOCOLS;
@@ -32,6 +36,24 @@ export class ProtocolsModule extends VuexModule {
 
   get managerSubscription(): any {
     return this.MANAGER_SUBSCRIPTION;
+  }
+  @Mutation
+  public SavePositions({
+    protocol,
+    positions,
+  }: {
+    protocol: Protocol;
+    positions: Position[];
+  }): void {
+    console.log(`Save ${positions.length} for ${protocol.id}`);
+    this.POSITIONS = {
+      ...this.POSITIONS,
+      [protocol.id]: { data: positions, time: new Date() },
+    };
+  }
+
+  get positions(): Record<string, PositionCache> {
+    return this.POSITIONS;
   }
 
   @Mutation

@@ -49,7 +49,7 @@
     </div>
     <div class="flex xs10 ml-3">
       <router-view v-slot="{ Component }">
-        <keep-alive exclude="Subscribe">
+        <keep-alive>
           <Suspense>
             <component :is="Component" />
             <template #fallback> Loading... </template>

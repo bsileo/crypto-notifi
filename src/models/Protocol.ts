@@ -19,6 +19,7 @@ import {
   TokenData,
 } from "@/notifi_types";
 import { Subscription } from "./Subscription";
+import { protocolsModule } from "@/store/protocol";
 
 type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends SubscriptionLimiter {
@@ -148,7 +149,9 @@ export class Protocol extends SubscriptionLimiter {
 
   public async positions(refresh?: boolean): Promise<Position[]> {
     if (!refresh) {
-      if (this._positions) return this._positions.data;
+      const pos = protocolsModule.positions;
+      const myPos = pos[this.id];
+      if (myPos) return myPos.data;
     }
     const config = await Moralis.Config.get();
     const cookieAPI = config.get("cookieAPIURL");
@@ -174,7 +177,7 @@ export class Protocol extends SubscriptionLimiter {
         console.log("Fetch failed - " + err.message);
       }
     }
-    this._positions = { data: res, time: new Date() };
+    protocolsModule.SavePositions({ protocol: this, positions: res });
     return res;
   }
 

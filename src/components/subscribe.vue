@@ -88,7 +88,7 @@
 import { UserChannel } from "@/models/Channel";
 import { channelsModule } from "@/store/channels";
 import { computed, getCurrentInstance, ref } from "vue";
-import { onBeforeRouteUpdate, useRouter } from "vue-router";
+import { onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
 
 import SubscribeType from "@/components/subscribe-type.vue";
 import SubscribeWallet from "@/components/subscribe-wallet.vue";
@@ -115,6 +115,7 @@ const props = defineProps({
   subscriptionID: { type: String, required: false },
   returnPath: { type: String, required: false, default: "/subscriptions" },
 });
+const route = useRoute();
 
 let sub: Subscription | undefined = undefined;
 if (props.subscriptionID) sub = await Subscription.fetch(props.subscriptionID);
@@ -163,7 +164,6 @@ const subscribeLabel = computed(() => {
 const subscribeIcon = computed(() => {
   return subscription.value ? "save" : "create";
 });
-
 
 const showContract = computed(() => {
   return showSection(SubscriptionTypes.contract);
@@ -287,8 +287,9 @@ const vaToast = app?.appContext.config.globalProperties.$vaToast;
 const showToast = vaToast.init;
 
 const router = useRouter();
-const cancel = async (): Promise<void> => {
-  router.push(props.returnPath);
+const cancel = (): void => {
+  const path = (route.query.returnPath as string) || "/subscriptions";
+  router.push(path);
 };
 const createBusy = ref(false);
 const subscribe = async (): Promise<void> => {
@@ -298,7 +299,8 @@ const subscribe = async (): Promise<void> => {
   //else showToast({ message: "Error No Subscription" });
   //showToast({ message: "Added Subscription", color: "success" });
   createBusy.value = false;
-  router.push(props.returnPath);
+  const path = (route.query.returnPath as string) || "/subscriptions";
+  router.push(path);
 };
 </script>
 
