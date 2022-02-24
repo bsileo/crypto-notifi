@@ -9,7 +9,7 @@
         hold <strong>{{ tokens }}</strong> Notifi tokens.
       </p>
       <p class="pt-3">
-        To increase levels,
+        To enable access to more items below
         <va-button @click="openSwap" size="small" color="primary"
           >Swap</va-button
         >
@@ -19,45 +19,45 @@
     <div class="row">
       <UserWallets></UserWallets>
     </div>
+    <div class="row">
+      <h1>Cost Summary:</h1>
+    </div>
+    <div class="row userCostsSummary">
+      <UserCostsSummary :balance="tokens"></UserCostsSummary>
+    </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, inject } from "vue";
-import Moralis from "moralis";
+<script setup lang="ts">
+import { inject, onMounted, ref } from "vue";
 import { NotifiUser, UserLevel } from "@/models/NotifiUser";
 import UserWallets from "@/components/UserWallets.vue";
 import { userModule } from "@/store/user";
+import UserCostsSummary from "@/components/UserCostsSummary.vue";
 
-export default defineComponent({
-  name: "Account",
-  components: { UserWallets },
-  setup() {
-    const user: NotifiUser | undefined = inject("user");
-    return { user };
-  },
-  data() {
-    return {
-      level: "Free" as UserLevel,
-      tokens: 0,
-    };
-  },
-  mounted() {
-    this.fetchUserInfo();
-  },
-  computed: {},
-  methods: {
-    openSwap(): void {
-      window.open("https://app.pangolin.exchange/#/swap");
-    },
-    async fetchUserInfo(): Promise<void> {
-      if (this.user) {
-        this.level = userModule.currentLevel;
-        this.tokens = userModule.NotifiTokens;
-      }
-    },
-  },
+const user: NotifiUser | undefined = inject("user");
+const level = ref<UserLevel>(UserLevel.Free);
+const tokens = ref(0);
+
+onMounted(() => {
+  fetchUserInfo();
 });
+
+const openSwap = (): void => {
+  window.open("https://app.pangolin.exchange/#/swap");
+};
+
+const fetchUserInfo = async (): Promise<void> => {
+  if (user) {
+    level.value = userModule.currentLevel;
+    tokens.value = userModule.NotifiTokens;
+  }
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+.userCostsSummary {
+  max-height: 60vh;
+  overflow-y: scroll;
+}
+</style>

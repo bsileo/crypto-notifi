@@ -9,7 +9,7 @@ import { NotifiUser } from "@/models/NotifiUser";
 import { SubscriptionType } from "@/models/SubscriptionType";
 import { Chain } from "@/models/Contract";
 import Moralis from "moralis";
-import { UserChannel, UserChannelStatus } from "./Channel";
+import { UserChannel } from "./Channel";
 import { Contract } from "./Contract";
 import { ContractActivity } from "./ContractActivity";
 import { Protocol } from "./Protocol";
@@ -112,8 +112,45 @@ export class Subscription extends Moralis.Object {
     return this.get("contractAddress");
   }
 
+  get costPriority(): number {
+    return this.get("costPriority");
+  }
+  set costPriority(n: number) {
+    this.set("costPriority", n);
+  }
 
+  get url(): string {
+    const type = this.urlType;
+    return `/subscription/${type}/${this.id}`;
+  }
 
+  get urlType(): string {
+    switch (this.subscriptionType) {
+      case "Position":
+        return "position";
+      case "Protocol Alerts":
+        return "protocol";
+      case "Smart Contracts":
+        return "smart_contracts";
+      case "My Wallet":
+        return "my_wallet";
+    }
+  }
+
+  get tokenCost(): number {
+    const t = this.subscriptionType;
+    switch (t) {
+      case "Protocol Alerts":
+        return 10;
+      case "Smart Contracts":
+        return 500;
+      case "My Wallet":
+        return 100;
+      case "Position":
+        return 250;
+    }
+    return 0;
+  }
   internalShortContractAddress(): string {
     return (
       this.contractAddress.slice(1, 6) +

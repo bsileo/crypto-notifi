@@ -45,6 +45,17 @@
             </va-sidebar-item-content>
           </va-sidebar-item>
         </template>
+         <va-sidebar-item @click="logout" text-color="danger">
+          <va-sidebar-item-content>
+            <va-icon name="logout" color="danger" />
+            <va-sidebar-item-title
+              text-color="danger"
+              v-show="!minimized"
+              style="height: 24px;"
+              >Logout</va-sidebar-item-title
+            >
+          </va-sidebar-item-content>
+        </va-sidebar-item>
       </va-sidebar>
     </div>
     <div class="flex xs10 ml-3">
@@ -66,8 +77,9 @@ import { computed, inject, ref } from "vue";
 import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
 import { SidebarDescriptor } from "@/notifi_types";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
+const router = useRouter();
 const moralis: any = inject("Moralis");
 const userIsManager = computed((): boolean => {
   const u = moralis.User.current();
@@ -109,9 +121,9 @@ if (userIsManager.value) {
 }
 
 const managerItems = computed(() => {
-  const items: SidebarDescriptor[] = [];
+  const mItems: SidebarDescriptor[] = [];
   if (props.protocolID != undefined && userIsManager.value) {
-    items.push(
+    mItems.push(
       ...[
         {
           title: "Send",
@@ -152,10 +164,24 @@ const managerItems = computed(() => {
       ]
     );
   }
-  return items;
+  return mItems;
 });
-
+items.value.push({
+  title: "My Account",
+  icon: "manage_accounts",
+  to: "/my_account",
+});
+items.value.push({
+  title: "My Channels",
+  icon: "import_contacts",
+  to: "/my_channels",
+});
 const minimized = ref(false);
+
+const logout = async () => {
+  moralis.User.logOut();
+  router.push({ name: "Login" });
+};
 </script>
 
 <style scoped></style>

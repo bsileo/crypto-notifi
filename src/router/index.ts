@@ -5,13 +5,22 @@ const Positions = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/Positions.vue");
 const Subscriptions = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/Subscriptions.vue");
+
 const Protocols = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/Protocols.vue");
-  const Subscription = () =>
+
+const MyAccount = () =>
+  import(/* webpackChunkName: "group-user" */ "@/views/MyAccount.vue");
+
+const MyChannels = () =>
+  import(/* webpackChunkName: "group-user" */ "@/views/MyChannels.vue");
+
+const Subscription = () =>
   import(/* webpackChunkName: "subscription" */ "@/views/Subscription.vue");
 
-  const Subscribe = () =>
+const Subscribe = () =>
   import(/* webpackChunkName: "subscription" */ "@/components/subscribe.vue");
+
 const PositionEditor = () =>
   import(
     /* webpackChunkName: "subscription" */ "@/components/PositionEditor.vue"
@@ -79,6 +88,21 @@ const routes: Array<RouteRecordRaw> = [
         path: "/protocols",
         name: DisplayMode.protocols,
         component: Protocols,
+      },
+      {
+        path: "/my_account",
+        name: "My Account",
+        component: MyAccount,
+      },
+      {
+        path: "/my_channels",
+        name: "My Channels",
+        component: MyChannels,
+      },
+      {
+        path: "/my_channels/:channelID",
+        name: "My Channel",
+        component: MyChannels,
       },
       {
         path: "/subscription",

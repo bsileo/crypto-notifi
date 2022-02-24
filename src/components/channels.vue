@@ -24,17 +24,17 @@
       <va-button
         @click.prevent="this.showAdd = true"
         :disabled="addNotAllowed"
-        size="small"
+        size="medium"
         icon-right="add"
         class="mr-4"
-      ></va-button>
+        >Add</va-button
+      >
     </div>
     <va-modal v-model="showAdd" hide-default-actions overlay-opacity="0.2">
       <template #header>
         <h2>Setup a Channel to Receive Alerts</h2>
       </template>
       <slot>
-        <va-input class="pt-2" v-model="name" label="Name"> </va-input>
         <va-select
           class="pt-2"
           v-model="newChannel"
@@ -50,166 +50,177 @@
         ></Twilio>
         <Discord
           v-if="newChannel == 'discord'"
-          @providerData="this.setProviderData"
+          @providerData="setProviderData"
         ></Discord>
         <Email
           v-if="newChannel == 'email'"
-          @providerData="this.setProviderData"
+          @providerData="setProviderData"
         ></Email>
         <Telegram
           v-if="newChannel == 'telegram'"
-          @providerData="this.setProviderData"
+          @providerData="setProviderData"
         ></Telegram>
+        <va-input
+          class="pt-2"
+          v-model="name"
+          label="Channel Name"
+          :error="!validName"
+        >
+        </va-input>
       </slot>
       <template #footer>
-        <va-button @click.prevent="add" :disabled="!this.addValid"
-          >Add</va-button
-        >
-        <va-button @click.prevent="this.showAdd = false"> Cancel </va-button>
+        <va-button @click.prevent="add" :disabled="!addValid">Add</va-button>
+        <va-button @click.prevent="showAdd = false"> Cancel </va-button>
       </template>
     </va-modal>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { userModule } from "../store/user";
-import { defineComponent, getCurrentInstance, ref } from "vue";
-import {
-  ChannelModel,
-  UserChannel,
-  UserChannelStatus,
-} from "../models/Channel";
+import { computed, getCurrentInstance, ref } from "vue";
+import { UserChannel } from "../models/Channel";
 import { channelsModule } from "../store/channels";
 import Twilio from "@/components/TwilioAdd.vue";
 import Discord from "@/components/DiscordAdd.vue";
 import Email from "@/components/EmailAdd.vue";
 import Telegram from "@/components/TelegramAdd.vue";
 import Moralis from "moralis";
+import { ChannelModel } from "@/notifi_types";
 
 type ProviderData = Record<string, string | boolean | undefined>;
 
-export default defineComponent({
-  name: "Channels",
-  components: { Twilio, Discord, Email, Telegram },
-  setup() {
-    const app = getCurrentInstance();
-    const vaToast = app?.appContext.config.globalProperties.$vaToast;
-    const showToast = ref(vaToast.init);
-    return { showToast };
+const app = getCurrentInstance();
+const vaToast = app?.appContext.config.globalProperties.$vaToast;
+const showToast = ref(vaToast.init);
+
+const columns = ref([
+  { key: "id", label: "Remove", sortable: false },
+  { key: "statusPlus", label: "Status", sortable: false },
+  { key: "name", label: "Name", sortable: true },
+  { key: "providerName", label: "Provider", sortable: true },
+]);
+
+const providerData = ref<ProviderData>({ to: undefined });
+const name = ref("");
+const intNewChannel = ref("");
+const showAdd = ref(false);
+
+const newChannel = computed({
+  get() {
+    return intNewChannel.value;
   },
-  data() {
-    const columns = [
-      { key: "id", label: "Remove", sortable: false },
-      { key: "name", label: "Name", sortable: true },
-      { key: "providerName", label: "Provider", sortable: true },
-      { key: "statusPlus", label: "Status", sortable: false },
-    ];
-    const pd: ProviderData | undefined = { to: undefined };
-    return {
-      newChannel: "",
-      name: "",
-      showAdd: false,
-      columns: columns,
-      providerData: pd,
-    };
-  },
-  computed: {
-    channels(): ChannelModel[] {
-      return channelsModule.channels;
-    },
-    myChannels(): UserChannel[] {
-      return channelsModule.myChannels;
-    },
-    availableChannels(): ChannelModel[] {
-      let base = this.channels;
-      const cur = channelsModule.myChannels;
-      const res = base.filter((e) => {
-        return (
-          e.multiple ||
-          !cur.some((curElem) => e.id === curElem.attributes.providerID)
-        );
-      });
-      return res;
-    },
-    addNotAllowed(): boolean {
-      return this.availableChannels.length == 0;
-    },
-    addValid(): boolean {
-      return (
-        this.name.length > 1 &&
-        this.newChannel.length > 0 &&
-        this.providerData != undefined
-      );
-    },
-  },
-  methods: {
-    setProviderData(pd: ProviderData): void {
-      this.providerData = pd;
-    },
-    async remove(id: string): Promise<void> {
-      console.log(id);
-      const res: UserChannel | undefined = channelsModule.myChannels.find(
-        (e) => e.id === id
-      );
-      if (res) {
-        res.destroy().then(
-          (myObject: UserChannel): void => {
-            console.log("Deleted " + myObject.id);
-          },
-          (error: Error) => {
-            alert("Delete Failed  " + error.message);
-          }
-        );
-      }
-    },
-    async resendVerification(data: any): Promise<boolean> {
-      // this is a hack till we can pass the records in.
-      const id = data[0].source;
-      const uc = this.myChannels.find((chan) => chan.id == id);
-      if (uc) {
-        const res = await uc.sendVerification();
-        this.showToast({
-          message: "Verification Sent",
-          duration: 2000,
-          color: "success",
-        });
-      }
-      return true;
-    },
-    async add(): Promise<void> {
-      if (!userModule.user) {
-        throw "Login required";
-      }
-      const c = UserChannel.spawn(
-        this.name,
-        userModule.user?.id,
-        this.newChannel
-      );
-      c.setProviderData(this.providerData);
-      var acl = new Moralis.ACL();
-      acl.setReadAccess(Moralis.User.current().id, true);
-      acl.setWriteAccess(Moralis.User.current().id, true);
-      acl.setRoleReadAccess("admins", true);
-      acl.setRoleWriteAccess("admins", true);
-      c.setACL(acl);
-      const context = { action: "insert" };
-      c.save(null, { context: context }).then(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        (uc: UserChannel) => {
-          // Execute any logic that should take place after the object is saved.
-          this.showAdd = false;
-        },
-        (error: { message: string }) => {
-          // Execute any logic that should take place if the save fails.
-          // error is a Moralis.Error with an error code and message.
-          alert(
-            "Failed to create new object, with error code: " + error.message
-          );
-        }
-      );
-    },
+  set(v: string) {
+    intNewChannel.value = v;
+    if (name.value == "") {
+      if (v == "twilio") {
+        name.value = "My SMS";
+      } else name.value = "My " + v;
+    }
   },
 });
+
+const channels = computed((): ChannelModel[] => {
+  return channelsModule.channels;
+});
+
+const myChannels = computed((): UserChannel[] => {
+  return channelsModule.myChannels;
+});
+
+const availableChannels = computed((): ChannelModel[] => {
+  let base = channels.value;
+  const cur = channelsModule.myChannels;
+  const res = base.filter((e) => {
+    return (
+      e.multiple ||
+      !cur.some((curElem) => e.id === curElem.attributes.providerID)
+    );
+  });
+  return res;
+});
+
+const addNotAllowed = computed((): boolean => {
+  return availableChannels.value.length == 0;
+});
+
+const validName = computed((): boolean => {
+  return name.value.length > 3;
+});
+const addValid = computed((): boolean => {
+  return (
+    validName.value &&
+    newChannel.value.length > 0 &&
+    providerData.value != undefined
+  );
+});
+
+const setProviderData = (pd: ProviderData): void => {
+  providerData.value = pd;
+};
+
+const remove = async (id: string): Promise<void> => {
+  console.log(id);
+  const res: UserChannel | undefined = channelsModule.myChannels.find(
+    (e) => e.id === id
+  );
+  if (res) {
+    res.destroy().then(
+      (myObject: UserChannel): void => {
+        console.log("Deleted " + myObject.id);
+      },
+      (error: Error) => {
+        alert("Delete Failed  " + error.message);
+      }
+    );
+  }
+};
+
+const resendVerification = async (data: any): Promise<boolean> => {
+  // this is a hack till we can pass the records in.
+  const id = data[0].source;
+  const uc = myChannels.value.find((chan) => chan.id == id);
+  if (uc) {
+    await uc.sendVerification();
+    showToast({
+      message: "Verification Sent",
+      duration: 2000,
+      color: "success",
+    });
+  }
+  return true;
+};
+
+const add = async (): Promise<void> => {
+  if (!userModule.user) {
+    throw "Login required";
+  }
+  const c = UserChannel.spawn(
+    name.value,
+    userModule.user?.id,
+    newChannel.value
+  );
+  c.setProviderData(providerData.value);
+  var acl = new Moralis.ACL();
+  acl.setReadAccess(Moralis.User.current().id, true);
+  acl.setWriteAccess(Moralis.User.current().id, true);
+  acl.setRoleReadAccess("admins", true);
+  acl.setRoleWriteAccess("admins", true);
+  c.setACL(acl);
+  const context = { action: "insert" };
+  c.save(null, { context: context }).then(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (uc: UserChannel) => {
+      // Execute any logic that should take place after the object is saved.
+      showAdd.value = false;
+    },
+    (error: { message: string }) => {
+      // Execute any logic that should take place if the save fails.
+      // error is a Moralis.Error with an error code and message.
+      alert("Failed to create new object, with error code: " + error.message);
+    }
+  );
+};
 </script>
 
 <style scoped></style>

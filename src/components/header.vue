@@ -23,44 +23,9 @@
       </template>
       <template #right v-if="loggedIn">
         <slot name="right"></slot>
-        <va-navbar-item>
-          <va-button-dropdown
-            id="menu"
-            color="dark"
-            label="My Account"
-            class="float-end"
-            size="medium"
-            :flat="true"
-            :outline="false"
-          >
-            <va-card color="background" square :bordered="true">
-              <va-card-actions align="between" :vertical="true">
-                <va-button color="primary" @click.prevent="showAccount = true">
-                  My Account
-                </va-button>
-                <va-button color="primary" @click.prevent="showChannels = true">
-                  My Channels
-                </va-button>
-                <va-button color="danger" @click.prevent="logout">
-                  Logout
-                </va-button>
-              </va-card-actions>
-            </va-card>
-          </va-button-dropdown>
-        </va-navbar-item>
       </template>
     </va-navbar>
   </div>
-  <va-modal v-model="showChannels" title="Configure your Channels">
-    <slot>
-      <Channels></Channels>
-    </slot>
-  </va-modal>
-  <va-modal v-model="showAccount" title="Manage my Account">
-    <slot>
-      <Account></Account>
-    </slot>
-  </va-modal>
 </template>
 
 <script lang="ts">
@@ -74,12 +39,9 @@ import {
 } from "vue";
 import { DisplayMode, UserMode } from "@/notifi_types";
 import { useRoute, useRouter } from "vue-router";
-import Channels from "@/components/channels.vue";
-import Account from "@/components/Account.vue";
 
 export default defineComponent({
   name: "Header",
-  components: { Channels, Account },
   inject: ["Moralis"],
   setup(props, context) {
     const router = useRouter();

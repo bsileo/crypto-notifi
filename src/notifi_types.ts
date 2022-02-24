@@ -1,4 +1,7 @@
-import { Position } from "./models/Position";
+import { UserChannel } from "@/models/Channel";
+import { Position } from "@/models/Position";
+import { Protocol } from "@/models/Protocol";
+import { Subscription } from "@/models/Subscription";
 
 export enum CardDisplayMode {
   "narrow",
@@ -122,4 +125,45 @@ export const SubscriptionTypes: Record<
 export enum SubscriptionStatus {
   "active" = "active",
   "paused" = "paused",
+}
+
+export type SummaryItemType = "Channel" | "Subscription";
+export type SummaryItemTypeDetail =
+  | "Protocol Funded"
+  | ChannelNames
+  | SubscriptionTypesName;
+export type UserSummaryStatus = "Active" | "Paused" | "Over Balance";
+export type SummaryItemLink = Protocol | Subscription | UserChannel;
+
+export type UserSummaryItem = {
+  costPriority?: number;
+  type: SummaryItemType;
+  detail: SummaryItemTypeDetail;
+  name: string;
+  tokenCost: number;
+  runningTotal?: number;
+  status: UserSummaryStatus;
+  color?: string,
+  relatedItem: SummaryItemLink;
+};
+
+export type ChannelNames = "SMS" | "Email" | "Telegram";
+export interface ChannelModel {
+  id: number | string;
+  name: ChannelNames;
+  provider?: string;
+  multiple: boolean;
+}
+
+export enum UserChannelStatus {
+  "pending" = "Pending Verification",
+  "pendingSent" = "Verification Sent",
+  "active" = "Active",
+  "optout" = "Opted Out",
+}
+
+export enum ProviderIDSymbols {
+  "twilio" = "twilio",
+  "email" = "email",
+  "telegram" = "telegram",
 }

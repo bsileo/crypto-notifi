@@ -15,8 +15,7 @@
 import PositionEditor from "./PositionEditor.vue";
 import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
-import { computed, ref, watch } from "vue";
-import Moralis from "moralis";
+import { computed, ref } from "vue";
 import { Position } from "@/models/Position";
 
 // eslint-disable-next-line no-undef

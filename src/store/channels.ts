@@ -7,8 +7,9 @@ import {
 } from "vuex-module-decorators";
 import { store } from ".";
 
-import { ChannelModel, UserChannel } from "@/models/Channel";
+import { UserChannel } from "@/models/Channel";
 import Moralis from "moralis";
+import { ChannelModel } from "@/notifi_types";
 
 @Module({ dynamic: true, store: store, namespaced: true, name: "Channels" })
 export class ChannelsModule extends VuexModule {

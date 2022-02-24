@@ -2,21 +2,11 @@ import { NotifiUser } from "@/models/NotifiUser";
 import { channelsModule } from "@/store/channels";
 import Moralis from "moralis";
 import { Subscription } from "@/models/Subscription";
-
-export interface ChannelModel {
-  id: number | string;
-  name: string;
-  provider?: string;
-  multiple: boolean;
-}
-
-export enum UserChannelStatus {
-  "pending" = "Pending Verification",
-  "pendingSent" = "Verification Sent",
-  "active" = "Active",
-  "optout" = "Opted Out",
-}
-
+import {
+  ChannelNames,
+  ProviderIDSymbols,
+  UserChannelStatus,
+} from "@/notifi_types";
 export class UserChannel extends Moralis.Object {
   subscriptionCounter: undefined | number = undefined;
   _statusPlus: UserChannelStatus | undefined = undefined;
@@ -30,7 +20,7 @@ export class UserChannel extends Moralis.Object {
     return this.get("name");
   }
 
-  get providerID(): string {
+  get providerID(): ProviderIDSymbols {
     return this.get("providerID");
   }
 
@@ -107,26 +97,45 @@ export class UserChannel extends Moralis.Object {
     return val;
   }
 
-  get providerName(): string | null {
+  get providerName(): ChannelNames {
     const res = channelsModule.channels.find((e) => e.id == this.providerID);
     if (res) {
       return res.name;
-    } else {
-      return null;
     }
+    throw (
+      "UserChannel.providernName - Mismatched Channel ProviderID not found for " +
+      this.id
+    );
   }
 
   get providerIcon(): string {
     const pid = this.providerID;
     switch (pid) {
-      case "twilio":
+      case ProviderIDSymbols.twilio:
         return "sms";
-      case "email":
+      case ProviderIDSymbols.email:
         return "email";
-      case "telegram":
+      case ProviderIDSymbols.telegram:
         return "telegram";
     }
     return "email";
+  }
+
+  get url(): string {
+    return `/my_channels/${this.id}`;
+  }
+
+  get tokenCost(): number {
+    const pid = this.providerID;
+    switch (pid) {
+      case "twilio":
+        return 500;
+      case "email":
+        return 100;
+      case "telegram":
+        return 0;
+    }
+    return 0;
   }
 
   static spawn(
