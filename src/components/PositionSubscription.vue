@@ -1,19 +1,19 @@
 <template>
   <div class="row">
     <div v-if="subscription" class="flex xs6" style="font-size: smaller">
-      <div v-if="subscription.positionLow" :style="lowPositionStyle">
-        <va-icon
-          name="arrow_drop_down"
-          :color="lowPositionViolated ? 'danger' : ''"
-        />
-        ${{ prettyNumber(subscription.positionLow) }}
-      </div>
       <div v-if="subscription.positionHigh" :style="highPositionStyle">
         <va-icon
           name="arrow_drop_up"
           :color="highPositionViolated ? 'danger' : ''"
         />
         ${{ prettyNumber(subscription.positionHigh) }}
+      </div>
+      <div v-if="subscription.positionLow" :style="lowPositionStyle">
+        <va-icon
+          name="arrow_drop_down"
+          :color="lowPositionViolated ? 'danger' : ''"
+        />
+        ${{ prettyNumber(subscription.positionLow) }}
       </div>
     </div>
     <div v-if="subscription" class="flex xs6">

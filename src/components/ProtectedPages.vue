@@ -77,6 +77,8 @@ const userIsManager = computed((): boolean => {
 // eslint-disable-next-line no-undef
 const props = defineProps({
   protocolID: { type: String, required: false },
+  subscriptionID: { type: String, required: false },
+  typeName: { type: String, required: false },
 });
 
 const items = ref<SidebarDescriptor[]>([
