@@ -36,7 +36,7 @@
           v-model="search"
         ></va-input>
         <va-checkbox
-          v-if="showSearch"
+          v-if="showSearchFavorites"
           class="flex xs4 sm2"
           label="Favorites?"
           v-model="searchFavorites"
@@ -108,6 +108,7 @@ const props = defineProps({
   showVote: { type: Boolean, required: false, default: false },
   showSubscribe: { type: Boolean, required: false, default: false },
   showFavorites: { type: Boolean, required: false, default: true },
+  showSearchFavorites: { type: Boolean, required: false, default: true },
   showUserInfo: { type: Boolean, required: false, default: false },
   autoSelect: { type: Boolean, required: false, default: false },
   simpleList: { type: Boolean, required: false, default: false },

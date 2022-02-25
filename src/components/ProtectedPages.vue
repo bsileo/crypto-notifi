@@ -45,13 +45,13 @@
             </va-sidebar-item-content>
           </va-sidebar-item>
         </template>
-         <va-sidebar-item @click="logout" text-color="danger">
+        <va-sidebar-item to="#" @click.prevent="logout" text-color="danger">
           <va-sidebar-item-content>
             <va-icon name="logout" color="danger" />
             <va-sidebar-item-title
               text-color="danger"
               v-show="!minimized"
-              style="height: 24px;"
+              style="height: 24px"
               >Logout</va-sidebar-item-title
             >
           </va-sidebar-item-content>
@@ -182,6 +182,13 @@ const logout = async () => {
   moralis.User.logOut();
   router.push({ name: "Login" });
 };
+
+moralis.onAccountChanged(async (account: string) => {
+  const confirmed = confirm("Link this address to your account?");
+  if (confirmed) {
+    await moralis.link(account);
+  }
+});
 </script>
 
 <style scoped></style>

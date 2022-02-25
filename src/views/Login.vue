@@ -42,6 +42,7 @@
           :showVote="false"
           :showSubscribe="false"
           :showUserInfo="false"
+          :showSearchFavorites="false"
           :allowSelect="false"
           :showStatus="true"
           :showFavorites="false"
@@ -68,15 +69,16 @@ export default defineComponent({
   methods: {
     async doLogin(): Promise<void> {
       try {
-        // const user = await Moralis.authenticate({
-        //   signingMessage: "Sign to create an account on CryptoNotifi",
-        // });
         const user = await Moralis.authenticate({
+          signingMessage: "Sign in to Notifi",
+        });
+        /*const user = await Moralis.authenticate({
           provider: "web3Auth",
           theme: "light",
+          chainId: 0xa86a,
           clientId:
             "BNAltJRis6TNpbJxvM4WwENUZbgdzE5sGXZ8bCYYHEXlxTrtLVVxwe6WrX80y6IvH14l_clPo_Eqs7ay3TLGKow",
-        });
+        });*/
         if (user) {
           const q = new Moralis.Query(NotifiUser);
           const newUser = await q.get(user.id);
