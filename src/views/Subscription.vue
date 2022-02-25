@@ -25,7 +25,7 @@ const props = defineProps({
   subscriptionID: { type: String, required: false },
   typeName: { type: String, required: false, default: "new" },
 });
-const selectedSubscription = ref<Subscription | undefined>(new Subscription());
+const selectedSubscription = ref<Subscription | undefined>(undefined);
 
 watch(
   () => route.params.subscriptionID,

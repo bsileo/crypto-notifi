@@ -203,7 +203,7 @@ const showNoSubscriptions = computed((): boolean => {
 });
 
 const addSubscription = (): void => {
-  router.push({ name: "Subscribe" });
+  router.push({ name: "SubscriptionNew",  });
 };
 const showChannels = (): void => {
   emit("showChannels");

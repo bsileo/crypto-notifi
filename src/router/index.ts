@@ -119,7 +119,7 @@ const routes: Array<RouteRecordRaw> = [
             props: true,
           },
           {
-            path: ":typeName",
+            path: ":typeName?",
             name: "SubscriptionNew",
             component: Subscribe,
             props: true,
