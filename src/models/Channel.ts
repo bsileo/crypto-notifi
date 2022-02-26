@@ -93,7 +93,11 @@ export class UserChannel extends Moralis.Object {
 
   public async sendVerification(): Promise<boolean> {
     const params = { userChannelID: this.id };
-    const val: boolean = await Moralis.Cloud.run("resendVerification", params);
+    const val: boolean = await Moralis.Cloud.run(
+      "resendVerificationMessage",
+      params
+    );
+
     return val;
   }
 

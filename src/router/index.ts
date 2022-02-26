@@ -21,10 +21,8 @@ const Subscription = () =>
 const Subscribe = () =>
   import(/* webpackChunkName: "subscription" */ "@/components/subscribe.vue");
 
-const PositionEditor = () =>
-  import(
-    /* webpackChunkName: "subscription" */ "@/components/PositionEditor.vue"
-  );
+const EmailConfirm = () =>
+  import(/* webpackChunkName: "email" */ "@/views/EmailConfirm.vue");
 
 const Manager = () =>
   import(/* webpackChunkName: "group-manager" */ "@/views/Manager.vue");
@@ -60,6 +58,11 @@ const routes: Array<RouteRecordRaw> = [
     name: "Login",
     component: Login,
     beforeEnter: RouterGuard.Login,
+  },
+  {
+    path: "/email_confirm",
+    name: "Confirm",
+    component: EmailConfirm,
   },
   {
     path: "/",
