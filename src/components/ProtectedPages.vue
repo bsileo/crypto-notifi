@@ -61,8 +61,8 @@
     <div class="flex xs10 ml-3">
       <router-view v-slot="{ Component }">
         <keep-alive>
-          <Suspense>
-            <component :is="Component" />
+          <Suspense :key="$route.fullPath">
+            <component :is="Component" :key="$route.fullPath"/>
             <template #fallback> Loading... </template>
           </Suspense>
         </keep-alive>
@@ -98,6 +98,8 @@ const items = ref<SidebarDescriptor[]>([
   { title: "Positions", icon: "radar", to: "/positions" },
   { title: "Subscriptions", icon: "dashboard", to: "/subscriptions" },
   { title: "Subscribe", icon: "loop", to: "/subscription" },
+  { title: "My Account", icon: "manage_accounts", to: "/my_account" },
+  { title: "My Channels", icon: "import_contacts", to: "/my_channels" },
 ]);
 
 const route = useRoute();
@@ -165,16 +167,6 @@ const managerItems = computed(() => {
     );
   }
   return mItems;
-});
-items.value.push({
-  title: "My Account",
-  icon: "manage_accounts",
-  to: "/my_account",
-});
-items.value.push({
-  title: "My Channels",
-  icon: "import_contacts",
-  to: "/my_channels",
 });
 const minimized = ref(false);
 
