@@ -64,7 +64,6 @@ export class Alert extends Moralis.Object {
     a.set("richContent", content.rich);
     if (protocol) {
       a.set("protocol", protocol);
-      a.set("protocolID", protocol.id);
     }
     return a;
   }

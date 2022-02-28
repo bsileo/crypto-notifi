@@ -23,11 +23,10 @@ import { protocolsModule } from "@/store/protocol";
 
 type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends SubscriptionLimiter {
-  
   constructor() {
     super("Protocol");
 
-    this.set("tokendata", {
+    this.set("tokenData", {
       symbol: "",
       contractAddress: "",
       chain: "",
