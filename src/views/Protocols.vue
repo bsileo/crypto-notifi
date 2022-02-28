@@ -99,9 +99,10 @@
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
 import ChainsPicker from "@/components/ChainsPicker.vue";
 import { Chain } from "@/models/Contract";
-import { Protocol, SiteStatus } from "@/models/Protocol";
+import { Protocol } from "@/models/Protocol";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
+import { SiteStatus } from "@/notifi_types";
 
 const newName = ref("");
 const newWebsite = ref("");
@@ -197,6 +198,7 @@ const addProtocol = async (): Promise<void> => {
     await ps.save();
     showAdd.value = false;
   } catch (err: any) {
+    console.log(err);
     alert(err.message);
   }
 };
