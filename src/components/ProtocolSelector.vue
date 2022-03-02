@@ -38,12 +38,15 @@
         <va-checkbox
           v-if="showSearchFavorites"
           class="flex xs4 sm2"
+          :class="showSearch ? '' : 'offset--xs9 offset--sm9'"
           label="Favorites?"
           v-model="searchFavorites"
         />
         <div
           class="flex xs2 sm1 float-right"
-          :class="showSearch ? '' : 'offset--xs10 offset--sm11'"
+          :class="
+            showSearchFavorites || showSearch ? '' : 'offset--xs9 offset--sm9'
+          "
         >
           <va-button
             icon="refresh"
@@ -119,7 +122,7 @@ const props = defineProps({
   manager: { type: Boolean, required: false, default: false },
 });
 
-const user: NotifiUser | undefined = inject("user");
+const user: NotifiUser | undefined = inject("NotifiUser");
 
 const intSearch = ref("");
 const intSearchFavorites = ref(false);
@@ -221,10 +224,16 @@ const fetchProtocols = async (refresh?: boolean): Promise<void> => {
   rawProtocols.value.push(...prots);
   let res: Protocol[] = [];
   if (props.manager) {
-    for (let i = 0; i < prots.length; i++) {
-      let man = await prots[i].managerOf();
-      if (man) {
-        res.push(prots[i]);
+    //if (user && (await user.isAdmin())) {
+    // eslint-disable-next-line no-constant-condition
+    if (false) {
+      res.push(...prots);
+    } else {
+      for (let i = 0; i < prots.length; i++) {
+        let man = await prots[i].managerOf();
+        if (man) {
+          res.push(prots[i]);
+        }
       }
     }
   } else {

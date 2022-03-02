@@ -36,6 +36,10 @@ export class NotifiUser extends Moralis.User {
     return UserLevel.Free;
   }
 
+  async isAdmin(): Promise<boolean> {
+    return await Moralis.Cloud.run("adminUser");
+  }
+
   static async tokenBalance(): Promise<number> {
     const bal = Moralis.Cloud.run("NotifiBalance");
     return bal;
