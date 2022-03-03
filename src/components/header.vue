@@ -1,7 +1,15 @@
 <template>
   <div>
-    <va-navbar color="primary" shape class="mb-2">
+    <va-navbar color="primary" shape class="mb-1">
       <template #left>
+        <div class="pt-3 mr-2">
+          <va-icon-menu-collapsed
+            @click="minimized = !minimized"
+            :class="{ 'x-flip': minimized }"
+            class="va-navbar__item"
+            :color="colors.dark"
+          />
+        </div>
         <va-navbar-item>
           <va-image class="logo" alt="logo" src="/logo.png">
             <template #error> Logo </template>
@@ -28,111 +36,30 @@
   </div>
 </template>
 
-<script lang="ts">
-import {
-  computed,
-  defineComponent,
-  inject,
-  ref,
-  watch,
-  watchEffect,
-} from "vue";
-import { DisplayMode, UserMode } from "@/notifi_types";
-import { useRoute, useRouter } from "vue-router";
+<script setup lang="ts">
+import { computed, inject, ref } from "vue";
+import { appModule } from "@/store/app";
+import VaIconMenuCollapsed from "@/components/icons/VaIconMenuCollapsed.vue";
+import { useColors } from "vuestic-ui";
 
-export default defineComponent({
-  name: "Header",
-  inject: ["Moralis"],
-  setup(props, context) {
-    const router = useRouter();
-    const route = useRoute();
-
-    //console.log(`Setup loggedIn - ` + moralis);
-    const moralis: any = inject("Moralis");
-    let li = false;
-    if (!moralis) li = false;
-    else {
-      if (moralis.User.current()) li = true;
-      else li = false;
-    }
-    const loggedIn = ref(li);
-    const userIsManager = computed((): boolean => {
-      const moralis: any = inject("Moralis");
-      const u = moralis.User.current();
-      return u && u.get("ProtocolManager");
-    });
-
-    let initialUserMode: UserMode = UserMode.user;
-    if (route.meta.manager) initialUserMode = UserMode.manager;
-    const intUserMode = ref<UserMode>(initialUserMode);
-    const userMode = computed({
-      get: () => {
-        return intUserMode.value;
-      },
-      set: (mode) => {
-        intUserMode.value = mode;
-        if (mode == UserMode.manager) {
-          router.push({ name: "ManageSelectProtocol" });
-        } else {
-          router.push({ name: intMode.value });
-        }
-      },
-    });
-
-    let initialMode = DisplayMode.protocols;
-    switch (route.name) {
-      case DisplayMode.protocols:
-        initialMode = DisplayMode.protocols;
-        break;
-      case DisplayMode.subscriptions:
-        initialMode = DisplayMode.subscriptions;
-        break;
-      case DisplayMode.positions:
-        initialMode = DisplayMode.positions;
-        break;
-      default:
-        initialMode = DisplayMode.protocols;
-    }
-
-    const intMode = ref<DisplayMode>(initialMode);
-    const mode = computed({
-      get: (): any => {
-        return intMode.value;
-      },
-      set: (val): void => {
-        intMode.value = val;
-        router.push(val);
-      },
-    });
-    const modeOptions = ref([
-      { value: DisplayMode.protocols, label: "Protocols" },
-      { value: DisplayMode.positions, label: "Positions" },
-      { value: DisplayMode.subscriptions, label: "Subscriptions" },
-    ]);
-
-    const showChannels = ref(false);
-    const showAccount = ref(false);
-
-    return {
-      showChannels,
-      showAccount,
-      loggedIn,
-      mode,
-      userMode,
-      userIsManager,
-      modeOptions,
-    };
-  },
-  methods: {
-    async logout() {
-      this.$moralis.User.logOut();
-      this.$router.push({ name: "Login" });
-    },
-  },
+const { getColors } = useColors();
+const colors = computed(() => getColors());
+const minimized = computed({
+  get: () => appModule.isSidebarMinimized,
+  set: (value) => appModule.SidebarMinimized(value),
 });
+
+const moralis: any = inject("Moralis");
+let li = false;
+if (!moralis) li = false;
+else {
+  if (moralis.User.current()) li = true;
+  else li = false;
+}
+const loggedIn = ref(li);
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .logo {
   height: 50px;
   width: 80px;
@@ -142,5 +69,21 @@ export default defineComponent({
   font-weight: bold;
   align-self: center;
   font-family: "Material Icons";
+}
+
+.x-flip {
+  transform: scaleX(-100%);
+}
+
+.menuIcon {
+  position: relative;
+  bottom: 3px;
+}
+
+.app-navbar__text > * {
+  margin-right: 0.5rem;
+  &:last-child {
+    margin-right: 0;
+  }
 }
 </style>
