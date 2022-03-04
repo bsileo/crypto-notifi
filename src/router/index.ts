@@ -16,10 +16,10 @@ const MyChannels = () =>
   import(/* webpackChunkName: "group-user" */ "@/views/MyChannels.vue");
 
 const Subscription = () =>
-  import(/* webpackChunkName: "subscription" */ "@/views/Subscription.vue");
+  import(/* webpackChunkName: "group-user" */ "@/views/Subscription.vue");
 
 const Subscribe = () =>
-  import(/* webpackChunkName: "subscription" */ "@/components/subscribe.vue");
+  import(/* webpackChunkName: "group-user" */ "@/components/subscribe.vue");
 
 const EmailConfirm = () =>
   import(/* webpackChunkName: "email" */ "@/views/EmailConfirm.vue");
