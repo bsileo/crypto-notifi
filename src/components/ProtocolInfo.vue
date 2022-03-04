@@ -8,9 +8,9 @@
     @click.prevent="select(protocol)"
   >
     <va-card-title>
-      <va-chip :href="protocol.website" shadow color="success" size="medium">{{
-        protocol.name
-      }}</va-chip>
+      <va-chip :href="protocol.website" shadow color="success" size="medium"
+        ><span style="text-align: center">{{ protocol.name }}</span>
+      </va-chip>
       <va-icon
         v-if="showFavorites"
         :name="isFavorite ? 'favorite' : 'favorite_border'"

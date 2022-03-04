@@ -103,6 +103,8 @@ import Moralis from "moralis";
 import { computed, inject, onMounted, ref } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
 import { SiteStatus } from "@/notifi_types";
+import { appModule } from "@/store/app";
+
 
 /* global defineProps, defineEmits */
 const emit = defineEmits(["selection", "subscribe", "add"]);
@@ -122,10 +124,8 @@ const props = defineProps({
   manager: { type: Boolean, required: false, default: false },
 });
 
-const user: NotifiUser | undefined = inject("NotifiUser");
-
 const intSearch = ref("");
-const intSearchFavorites = ref(false);
+const intSearchFavorites = ref(appModule.protocolSearchFavorites);
 const selectedProtocol = ref<Protocol | undefined>(undefined);
 const selectedProtocols = ref<Protocol[]>([]);
 const query = ref<any>(undefined);
@@ -171,6 +171,7 @@ const searchFavorites = computed({
   },
   set(newVal: boolean) {
     intSearchFavorites.value = newVal;
+    appModule.UpdateProtocolSearchFavorites(newVal);
     fetchProtocols(true);
   },
 });

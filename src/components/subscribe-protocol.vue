@@ -104,18 +104,13 @@ const props = defineProps({
 });
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["changed"]);
-
 const route = useRoute();
 
 //const user: NotifiUser | undefined = inject("user");
 const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
-if (route.query.protocolID) {
-  intSelectedProtocol.value = await Protocol.fetch(
-    route.query.protocolID as string
-  );
-}
 const subGeneralTypes = ref<SubscriptionType[]>([]);
 const intSubGeneralTypeID = ref("");
+const fetching = ref(false);
 
 const subGeneralTypeID = computed({
   get(): string {
@@ -142,7 +137,7 @@ const selectedSubGeneralTypeName = computed((): string | undefined => {
 });
 
 const protocolNoTypes = computed(() => {
-  return subGeneralTypes.value.length == 0;
+  return fetching.value == false && subGeneralTypes.value.length == 0;
 });
 
 const selectedSubGeneralTypeDescription = computed((): string | undefined => {
@@ -159,6 +154,7 @@ const selectedSubGeneralType = computed((): SubscriptionType | undefined => {
 });
 
 const fetchSubGeneralTypes = async (): Promise<void> => {
+  fetching.value = true;
   const q = new Moralis.Query(SubscriptionType);
   q.equalTo("protocol", selectedProtocol.value);
   q.equalTo("status", SubscriptionTypeStatus.active);
@@ -166,6 +162,7 @@ const fetchSubGeneralTypes = async (): Promise<void> => {
   subGeneralTypeID.value = "";
   subGeneralTypes.value.length = 0;
   subGeneralTypes.value.push(...res);
+  fetching.value = false;
 };
 
 const irrigate = (s: Subscription): void => {
@@ -214,6 +211,13 @@ const voteFor = async (): Promise<void> => {
 watch(selectedProtocol, async (newProt, oldProt) => {
   fetchSubGeneralTypes();
 });
+
+if (route.query.protocolID) {
+  fetching.value = true;
+  selectedProtocol.value = await Protocol.fetch(
+    route.query.protocolID as string
+  );
+}
 </script>
 
 <style scoped>

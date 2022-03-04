@@ -29,7 +29,7 @@
   </div>
   <div class="layout gutter--sm">
     <div class="row ml-2">
-      <div v-for="channel in channels" :key="channel.id" class="flex">
+      <div v-for="channel in channels" :key="channel.id" class="flex xs6">
         <va-chip
           style="font-size: x-small"
           :icon="channel.providerIcon"

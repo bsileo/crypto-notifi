@@ -152,14 +152,14 @@
     </div>
     <div class="layout gutter--sm">
       <div class="row ml-2">
-        <div v-for="channel in channels" :key="channel.id" class="flex">
+        <div v-for="channel in channels" :key="channel.id" class="flex xs6">
           <va-chip
-            style="font-size: x-small"
+            class="channelChip"
             :icon="channel.providerIcon"
             size="small"
             closeable
             @update:modelValue="removeChannel(channel)"
-            >{{ channel.name }}
+            ><span class="channelChipName">{{ channel.name }}</span>
           </va-chip>
         </div>
       </div>
@@ -421,5 +421,17 @@ export default defineComponent({
 }
 .subscription {
   height: 20em;
+}
+
+.channelChip {
+  font-size: x-small;
+  max-width: 90%;
+}
+
+.channelChipName {
+  font-size: x-small;
+  overflow-x: clip;
+  white-space: nowrap;
+  max-width: 90%;
 }
 </style>
