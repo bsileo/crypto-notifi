@@ -60,13 +60,13 @@
       <va-select
         class="flex xs12 sm8 md6 lg3"
         label="Subscription Category"
-        v-model="subGeneralTypeID"
+        v-model="selectedSubGeneralType"
         :options="subGeneralTypes"
-        value-by="id"
+        track-by="id"
         text-by="name"
         :rules="[
-          (subGeneralTypeID) =>
-            subGeneralTypeID != null || 'Select an alert category',
+          (selectedSubGeneralType) =>
+            selectedSubGeneralType != null || 'Select an alert category',
         ]"
       />
       <div class="row pt-2">
@@ -109,15 +109,20 @@ const route = useRoute();
 //const user: NotifiUser | undefined = inject("user");
 const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
 const subGeneralTypes = ref<SubscriptionType[]>([]);
-const intSubGeneralTypeID = ref("");
 const fetching = ref(false);
 
-const subGeneralTypeID = computed({
-  get(): string {
-    return intSubGeneralTypeID.value;
+const intSubGeneralType = ref<SubscriptionType | undefined>();
+const selectedSubGeneralType = computed({
+  get(): SubscriptionType | undefined {
+    return intSubGeneralType.value;
   },
-  set(val: string): void {
-    intSubGeneralTypeID.value = val;
+  set(val: SubscriptionType | undefined): void {
+    if (val) {
+      const t = subGeneralTypes.value.find((e) => e.id == val.id);
+      intSubGeneralType.value = t;
+    } else {
+      intSubGeneralType.value = val;
+    }
     emit("changed");
   },
 });
@@ -148,10 +153,7 @@ const selectedSubGeneralTypeDescription = computed((): string | undefined => {
   return t?.description;
 });
 
-const selectedSubGeneralType = computed((): SubscriptionType | undefined => {
-  const t = subGeneralTypes.value.find((e) => e.id == subGeneralTypeID.value);
-  return t;
-});
+
 
 const fetchSubGeneralTypes = async (): Promise<void> => {
   fetching.value = true;
@@ -159,7 +161,7 @@ const fetchSubGeneralTypes = async (): Promise<void> => {
   q.equalTo("protocol", selectedProtocol.value);
   q.equalTo("status", SubscriptionTypeStatus.active);
   const res = await q.find();
-  subGeneralTypeID.value = "";
+  selectedSubGeneralType.value = undefined;
   subGeneralTypes.value.length = 0;
   subGeneralTypes.value.push(...res);
   fetching.value = false;
@@ -177,7 +179,10 @@ const message = computed((): string => {
 });
 
 const validSubmit = computed((): boolean => {
-  return selectedProtocolName.value != "" && subGeneralTypeID.value != "";
+  return (
+    selectedProtocolName.value != "" &&
+    selectedSubGeneralType.value != undefined
+  );
 });
 
 const canComplete = computed((): boolean => {
