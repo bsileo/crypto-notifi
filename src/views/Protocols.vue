@@ -205,8 +205,8 @@ const addProtocol = async (): Promise<void> => {
 
 const router = useRouter();
 const protocolSubscribe = (aProtocol: Protocol) => {
-  //router.push(`/subscription/protocol/${aProtocol.id}`);
-  router.push(`/subscription/protocol`);
+  router.push(`/subscription/protocol?protocolID=${aProtocol.id}`);
+  //router.push(`/subscription/protocol`);
 };
 </script>
 

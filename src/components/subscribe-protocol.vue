@@ -95,6 +95,7 @@ import { Protocol } from "@/models/Protocol";
 import { inject, computed, ref, watch } from "vue";
 import Moralis from "moralis";
 import { NotifiUser } from "@/models/NotifiUser";
+import { useRoute } from "vue-router";
 
 // eslint-disable-next-line no-undef
 const props = defineProps({
@@ -104,8 +105,15 @@ const props = defineProps({
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["changed"]);
 
+const route = useRoute();
+
 //const user: NotifiUser | undefined = inject("user");
 const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
+if (route.query.protocolID) {
+  intSelectedProtocol.value = await Protocol.fetch(
+    route.query.protocolID as string
+  );
+}
 const subGeneralTypes = ref<SubscriptionType[]>([]);
 const intSubGeneralTypeID = ref("");
 
