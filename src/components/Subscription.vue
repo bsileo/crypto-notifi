@@ -2,7 +2,10 @@
   <va-card class="subscription" color="#76b4e3" gradient>
     <va-card-title>
       <div class="flex xs9 md7">
-        <div class="title">{{ name }}</div>
+        <div class="title"><InlineEdit v-model="name" title="Name: " /></div>
+        <div v-if="showGroup" class="group">
+          <GroupPicker v-model="group"></GroupPicker>
+        </div>
       </div>
       <div class="flex xs3 md5">
         <div class="row">
@@ -178,11 +181,15 @@ import {
   ValueOperatorNames,
 } from "@/notifi_types";
 import { prettyNumber } from "@/Utilities";
+import GroupPicker from "@/components/GroupPicker.vue";
+import InlineEdit from "@/components/InlineEdit.vue";
+import { Group } from "@/models/Group";
 
 export default defineComponent({
   name: "SubscriptionCard",
   props: {
     subscription: { type: Subscription, required: false },
+    showGroup: { type: Boolean, required: false, default: true },
   },
   setup(props) {
     const paused = computed(() => {
@@ -190,7 +197,7 @@ export default defineComponent({
     });
     const channels = ref([] as UserChannel[]);
 
-    const activeSubscription = ref(new Subscription());
+    const activeSubscription = ref<Subscription>(new Subscription());
 
     const availableChannels = computed(() => {
       const myChannels = channelsModule.myChannels;
@@ -216,7 +223,7 @@ export default defineComponent({
 
     return { paused, channels, activeSubscription, availableChannels };
   },
-  components: {},
+  components: { GroupPicker, InlineEdit },
   data() {
     return {
       currentSubscription: this.subscription || new Subscription(),
@@ -347,6 +354,16 @@ export default defineComponent({
       },
       set(val: string) {
         this.currentSubscription.name = val;
+        this.currentSubscription.save();
+      },
+    },
+    group: {
+      get(): Group {
+        return this.currentSubscription.group;
+      },
+      set(val: Group) {
+        this.currentSubscription.group = val;
+        this.currentSubscription.save();
       },
     },
     subscriptionType(): SubscriptionTypesName {
@@ -376,13 +393,12 @@ export default defineComponent({
       } else {
         let text = `Are you sure you want to remove '${chan.name} from this subscription?`;
         if (confirm(text) == true) {
-          chan.removeSubscription(this.activeSubscription);
-          console.log("CHAN=" + chan.name);
+          chan.removeSubscription(this.activeSubscription as Subscription);
         }
       }
     },
     addChannel(chan: UserChannel) {
-      chan.addSubscription(this.activeSubscription);
+      chan.addSubscription(this.activeSubscription as Subscription);
     },
     shortAddress(addr: string) {
       if (!addr || addr.length < 6) return "";

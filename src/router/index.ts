@@ -83,6 +83,13 @@ const routes: Array<RouteRecordRaw> = [
         component: Positions,
       },
       {
+        path: "/groups",
+        name: "Groups",
+        component: import(
+          /* webpackChunkName: "group-user" */ "@/views/Groups.vue"
+        ),
+      },
+      {
         path: "/subscriptions",
         name: DisplayMode.subscriptions,
         component: Subscriptions,

@@ -16,7 +16,7 @@ import { Protocol } from "./Protocol";
 import { Position } from "./Position";
 import { ChainEndpoint, TokenStatus } from "cookietrack-types";
 import { prettyNumber } from "@/Utilities";
-
+import { Group } from "./Group";
 
 export class Subscription extends Moralis.Object {
   constructor() {
@@ -51,6 +51,14 @@ export class Subscription extends Moralis.Object {
   }
   set frequency(f: typeof UserFrequency) {
     this.set("userFrequency", f);
+  }
+
+  get group(): Group {
+    return this.get("Group");
+  }
+
+  set group(gr: Group) {
+    this.set("Group", gr);
   }
 
   // Return the name of the Subscription Type I am associated with.

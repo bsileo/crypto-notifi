@@ -26,6 +26,12 @@ export enum UserMode {
   "manager" = "manager",
 }
 
+export enum GroupFrequency {
+  "daily" = "Daily",
+  "weekly" = "Weekly",
+  "realtime" = "Real-time",
+}
+
 export type SidebarDescriptor = {
   title: string;
   icon: string;
