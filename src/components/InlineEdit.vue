@@ -55,6 +55,6 @@ const messages = props.required ? "Required" : "";
 
 <style scoped>
 .editable {
-  cursor: pointer;
+  cursor: text;
 }
 </style>

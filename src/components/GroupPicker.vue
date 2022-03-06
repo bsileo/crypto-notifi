@@ -1,22 +1,26 @@
 <template>
-  <div @click="editing = true" v-show="!editing" class="groupName">
+  <div @click="startEdit" v-show="!editing" class="groupName">
     Group: <span class="editable">{{ name }}</span>
   </div>
   <va-select
     v-show="editing"
     :options="groups"
     text-by="name"
+    track-by="id"
     label="Group"
+    v-model="group"
     @update:model-value="select"
-    :multiple="false"
-    :messages="messages"
-    :success="valid"
+    @keypress.esc="endEdit"
+    ref="editor"
+    clearable
+    :clear-value="undefined"
+    no-options-text="No Groups Defined"
   ></va-select>
 </template>
 
 <script setup lang="ts">
 import { Group } from "@/models/Group";
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["update:modelValue"]);
@@ -27,6 +31,17 @@ const props = defineProps({
   modelValue: Group,
 });
 const editing = ref(false);
+const editor = ref();
+
+const startEdit = async () => {
+  editing.value = true;
+  await nextTick();
+  //editor.value.focus();
+};
+const endEdit = () => {
+  editing.value = false;
+};
+
 const valid = computed(() => {
   return !props.required || group.value != undefined;
 });
@@ -42,11 +57,12 @@ const name = computed(() => {
   else return "<No Group>";
 });
 const messages = props.required ? "Required" : "";
-const select = (group: Group) => {
-  console.log("Set GroupPicker");
-  const g = groups.value.find((e) => e.id == group.id);
+const select = (newGroup: Group) => {
+  let g = undefined;
+  if (newGroup) {
+    g = groups.value.find((e) => e.id == newGroup.id);
+  }
   group.value = g;
-  emit("update:modelValue", g);
   editing.value = false;
 };
 
@@ -60,6 +76,6 @@ fetchGroups();
 
 <style scoped>
 .editable {
-  cursor: pointer;
+  cursor: text;
 }
 </style>

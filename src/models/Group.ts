@@ -1,5 +1,5 @@
 import { Subscription } from "@/models/Subscription";
-import { GroupFrequency } from "@/notifi_types";
+import { AlertDay, GroupFrequency } from "@/notifi_types";
 import { userModule } from "@/store/user";
 import Moralis from "moralis";
 import { setTransitionHooks } from "vue";
@@ -45,6 +45,22 @@ export class Group extends Moralis.Object {
   }
   set frequency(freq: GroupFrequency) {
     this.set("frequency", freq);
+  }
+
+  get alertTime(): string {
+    return this.get("alertTime");
+  }
+
+  set alertTime(time: string) {
+    this.set("alertTime", time);
+  }
+
+  get alertDay(): AlertDay {
+    return this.get("alertDay");
+  }
+
+  set alertDay(d: AlertDay) {
+    this.set("alertDay", d);
   }
 }
 

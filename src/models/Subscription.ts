@@ -58,7 +58,11 @@ export class Subscription extends Moralis.Object {
   }
 
   set group(gr: Group) {
-    this.set("Group", gr);
+    if (gr) {
+      this.set("Group", gr);
+    } else {
+      this.unset("Group");
+    }
   }
 
   // Return the name of the Subscription Type I am associated with.
@@ -144,6 +148,20 @@ export class Subscription extends Moralis.Object {
         return "my_wallet";
     }
   }
+
+  get typeIcon(): string {
+    const t = this.subscriptionType;
+    if (t == SubscriptionTypes.wallet) {
+      return "account_balance_wallet";
+    } else if (t == SubscriptionTypes.protocol) {
+      return "announcement";
+    } else if (t == SubscriptionTypes.contract) {
+      return "gavel";
+    } else if (t == SubscriptionTypes.position) {
+      return "radar";
+    }
+    return "";
+  };
 
   get tokenCost(): number {
     const t = this.subscriptionType;
