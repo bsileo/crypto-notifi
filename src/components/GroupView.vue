@@ -48,12 +48,20 @@
     </h2>
     <div v-show="subListVisible">
       <va-list>
-        <SubscriptionListItem
-          v-for="subscription in subscriptions"
-          v-bind:key="subscription.id"
-          :subscription="subscription"
+        <draggable
+          v-model="subscriptions"
+          group="subscriptions"
+          @start="drag = true"
+          @end="drag = false"
+          @change="dragChange"
+          :sort="false"
+          item-key="id"
         >
-        </SubscriptionListItem>
+          <template #item="{ element }">
+            <SubscriptionListItem :subscription="element" :draggable="true">
+            </SubscriptionListItem>
+          </template>
+        </draggable>
       </va-list>
       <div v-show="subscriptions.length == 0">No Subscriptions</div>
     </div>
@@ -66,6 +74,7 @@ import { Subscription } from "@/models/Subscription";
 import { computed, ref } from "vue";
 import { GroupFrequency } from "@/notifi_types";
 import SubscriptionListItem from "@/components/SubscriptionListItem.vue";
+import draggable from "vuedraggable";
 
 /* global defineProps */
 const props = defineProps({
@@ -131,9 +140,9 @@ const alertTime = computed({
 });
 
 const minFilter = (m: number) => {
- console.log(m);
- return m == 0 || m == 30
-}
+  console.log(m);
+  return m == 0 || m == 30;
+};
 
 const alertDays = [
   "Sunday",
@@ -162,4 +171,15 @@ const toggleSubList = () => {
 const subListIconName = computed(() => {
   return subListVisible.value ? "expand_more" : "expand_less";
 });
+
+const checkMove = (event: any) => {
+  return false;
+};
+
+const dragChange = async (event: any) => {
+  if (event.added) {
+    event.added.element.group = activeGroup.value;
+    event.added.element.save();
+  }
+};
 </script>

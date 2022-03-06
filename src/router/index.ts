@@ -23,7 +23,8 @@ const Subscribe = () =>
 
 const EmailConfirm = () =>
   import(/* webpackChunkName: "email" */ "@/views/EmailConfirm.vue");
-
+const Groups = () =>
+  import(/* webpackChunkName: "group-user" */ "@/views/Groups.vue");
 const Manager = () =>
   import(/* webpackChunkName: "group-manager" */ "@/views/Manager.vue");
 const ManagerSelect = () =>
@@ -85,9 +86,7 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: "/groups",
         name: "Groups",
-        component: import(
-          /* webpackChunkName: "group-user" */ "@/views/Groups.vue"
-        ),
+        component: Groups,
       },
       {
         path: "/subscriptions",

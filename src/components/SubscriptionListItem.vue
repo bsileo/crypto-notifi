@@ -1,5 +1,8 @@
 <template>
   <va-list-item>
+    <va-list-item-section avatar v-show="draggable">
+      <va-icon name="drag_indicator"></va-icon>
+    </va-list-item-section>
     <va-list-item-section>
       <va-list-item-label>
         <va-icon :name="subscription.typeIcon" />
@@ -36,6 +39,7 @@ import { ref } from "vue";
 /* global defineProps */
 const props = defineProps({
   subscription: { type: Subscription, required: true },
+  draggable: { type: Boolean, required: false, default: false },
 });
 
 const status = ref(props.subscription.status);
