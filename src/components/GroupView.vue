@@ -29,7 +29,7 @@
           class="flex xs1 pt-3"
           style="text-align: center"
         >
-          @
+          <strong>@</strong>
         </div>
         <va-time-input
           v-show="pickTime"

@@ -125,47 +125,52 @@
       <div class="flex xs9">{{ generalTypeName }}</div>
     </div>
     <va-divider dashed inset></va-divider>
-    <div class="row ml-2 pb-1">
-      <div v-if="availableChannels.length > 0" class="flex xs2">
-        <va-button-dropdown
-          right-icon
-          icon="add"
-          class="mr-2 mb-2"
-          color="secondary"
-          size="small"
-        >
-          <div
-            v-for="channel in availableChannels"
-            :key="channel.id"
-            class="flex pb-1"
+    <div v-show="showChannels">
+      <div class="row ml-2 pb-1">
+        <div v-if="availableChannels.length > 0" class="flex xs2">
+          <va-button-dropdown
+            right-icon
+            icon="add"
+            class="mr-2 mb-2"
+            color="secondary"
+            size="small"
           >
-            <va-chip
-              style="font-size: x-small"
-              size="small"
-              color="secondary"
-              :icon="channel.providerIcon"
-              @click="addChannel(channel)"
+            <div
+              v-for="channel in availableChannels"
+              :key="channel.id"
+              class="flex pb-1"
             >
-              {{ channel.name }}
+              <va-chip
+                style="font-size: x-small"
+                size="small"
+                color="secondary"
+                :icon="channel.providerIcon"
+                @click="addChannel(channel)"
+              >
+                {{ channel.name }}
+              </va-chip>
+            </div>
+          </va-button-dropdown>
+        </div>
+        <div class="flex xs4"><strong>Channels:</strong></div>
+      </div>
+      <div class="layout gutter--sm">
+        <div class="row ml-2">
+          <div v-for="channel in channels" :key="channel.id" class="flex xs6">
+            <va-chip
+              class="channelChip"
+              :icon="channel.providerIcon"
+              size="small"
+              closeable
+              @update:modelValue="removeChannel(channel)"
+              ><span class="channelChipName">{{ channel.name }}</span>
             </va-chip>
           </div>
-        </va-button-dropdown>
-      </div>
-      <div class="flex xs4"><strong>Channels:</strong></div>
-    </div>
-    <div class="layout gutter--sm">
-      <div class="row ml-2">
-        <div v-for="channel in channels" :key="channel.id" class="flex xs6">
-          <va-chip
-            class="channelChip"
-            :icon="channel.providerIcon"
-            size="small"
-            closeable
-            @update:modelValue="removeChannel(channel)"
-            ><span class="channelChipName">{{ channel.name }}</span>
-          </va-chip>
         </div>
       </div>
+    </div>
+    <div v-show="!showChannels">
+      <div class="ml-4">Delivered with Group</div>
     </div>
   </va-card>
 </template>
@@ -357,6 +362,9 @@ export default defineComponent({
         this.currentSubscription.save();
       },
     },
+    showChannels(): boolean {
+      return this.group == undefined;
+    },
     group: {
       get(): Group {
         return this.currentSubscription.group;
@@ -433,6 +441,9 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .title {
+  font-size: larger;
+}
+.grouo {
   font-size: larger;
 }
 .subscription {

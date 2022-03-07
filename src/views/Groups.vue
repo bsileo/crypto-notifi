@@ -17,7 +17,7 @@
       <va-inner-loading :loading="groupsLoading">
         <va-card outlined>
           <va-card-title>
-            {{ group.name }}
+            <va-chip>{{ group.name }}</va-chip>
           </va-card-title>
           <va-card-content>
             <GroupView :group="group" :showSubscriptions="true"></GroupView>
