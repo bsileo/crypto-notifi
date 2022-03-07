@@ -7,6 +7,19 @@ export class AlertHistory extends Moralis.Object {
     super("AlertHistory");
   }
 
+  static async fetchByAlertID(id: string): Promise<AlertHistory> {
+    const query = new Moralis.Query("AlertHistory");
+    query.equalTo("AlertID", id);
+    let res = await query.first();
+    if (!res) {
+      // Check if we have an AlertHistory ID instead
+      const query2 = new Moralis.Query("AlertHistory");
+      res = await query2.get(id);
+    }
+    return res;
+  };
+
+
   get createdAt(): string {
     return this.get("createdAt");
   }

@@ -50,6 +50,12 @@ const ManagerContracts = () =>
     /* webpackChunkName: "group-manager" */ "@/views/ManagerContracts.vue"
   );
 
+const AlertView = () =>
+  import(
+    /* webpackChunkName: "group-user" */ "@/views/AlertView.vue"
+  );
+
+
 import ProtectedPages from "@/components/ProtectedPages.vue";
 import RouterGuard from "./router.guard";
 
@@ -134,6 +140,12 @@ const routes: Array<RouteRecordRaw> = [
             props: true,
           },
         ],
+      },
+      {
+        path: "/alert/:alertID",
+        name: "AlertView",
+        component: AlertView,
+        props: true,
       },
       {
         path: "/manager",
