@@ -174,11 +174,12 @@ export enum ProviderIDSymbols {
   "telegram" = "telegram",
 }
 
-export type AlertDay =
-  | "Sunday"
-  | "Monday"
-  | "Tuesday"
-  | "wednesday"
-  | "Thursday"
-  | "Friday"
-  | "Saturday";
+export enum AlertDay {
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+}

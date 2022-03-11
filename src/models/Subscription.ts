@@ -54,7 +54,7 @@ export class Subscription extends Moralis.Object {
   }
 
   get group(): Group {
-    return this.get("Group");
+    return this.get("Group") as Group;
   }
 
   set group(gr: Group) {

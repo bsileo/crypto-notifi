@@ -3,7 +3,7 @@
     <div class="flex xs1 offset--xs11">
       <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
       <va-button
-        to="/groups/add"
+        @click.prevent="addGroup"
         icon-right="add"
         size="medium"
         class="ml-4"
@@ -13,21 +13,42 @@
     </div>
   </div>
   <div class="row gutter--md">
-    <div v-for="group in groups" class="flex xs12 md6 xl4" :key="group.id">
-      <va-inner-loading :loading="groupsLoading">
-        <va-card outlined>
-          <va-card-title>
-            <va-chip>{{ group.name }}</va-chip>
-          </va-card-title>
-          <va-card-content>
-            <GroupView :group="group" :showSubscriptions="true"></GroupView>
-          </va-card-content>
-        </va-card>
-      </va-inner-loading>
+    <div class="flex xs12 lg8">
+      <div class="row gutter--md">
+        <div v-for="group in groups" class="flex xs12 md6" :key="group.id">
+          <va-inner-loading :loading="groupsLoading">
+            <va-card outlined>
+              <va-card-title>
+                <div class="row">
+                  <va-chip>{{ group.name }}</va-chip>
+                  <span class="minor"
+                    >Next:
+                    {{ group.prettyNextSend() }}
+                  </span>
+                  <va-button
+                    class="rightButton"
+                    @click="destroyGroup(group)"
+                    icon-right="delete"
+                    size="small"
+                    color="danger"
+                  ></va-button>
+                </div>
+              </va-card-title>
+              <va-card-content>
+                <GroupView :group="group" :showSubscriptions="true"></GroupView>
+              </va-card-content>
+            </va-card>
+          </va-inner-loading>
+        </div>
+      </div>
     </div>
-    <div class="flex xs12 md6 xl4" key="Ungrouped">
+    <div class="flex xs12 md6 lg4" key="Ungrouped">
       <va-card outlined>
-        <va-card-title> Ungrouped Subscriptions </va-card-title>
+        <va-card-title>
+          <va-chip color="warning"
+            >Ungrouped Subscriptions</va-chip
+          ></va-card-title
+        >
         <va-inner-loading :loading="ungroupedLoading">
           <va-card-content>
             <va-list>
@@ -123,6 +144,16 @@ const showNoGroups = computed((): boolean => {
   return !groupsLoading.value && groups.value?.length == 0;
 });
 
+const addGroup = (): void => {
+  groups.value.push(Group.spawn());
+};
+
+const destroyGroup = async (delGroup: Group) => {
+  const idx = groups.value.findIndex((aGroup) => aGroup.id == delGroup.id);
+  await delGroup.destroy();
+  groups.value.splice(idx, 1);
+};
+
 const checkMove = (event: any) => {
   return false;
 };
@@ -135,4 +166,10 @@ const dragChange = async (event: any) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.rightButton {
+  position: absolute;
+  right: 0px;
+  margin-right: 1em;
+}
+</style>

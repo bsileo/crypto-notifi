@@ -367,7 +367,7 @@ export default defineComponent({
     },
     group: {
       get(): Group {
-        return this.currentSubscription.group;
+        return this.currentSubscription.group as Group;
       },
       set(val: Group) {
         this.currentSubscription.group = val;

@@ -1,12 +1,22 @@
 import { Subscription } from "@/models/Subscription";
 import { AlertDay, GroupFrequency } from "@/notifi_types";
 import { userModule } from "@/store/user";
+import { nextDay } from "@/Utilities";
 import Moralis from "moralis";
-import { setTransitionHooks } from "vue";
+import { UserChannel } from "./Channel";
 
 export class Group extends Moralis.Object {
   constructor() {
     super("Group");
+  }
+
+  static spawn(groupName = "My Group"): Group {
+    const g = new Group();
+    g.set("name", groupName);
+    g.set("User", Moralis.User.current());
+    g.set("alertDay", "Monday");
+    g.set("alertTime", "09:00:00 GMT-0500 (Eastern Standard Time)");
+    return g;
   }
 
   static async MyGroups(): Promise<Group[]> {
@@ -61,6 +71,22 @@ export class Group extends Moralis.Object {
 
   set alertDay(d: AlertDay) {
     this.set("alertDay", d);
+  }
+  get userChannel(): UserChannel {
+    return this.get("UserChannel");
+  }
+
+  set userChannel(uc: UserChannel) {
+    this.set("UserChannel", uc);
+  }
+
+  get nextSend(): Date {
+    return this.get("nextSend");
+  }
+
+  public prettyNextSend(): string {
+    const ns = this.nextSend;
+    return ns.toLocaleString();
   }
 }
 

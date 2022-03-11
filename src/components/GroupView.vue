@@ -1,6 +1,12 @@
 <template>
   <div class="row">
-    <va-input label="Name" v-model="name" class="flex xs12 lg8"></va-input>
+    <va-input label="Name" v-model="name" class="flex xs12 md6"></va-input>
+    <ChannelPicker
+      class="flex xs12 md6"
+      label="Email"
+      v-model="userChannel"
+      :emailOnly="true"
+    ></ChannelPicker>
     <va-input
       label="Description"
       v-model="description"
@@ -41,29 +47,36 @@
       </div>
     </div>
   </div>
-  <div v-if="showSubscriptions" class="row pt-3">
-    <h2 @click="toggleSubList">
-      Subscriptions
-      <VaIcon :name="subListIconName"></VaIcon>
-    </h2>
-    <div v-show="subListVisible">
-      <va-list>
-        <draggable
-          v-model="subscriptions"
-          group="subscriptions"
-          @start="drag = true"
-          @end="drag = false"
-          @change="dragChange"
-          :sort="false"
-          item-key="id"
-        >
-          <template #item="{ element }">
-            <SubscriptionListItem :subscription="element" :draggable="true">
-            </SubscriptionListItem>
-          </template>
-        </draggable>
-      </va-list>
-      <div v-show="subscriptions.length == 0">No Subscriptions</div>
+  <div v-if="newGroup">
+    <va-button icon="save" @click="saveNew" color="primary" :disabled="!valid"
+      >Add</va-button
+    >
+  </div>
+  <div v-else>
+    <div v-if="showSubscriptions" class="row pt-3">
+      <h2 @click="toggleSubList">
+        Subscriptions
+        <VaIcon :name="subListIconName"></VaIcon>
+      </h2>
+      <div v-show="subListVisible">
+        <va-list>
+          <draggable
+            v-model="subscriptions"
+            group="subscriptions"
+            @start="drag = true"
+            @end="drag = false"
+            @change="dragChange"
+            :sort="false"
+            item-key="id"
+          >
+            <template #item="{ element }">
+              <SubscriptionListItem :subscription="element" :draggable="true">
+              </SubscriptionListItem>
+            </template>
+          </draggable>
+        </va-list>
+        <div v-show="subscriptions.length == 0">No Subscriptions</div>
+      </div>
     </div>
   </div>
 </template>
@@ -73,8 +86,10 @@ import { Group } from "@/models/Group";
 import { Subscription } from "@/models/Subscription";
 import { computed, ref } from "vue";
 import { GroupFrequency } from "@/notifi_types";
-import SubscriptionListItem from "@/components/SubscriptionListItem.vue";
 import draggable from "vuedraggable";
+import { UserChannel } from "@/models/Channel";
+import SubscriptionListItem from "@/components/SubscriptionListItem.vue";
+import ChannelPicker from "@/components/ChannelPicker.vue";
 
 /* global defineProps */
 const props = defineProps({
@@ -85,12 +100,38 @@ const props = defineProps({
 const activeGroup = ref<Group>(props.group);
 const subscriptions = ref<Subscription[]>([]);
 
+const newGroup = computed(() => activeGroup.value.id == undefined);
+
+const valid = computed((): boolean => {
+  return (
+    name.value != undefined &&
+    name.value.length > 3 &&
+    validFrequencySetting.value &&
+    userChannel.value != undefined
+  );
+});
+
+const validFrequencySetting = computed((): boolean => {
+  return (
+    (frequency.value != undefined &&
+      frequency.value == GroupFrequency.realtime) ||
+    (frequency.value == GroupFrequency.daily && alertTime.value != undefined) ||
+    (frequency.value == GroupFrequency.weekly &&
+      alertTime.value != undefined &&
+      alertDay.value != undefined)
+  );
+});
+
+const saveNew = async (): Promise<Group> => {
+  return await activeGroup.value.save();
+};
+
 const fetchSubscriptions = async () => {
   subscriptions.value.length = 0;
   subscriptions.value.push(...(await props.group.subscriptions()));
 };
 
-if (props.showSubscriptions) {
+if (props.showSubscriptions && !newGroup.value) {
   fetchSubscriptions();
 }
 
@@ -98,7 +139,9 @@ const name = computed({
   get: () => activeGroup.value?.name,
   set: (value) => {
     activeGroup.value.name = value;
-    activeGroup.value.save();
+    if (!newGroup.value) {
+      activeGroup.value.save();
+    }
   },
 });
 
@@ -106,7 +149,9 @@ const description = computed({
   get: () => activeGroup.value?.description,
   set: (value) => {
     activeGroup.value.description = value;
-    activeGroup.value.save();
+    if (!newGroup.value) {
+      activeGroup.value.save();
+    }
   },
 });
 
@@ -114,7 +159,9 @@ const frequency = computed({
   get: () => activeGroup.value?.frequency,
   set: (value) => {
     activeGroup.value.frequency = value;
-    activeGroup.value.save();
+    if (!newGroup.value) {
+      activeGroup.value.save();
+    }
   },
 });
 
@@ -122,7 +169,9 @@ const alertDay = computed({
   get: () => activeGroup.value?.alertDay,
   set: (value) => {
     activeGroup.value.alertDay = value;
-    activeGroup.value.save();
+    if (!newGroup.value) {
+      activeGroup.value.save();
+    }
   },
 });
 
@@ -135,7 +184,21 @@ const alertTime = computed({
   },
   set: (value: Date) => {
     activeGroup.value.alertTime = value.toTimeString();
-    activeGroup.value.save();
+    if (!newGroup.value) {
+      activeGroup.value.save();
+    }
+  },
+});
+
+const userChannel = computed({
+  get: () => {
+    return activeGroup.value.userChannel;
+  },
+  set: (value: UserChannel) => {
+    activeGroup.value.userChannel = value;
+    if (!newGroup.value) {
+      activeGroup.value.save();
+    }
   },
 });
 
