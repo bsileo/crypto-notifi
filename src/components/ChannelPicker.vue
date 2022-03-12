@@ -1,6 +1,6 @@
 <template>
   <va-select
-    :options="channels"
+    :options="emailOnly ? emailChannels : userChannels"
     :label="label"
     v-model="selectedChannel"
     text-by="name"
@@ -11,8 +11,9 @@
 
 <script setup lang="ts">
 import { UserChannel } from "@/models/Channel";
-import { computed, ref } from "vue";
-import { channelsModule } from "@/store/channels";
+import { computed, onMounted, ref } from "vue";
+import { useUserChannelsStore } from "@/store/pinia_userChannel";
+import { storeToRefs } from "pinia";
 
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["update:modelValue"]);
@@ -23,17 +24,21 @@ const props = defineProps({
   label: { type: String, required: false, default: "Channels" },
   emailOnly: { type: Boolean, required: false, default: false },
 });
+const userChannelsStore = useUserChannelsStore();
+onMounted(() => {
+  userChannelsStore.setupChannels();
+});
 
 const selectedChannel = computed({
   get: (): UserChannel | undefined => {
     return props.modelValue;
   },
   set: (val: UserChannel | undefined) => {
-    const newVal = channels.value.find((c) => c.id == val?.id);
+    const newVal = userChannelsStore.userChannels.find((c) => c.id == val?.id);
     emit("update:modelValue", newVal);
   },
 });
 
 const messages = props.required ? "Required" : "";
-const channels = computed(() => channelsModule.emailChannels);
+const { userChannels, emailChannels } = storeToRefs(userChannelsStore);
 </script>

@@ -86,6 +86,7 @@ export class Group extends Moralis.Object {
 
   public prettyNextSend(): string {
     const ns = this.nextSend;
+    if (!ns) return "";
     return ns.toLocaleString();
   }
 }

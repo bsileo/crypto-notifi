@@ -15,8 +15,12 @@
   <div class="row gutter--md">
     <div class="flex xs12 lg8">
       <div class="row gutter--md">
-        <div v-for="group in groups" class="flex xs12 md6" :key="group.id">
-          <va-inner-loading :loading="groupsLoading">
+        <div
+          v-for="group in groupsStore.groups"
+          class="flex xs12 md6"
+          :key="group.id"
+        >
+          <va-inner-loading :loading="groupsStore.loading">
             <va-card outlined>
               <va-card-title>
                 <div class="row">
@@ -102,26 +106,16 @@ import Moralis from "moralis";
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import draggable from "vuedraggable";
+import { useGroupsStore } from "@/store/pinia_group";
 
-const router = useRouter();
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["newGroup"]);
-const groupsLoading = ref(false);
 const ungroupedLoading = ref(false);
+const groupsStore = useGroupsStore();
 
 const refresh = () => {
-  fetchGroups();
+  groupsStore.fetchGroups();
   fetchUngroupedSubs();
-};
-
-const fetchGroups = async (): Promise<void> => {
-  if (!userModule.user) return;
-  groupsLoading.value = true;
-  const query = new Moralis.Query(Group);
-  query.equalTo("User", userModule.user);
-  groups.value.length = 0;
-  groups.value.push(...(await query.find()));
-  groupsLoading.value = false;
 };
 
 const fetchUngroupedSubs = async (): Promise<void> => {
@@ -132,26 +126,28 @@ const fetchUngroupedSubs = async (): Promise<void> => {
   ungroupedLoading.value = false;
 };
 
-const groups = ref<Group[]>([]);
 const ungroupedSubscriptions = ref<Subscription[]>([]);
 
 onMounted(() => {
-  fetchGroups();
+  groupsStore.fetchGroups();
   fetchUngroupedSubs();
 });
 
 const showNoGroups = computed((): boolean => {
-  return !groupsLoading.value && groups.value?.length == 0;
+  return !groupsStore.loading && groupsStore.groups.length == 0;
 });
 
 const addGroup = (): void => {
-  groups.value.push(Group.spawn());
+  groupsStore.groups.push(Group.spawn());
+  emit("newGroup");
 };
 
 const destroyGroup = async (delGroup: Group) => {
-  const idx = groups.value.findIndex((aGroup) => aGroup.id == delGroup.id);
-  await delGroup.destroy();
-  groups.value.splice(idx, 1);
+  if (delGroup.id) {
+    await delGroup.destroy();
+  } else {
+    groupsStore.removeGroup(delGroup);
+  }
 };
 
 const checkMove = (event: any) => {
