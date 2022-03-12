@@ -6,6 +6,7 @@ import router from "./router";
 import "./custom-declarations";
 
 import { store, key } from "./store";
+import { createPinia } from 'pinia'
 
 import { VuesticPlugin } from "vuestic-ui";
 import "vuestic-ui/dist/vuestic-ui.css";
@@ -20,5 +21,6 @@ app.provide("Moralis", app.config.globalProperties.$moralis);
 app.use(router);
 app.use(VuesticPlugin);
 app.use(store, key);
+app.use(createPinia());
 
 app.mount("#app");

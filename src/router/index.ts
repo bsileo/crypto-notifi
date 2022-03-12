@@ -23,7 +23,8 @@ const Subscribe = () =>
 
 const EmailConfirm = () =>
   import(/* webpackChunkName: "email" */ "@/views/EmailConfirm.vue");
-
+const Groups = () =>
+  import(/* webpackChunkName: "group-user" */ "@/views/Groups.vue");
 const Manager = () =>
   import(/* webpackChunkName: "group-manager" */ "@/views/Manager.vue");
 const ManagerSelect = () =>
@@ -48,6 +49,12 @@ const ManagerContracts = () =>
   import(
     /* webpackChunkName: "group-manager" */ "@/views/ManagerContracts.vue"
   );
+
+const AlertView = () =>
+  import(
+    /* webpackChunkName: "group-user" */ "@/views/AlertView.vue"
+  );
+
 
 import ProtectedPages from "@/components/ProtectedPages.vue";
 import RouterGuard from "./router.guard";
@@ -81,6 +88,11 @@ const routes: Array<RouteRecordRaw> = [
         path: "/positions",
         name: DisplayMode.positions,
         component: Positions,
+      },
+      {
+        path: "/groups",
+        name: "Groups",
+        component: Groups,
       },
       {
         path: "/subscriptions",
@@ -128,6 +140,12 @@ const routes: Array<RouteRecordRaw> = [
             props: true,
           },
         ],
+      },
+      {
+        path: "/alert/:alertID",
+        name: "AlertView",
+        component: AlertView,
+        props: true,
       },
       {
         path: "/manager",

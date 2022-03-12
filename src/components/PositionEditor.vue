@@ -76,7 +76,7 @@
       @change="setHighPercent"
     ></va-input>
   </div>
-  <div class="row pt-3">
+  <div :v-if="false" class="row pt-3">
     <SubscriptionFrequency
       :subscription="subscription"
       v-model="frequency"
@@ -383,7 +383,7 @@ const irrigate = (sub: Subscription) => {
     sub.positionHigh = undefined;
     sub.positionLow = undefined;
   }
-  sub.frequency = frequency.value;
+  //sub.frequency = frequency.value;
   if (props.showChannels) {
     sub.setUserChannels(channels.value);
   }

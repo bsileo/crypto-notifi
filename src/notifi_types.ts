@@ -26,6 +26,12 @@ export enum UserMode {
   "manager" = "manager",
 }
 
+export enum GroupFrequency {
+  "daily" = "Daily",
+  "weekly" = "Weekly",
+  "realtime" = "Real-time",
+}
+
 export type SidebarDescriptor = {
   title: string;
   icon: string;
@@ -166,4 +172,14 @@ export enum ProviderIDSymbols {
   "twilio" = "twilio",
   "email" = "email",
   "telegram" = "telegram",
+}
+
+export enum AlertDay {
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 }

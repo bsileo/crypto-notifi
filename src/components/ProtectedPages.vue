@@ -107,6 +107,7 @@ const props = defineProps({
 const items = ref<SidebarDescriptor[]>([
   { title: "Protocols", icon: "announcement", to: "/protocols" },
   { title: "Positions", icon: "radar", to: "/positions" },
+  { title: "Groups", icon: "bookmarks", to: "/groups" },
   { title: "Subscriptions", icon: "dashboard", to: "/subscriptions" },
   { title: "Subscribe", icon: "loop", to: "/subscription" },
   { title: "My Account", icon: "manage_accounts", to: "/my_account" },

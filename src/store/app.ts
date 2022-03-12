@@ -6,11 +6,17 @@ import {
   getModule,
 } from "vuex-module-decorators";
 import { store } from ".";
+import { Chain } from '@/models/Contract';
 
 @Module({ dynamic: true, store: store, namespaced: true, name: "App" })
 export class AppModule extends VuexModule {
   _isSidebarMinimized = true;
   private _protocolSearchFavorites = false;
+  private _chains: Array<Chain> = ["eth", "avalanche"];
+
+  public get chains(): Array<Chain> {
+    return this._chains;
+  }
 
   get protocolSearchFavorites(): boolean {
     return this._protocolSearchFavorites;

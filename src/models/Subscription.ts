@@ -16,7 +16,7 @@ import { Protocol } from "./Protocol";
 import { Position } from "./Position";
 import { ChainEndpoint, TokenStatus } from "cookietrack-types";
 import { prettyNumber } from "@/Utilities";
-
+import { Group } from "./Group";
 
 export class Subscription extends Moralis.Object {
   constructor() {
@@ -51,6 +51,18 @@ export class Subscription extends Moralis.Object {
   }
   set frequency(f: typeof UserFrequency) {
     this.set("userFrequency", f);
+  }
+
+  get group(): Group {
+    return this.get("Group") as Group;
+  }
+
+  set group(gr: Group) {
+    if (gr) {
+      this.set("Group", gr);
+    } else {
+      this.unset("Group");
+    }
   }
 
   // Return the name of the Subscription Type I am associated with.
@@ -136,6 +148,20 @@ export class Subscription extends Moralis.Object {
         return "my_wallet";
     }
   }
+
+  get typeIcon(): string {
+    const t = this.subscriptionType;
+    if (t == SubscriptionTypes.wallet) {
+      return "account_balance_wallet";
+    } else if (t == SubscriptionTypes.protocol) {
+      return "announcement";
+    } else if (t == SubscriptionTypes.contract) {
+      return "gavel";
+    } else if (t == SubscriptionTypes.position) {
+      return "radar";
+    }
+    return "";
+  };
 
   get tokenCost(): number {
     const t = this.subscriptionType;

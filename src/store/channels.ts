@@ -25,6 +25,12 @@ export class ChannelsModule extends VuexModule {
     return this.MYCHANNELS;
   }
 
+  get emailChannels(): Array<UserChannel> {
+    return this.MYCHANNELS.filter((c) => {
+      return c.providerName == "Email";
+    });
+  }
+
   get channels(): Array<ChannelModel> {
     return this.CHANNELS;
   }

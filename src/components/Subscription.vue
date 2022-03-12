@@ -2,7 +2,10 @@
   <va-card class="subscription" color="#76b4e3" gradient>
     <va-card-title>
       <div class="flex xs9 md7">
-        <div class="title">{{ name }}</div>
+        <div class="title"><InlineEdit v-model="name" title="Name: " /></div>
+        <div v-if="showGroup" class="group">
+          <GroupPicker v-model="group"></GroupPicker>
+        </div>
       </div>
       <div class="flex xs3 md5">
         <div class="row">
@@ -122,47 +125,52 @@
       <div class="flex xs9">{{ generalTypeName }}</div>
     </div>
     <va-divider dashed inset></va-divider>
-    <div class="row ml-2 pb-1">
-      <div v-if="availableChannels.length > 0" class="flex xs2">
-        <va-button-dropdown
-          right-icon
-          icon="add"
-          class="mr-2 mb-2"
-          color="secondary"
-          size="small"
-        >
-          <div
-            v-for="channel in availableChannels"
-            :key="channel.id"
-            class="flex pb-1"
+    <div v-show="showChannels">
+      <div class="row ml-2 pb-1">
+        <div v-if="availableChannels.length > 0" class="flex xs2">
+          <va-button-dropdown
+            right-icon
+            icon="add"
+            class="mr-2 mb-2"
+            color="secondary"
+            size="small"
           >
-            <va-chip
-              style="font-size: x-small"
-              size="small"
-              color="secondary"
-              :icon="channel.providerIcon"
-              @click="addChannel(channel)"
+            <div
+              v-for="channel in availableChannels"
+              :key="channel.id"
+              class="flex pb-1"
             >
-              {{ channel.name }}
+              <va-chip
+                style="font-size: x-small"
+                size="small"
+                color="secondary"
+                :icon="channel.providerIcon"
+                @click="addChannel(channel)"
+              >
+                {{ channel.name }}
+              </va-chip>
+            </div>
+          </va-button-dropdown>
+        </div>
+        <div class="flex xs4"><strong>Channels:</strong></div>
+      </div>
+      <div class="layout gutter--sm">
+        <div class="row ml-2">
+          <div v-for="channel in channels" :key="channel.id" class="flex xs6">
+            <va-chip
+              class="channelChip"
+              :icon="channel.providerIcon"
+              size="small"
+              closeable
+              @update:modelValue="removeChannel(channel)"
+              ><span class="channelChipName">{{ channel.name }}</span>
             </va-chip>
           </div>
-        </va-button-dropdown>
-      </div>
-      <div class="flex xs4"><strong>Channels:</strong></div>
-    </div>
-    <div class="layout gutter--sm">
-      <div class="row ml-2">
-        <div v-for="channel in channels" :key="channel.id" class="flex xs6">
-          <va-chip
-            class="channelChip"
-            :icon="channel.providerIcon"
-            size="small"
-            closeable
-            @update:modelValue="removeChannel(channel)"
-            ><span class="channelChipName">{{ channel.name }}</span>
-          </va-chip>
         </div>
       </div>
+    </div>
+    <div v-show="!showChannels">
+      <div class="ml-4">Delivered with Group</div>
     </div>
   </va-card>
 </template>
@@ -178,11 +186,15 @@ import {
   ValueOperatorNames,
 } from "@/notifi_types";
 import { prettyNumber } from "@/Utilities";
+import GroupPicker from "@/components/GroupPicker.vue";
+import InlineEdit from "@/components/InlineEdit.vue";
+import { Group } from "@/models/Group";
 
 export default defineComponent({
   name: "SubscriptionCard",
   props: {
     subscription: { type: Subscription, required: false },
+    showGroup: { type: Boolean, required: false, default: true },
   },
   setup(props) {
     const paused = computed(() => {
@@ -190,7 +202,7 @@ export default defineComponent({
     });
     const channels = ref([] as UserChannel[]);
 
-    const activeSubscription = ref(new Subscription());
+    const activeSubscription = ref<Subscription>(new Subscription());
 
     const availableChannels = computed(() => {
       const myChannels = channelsModule.myChannels;
@@ -216,7 +228,7 @@ export default defineComponent({
 
     return { paused, channels, activeSubscription, availableChannels };
   },
-  components: {},
+  components: { GroupPicker, InlineEdit },
   data() {
     return {
       currentSubscription: this.subscription || new Subscription(),
@@ -347,6 +359,19 @@ export default defineComponent({
       },
       set(val: string) {
         this.currentSubscription.name = val;
+        this.currentSubscription.save();
+      },
+    },
+    showChannels(): boolean {
+      return this.group == undefined;
+    },
+    group: {
+      get(): Group {
+        return this.currentSubscription.group as Group;
+      },
+      set(val: Group) {
+        this.currentSubscription.group = val;
+        this.currentSubscription.save();
       },
     },
     subscriptionType(): SubscriptionTypesName {
@@ -376,13 +401,12 @@ export default defineComponent({
       } else {
         let text = `Are you sure you want to remove '${chan.name} from this subscription?`;
         if (confirm(text) == true) {
-          chan.removeSubscription(this.activeSubscription);
-          console.log("CHAN=" + chan.name);
+          chan.removeSubscription(this.activeSubscription as Subscription);
         }
       }
     },
     addChannel(chan: UserChannel) {
-      chan.addSubscription(this.activeSubscription);
+      chan.addSubscription(this.activeSubscription as Subscription);
     },
     shortAddress(addr: string) {
       if (!addr || addr.length < 6) return "";
@@ -417,6 +441,9 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .title {
+  font-size: larger;
+}
+.grouo {
   font-size: larger;
 }
 .subscription {

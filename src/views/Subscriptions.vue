@@ -1,14 +1,14 @@
 <template>
   <div v-if="!showNoSubscriptions" class="row pb-1 pt-1">
-    <va-input class="flex xs5" label="Search Names" v-model="search"></va-input>
-    <div class="flex xs5">
+    <va-input class="flex xs3" label="Search Names" v-model="search"></va-input>
+    <div class="flex xs4">
       <ProtocolSelector
         :simpleList="true"
         :simpleMulti="true"
         @selection="setSearchProtocols"
       ></ProtocolSelector>
     </div>
-    <div class="flex xs2">
+    <div class="flex xs1 offset--xs4">
       <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
       <va-popover message="Add a new Subscription">
         <va-button
@@ -81,6 +81,7 @@ import { Protocol } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import { channelsModule } from "@/store/channels";
 import { useRouter } from "vue-router";
+import { Group } from "@/models/Group";
 const router = useRouter();
 
 const rawCount = ref(0);
@@ -94,6 +95,8 @@ const searchProtocols = ref<Protocol[]>([]);
 const emit = defineEmits(["showChannels"]);
 // eslint-disable-next-line no-undef
 const props = defineProps({ showAdd: Boolean });
+
+const showGroups = ref(false);
 
 // Using local search
 /* watch(search, (newSearch: string) => {
@@ -125,6 +128,7 @@ const fetchSubscriptions = async (): Promise<void> => {
   query.include("contractActivity");
   query.include("contract");
   query.include("GeneralSubType");
+  query.include("Group");
   let subs = await query.find();
   subscribe(query);
   rawSubscriptions.value.push(...subs);
@@ -203,7 +207,7 @@ const showNoSubscriptions = computed((): boolean => {
 });
 
 const addSubscription = (): void => {
-  router.push({ name: "SubscriptionNew",  });
+  router.push({ name: "SubscriptionNew" });
 };
 const showChannels = (): void => {
   emit("showChannels");
