@@ -1,6 +1,7 @@
 <template>
   <div @click="startEdit" v-show="!editing" class="groupName">
     {{ title }} <span class="editable">{{ value }}</span>
+    <va-icon class="editable" name="edit" :size="12"></va-icon>
   </div>
   <va-input
     v-show="editing"

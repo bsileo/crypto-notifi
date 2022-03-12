@@ -1,24 +1,32 @@
 import { UserChannel } from "@/models/Channel";
 import Moralis from "moralis";
-import { ChannelModel } from "@/notifi_types";
+import { ChannelModel, UserChannelStatus } from "@/notifi_types";
 import { defineStore } from "pinia";
 
 export const useUserChannelsStore = defineStore("userChannels", {
   state: () => {
     return {
-      channels: [
-        { id: "twilio", name: "SMS", multiple: true },
-        { id: "email", name: "Email", multiple: true },
-        { id: "telegram", name: "Telegram", multiple: true },
+      definedChannels: [
+        { id: "twilio", name: "SMS", multiple: true } as ChannelModel,
+        { id: "email", name: "Email", multiple: true } as ChannelModel,
+        { id: "telegram", name: "Telegram", multiple: true } as ChannelModel,
       ],
       userChannels: [] as Array<UserChannel>,
       query: undefined as any,
+      loading: false,
     };
   },
   getters: {
-    emailChannels(): Array<UserChannel> {
+    activeChannels(): Array<UserChannel> {
       return this.userChannels.filter((c: UserChannel) => {
-        return c.providerName == "Email";
+        return c.status == UserChannelStatus.active;
+      });
+    },
+    activeEmailChannels(): Array<UserChannel> {
+      return this.userChannels.filter((c: UserChannel) => {
+        return (
+          c.status == UserChannelStatus.active && c.providerName == "Email"
+        );
       });
     },
   },
@@ -47,10 +55,12 @@ export const useUserChannelsStore = defineStore("userChannels", {
       });
     },
     async setupChannels(): Promise<void> {
+      this.loading = true;
       if (this.query) return;
       const u = Moralis.User.current();
       if (!u) {
         this.SetUserChannels([]);
+        this.loading = false;
         return;
       }
       const query = new Moralis.Query("UserChannel");
@@ -59,6 +69,7 @@ export const useUserChannelsStore = defineStore("userChannels", {
       this.SetUserChannels(chans);
       this.query = query;
       this.subscribe();
+      this.loading = false;
     },
     async subscribe() {
       if (!this.query) return;

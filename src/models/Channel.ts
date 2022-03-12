@@ -73,6 +73,20 @@ export class UserChannel extends Moralis.Object {
     return this._statusPlus;
   }
 
+  public async statusIconInfo(): Promise<Record<"name" | "color", string>> {
+    const status = await this.getStatusPlus();
+    switch (status) {
+      case UserChannelStatus.active:
+        return { name: "done", color: "success" };
+      case UserChannelStatus.pending:
+        return { name: "pending", color: "warning" };
+      case UserChannelStatus.pendingSent:
+        return { name: "pending", color: "warning" };
+    }
+    return { name: "report_off", color: "danger" };
+  }
+
+
   public async getStatusPlus(): Promise<UserChannelStatus> {
     const stat = this.get("status") as UserChannelStatus;
     if (stat == UserChannelStatus.pending) {
@@ -121,6 +135,19 @@ export class UserChannel extends Moralis.Object {
         return "email";
       case ProviderIDSymbols.telegram:
         return "telegram";
+    }
+    return "email";
+  }
+
+  get channelDescription(): string {
+    const pid = this.providerID;
+    switch (pid) {
+      case ProviderIDSymbols.twilio:
+        return `${this.providerData.to}`;
+      case ProviderIDSymbols.email:
+        return `${this.providerData.email}`;
+      case ProviderIDSymbols.telegram:
+        return `${this.providerData.to}`;
     }
     return "email";
   }

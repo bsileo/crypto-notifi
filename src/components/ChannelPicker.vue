@@ -1,6 +1,6 @@
 <template>
   <va-select
-    :options="emailOnly ? emailChannels : userChannels"
+    :options="emailOnly ? activeEmailChannels : userChannels"
     :label="label"
     v-model="selectedChannel"
     text-by="name"
@@ -40,5 +40,5 @@ const selectedChannel = computed({
 });
 
 const messages = props.required ? "Required" : "";
-const { userChannels, emailChannels } = storeToRefs(userChannelsStore);
+const { userChannels, activeEmailChannels } = storeToRefs(userChannelsStore);
 </script>

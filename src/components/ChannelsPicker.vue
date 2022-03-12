@@ -46,8 +46,15 @@
 <script setup lang="ts">
 import { UserChannel } from "@/models/Channel";
 import { Subscription } from "@/models/Subscription";
+import { computed, onMounted, ref, watchEffect } from "vue";
+import { useUserChannelsStore } from "@/store/pinia_userChannel";
 import { channelsModule } from "@/store/channels";
-import { computed, ref, watchEffect } from "vue";
+import { storeToRefs } from "pinia";
+
+const userChannelsStore = useUserChannelsStore();
+onMounted(() => {
+  userChannelsStore.setupChannels();
+});
 
 /* global defineProps, defineEmits */
 const emit = defineEmits(["channels", "add", "remove"]);
@@ -67,7 +74,7 @@ watchEffect(async () => {
 });
 
 const availableChannels = computed(() => {
-  const myChannels = channelsModule.myChannels;
+  const myChannels = userChannelsStore.userChannels;
   const chans: UserChannel[] = [];
   for (let i = 0; i < myChannels.length; i++) {
     let cand = myChannels[i];
