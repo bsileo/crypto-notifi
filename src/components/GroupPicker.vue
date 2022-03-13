@@ -26,11 +26,11 @@ import { computed, nextTick, ref } from "vue";
 const emit = defineEmits(["update:modelValue"]);
 // eslint-disable-next-line no-undef
 const props = defineProps({
-  multiple: Boolean,
-  required: Boolean,
-  modelValue: Group,
+  required: { type: Boolean, required: false, default: false },
+  modelValue: { type: Group, required: false },
+  editOnly: { type: Boolean, required: false, default: false},
 });
-const editing = ref(false);
+const editing = ref(props.editOnly);
 const editor = ref();
 
 const startEdit = async () => {
@@ -39,7 +39,7 @@ const startEdit = async () => {
   //editor.value.focus();
 };
 const endEdit = () => {
-  editing.value = false;
+  if (! props.editOnly) editing.value = false;
 };
 
 const valid = computed(() => {
@@ -47,7 +47,7 @@ const valid = computed(() => {
 });
 const group = computed({
   get: () => props.modelValue,
-  set: (value) => {
+  set: (value: Group | undefined) => {
     emit("update:modelValue", value);
   },
 });
@@ -63,7 +63,7 @@ const select = (newGroup: Group) => {
     g = groups.value.find((e) => e.id == newGroup.id);
   }
   group.value = g;
-  editing.value = false;
+  if (!props.editOnly) editing.value = false;
 };
 
 const groups = ref<Group[]>([]);

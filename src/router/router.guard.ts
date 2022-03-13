@@ -2,11 +2,15 @@ import { DisplayMode } from "@/notifi_types";
 import { NavigationGuardNext } from "vue-router";
 import MoralisConfig from "../config/moralis";
 import { userModule } from "../store/user";
+import { useUserStore } from "@/store/pinia_user";
+
 
 const CheckLogin = async () => {
+  const userStore = useUserStore();
   const user = await MoralisConfig.User.current();
   if (!user) throw new Error("Unauthorized");
   userModule.SET_USER(user);
+  userStore.SET_USER(user);
 };
 
 export default class RouterGuard {

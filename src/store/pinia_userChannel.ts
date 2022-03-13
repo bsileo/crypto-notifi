@@ -55,8 +55,8 @@ export const useUserChannelsStore = defineStore("userChannels", {
       });
     },
     async setupChannels(): Promise<void> {
-      this.loading = true;
       if (this.query) return;
+      this.loading = true;
       const u = Moralis.User.current();
       if (!u) {
         this.SetUserChannels([]);

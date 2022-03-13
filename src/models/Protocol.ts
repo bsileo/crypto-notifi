@@ -1,4 +1,3 @@
-import { PositionCache } from "@/notifi_types";
 import { SubscriptionLimiter } from "./lib/subscriptionLimits";
 import { ContractActivity } from "./ContractActivity";
 import { Chain, Contract } from "./Contract";
@@ -19,7 +18,7 @@ import {
   TokenData,
 } from "@/notifi_types";
 import { Subscription } from "./Subscription";
-import { protocolsModule } from "@/store/protocol";
+import { useProtocolsStore } from "@/store/pinia_protocols";
 
 type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends SubscriptionLimiter {
@@ -147,10 +146,10 @@ export class Protocol extends SubscriptionLimiter {
   }
 
   public async positions(refresh?: boolean): Promise<Position[]> {
+    const protocolsStore = useProtocolsStore();
     if (!refresh) {
-      const pos = protocolsModule.positions;
-      const myPos = pos[this.id];
-      if (myPos) return myPos.data;
+      const myPos = protocolsStore.positionsForProtocol(this);
+      if (myPos) return myPos;
     }
     const config = await Moralis.Config.get();
     const cookieAPI = config.get("cookieAPIURL");
@@ -176,7 +175,7 @@ export class Protocol extends SubscriptionLimiter {
         console.log("Fetch failed - " + err.message);
       }
     }
-    protocolsModule.SavePositions({ protocol: this, positions: res });
+    protocolsStore.savePositions({ protocol: this, positions: res });
     return res;
   }
 

@@ -81,7 +81,7 @@ export enum LimitType {
 }
 
 export type PositionCache = {
-  time: undefined | Date;
+  time: Date;
   data: Position[];
 };
 
