@@ -3,6 +3,8 @@ import Moralis from "moralis";
 import { NotifiUser, TokenBalance, UserLevel } from "../models/NotifiUser";
 import { defineStore } from "pinia";
 import { useUserChannelsStore } from "./pinia_userChannel";
+import { useSubscriptionsStore } from "./pinia_subscriptions";
+import { Protocol } from "@/models/Protocol";
 
 export const useUserStore = defineStore("user", {
   state: () => {
@@ -46,7 +48,9 @@ export const useUserStore = defineStore("user", {
       this._user = user;
       this.fetchUserTokens();
       const userChannelStore = useUserChannelsStore();
+      const subscriptionsStore = useSubscriptionsStore();
       userChannelStore.setupChannels();
+      subscriptionsStore.fetchSubscriptions();
     },
 
     SET_TOKENS(userTokens: TokenBalance[]): void {

@@ -1,5 +1,5 @@
 <template>
-  <div @click="startEdit" v-show="!editing" class="groupName">
+  <div @click="startEdit" v-if="!editOnly" v-show="!editing" class="groupName">
     Group: <span class="editable">{{ name }}</span>
   </div>
   <va-select

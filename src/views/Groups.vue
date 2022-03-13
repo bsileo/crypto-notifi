@@ -12,7 +12,7 @@
       </va-button>
     </div>
   </div>
-  <div class="row gutter--md">
+  <div class="row gutter--md mb-5">
     <div class="flex xs12 lg8">
       <div class="row gutter--md">
         <div
@@ -46,7 +46,7 @@
         </div>
       </div>
     </div>
-    <div class="flex xs12 md6 lg4" key="Ungrouped">
+    <div class="flex xs12 md6 lg4" key="Ungrouped" ref="ungrouped">
       <va-card outlined>
         <va-card-title>
           <va-chip color="warning"

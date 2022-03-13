@@ -8,7 +8,10 @@
         @selection="setSearchProtocols"
       ></ProtocolSelector>
     </div>
-    <div class="flex xs1 offset--xs4">
+    <div class="flex xs2">
+      <GroupPicker :editOnly="true" v-model="searchGroup"></GroupPicker>
+    </div>
+    <div class="flex xs1 offset--xs2">
       <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
       <va-popover message="Add a new Subscription">
         <va-button
@@ -24,7 +27,7 @@
     </div>
   </div>
   <div class="gutter--sm">
-    <va-inner-loading :loading="subscriptionsLoading" :size="60">
+    <va-inner-loading :loading="loading" :size="60">
       <div class="row">
         <div
           class="flex xs12 sm6 md6 lg4 xl3 pb-3"
@@ -74,106 +77,43 @@
 import useDebouncedRef from "@/composables/useDebouncedRef";
 import SubscriptionCard from "@/components/Subscription.vue";
 import ProtocolSelector from "@/components/ProtocolSelector.vue";
+import GroupPicker from "@/components/GroupPicker.vue";
 import Moralis from "moralis";
 import { computed, onMounted, ref } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
 import { userModule } from "@/store/user";
 import { channelsModule } from "@/store/channels";
+import { useSubscriptionsStore } from "@/store/pinia_subscriptions";
 import { useRouter } from "vue-router";
 import { Group } from "@/models/Group";
+import { storeToRefs } from "pinia";
+
 const router = useRouter();
 
-const rawCount = ref(0);
-const rawSubscriptions = ref<Subscription[]>([]);
-const subscriptionsLoading = ref(false);
 const search = useDebouncedRef("");
-const queryLimit = ref(25);
 const searchProtocols = ref<Protocol[]>([]);
+const searchGroup = ref<Group>();
+const subscriptionStore = useSubscriptionsStore();
+const {
+  rawCount,
+  subscriptions: rawSubscriptions,
+  loading,
+} = storeToRefs(subscriptionStore);
 
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["showChannels"]);
 // eslint-disable-next-line no-undef
 const props = defineProps({ showAdd: Boolean });
-
 const showGroups = ref(false);
 
-// Using local search
-/* watch(search, (newSearch: string) => {
-  console.log(`Search=${newSearch}`);
-  rawSubscriptions.value.length = 0;
-  fetchSubscriptions();
-});*/
-
 const refresh = () => {
-  rawSubscriptions.value.length = 0;
-  fetchSubscriptions();
-};
-
-const appendSubscriptions = (): Promise<void> => {
-  return fetchSubscriptions();
-};
-const fetchSubscriptions = async (): Promise<void> => {
-  if (!userModule.user) return;
-  subscriptionsLoading.value = true;
-  const query = new Moralis.Query(Subscription);
-  query.equalTo("userID", userModule.user?.id);
-  rawCount.value = await query.count();
-  // Running local browser search for more flexibility right now e.g. case insensitve
-  //if (search.value) {
-  //  query.matches("name", search.value);
-  //}
-  query.limit(queryLimit.value);
-  query.skip(rawSubscriptions.value.length);
-  query.include("contractActivity");
-  query.include("contract");
-  query.include("GeneralSubType");
-  query.include("Group");
-  let subs = await query.find();
-  subscribe(query);
-  rawSubscriptions.value.push(...subs);
-  subscriptionsLoading.value = false;
+  subscriptionStore.fetchSubscriptions();
 };
 
 onMounted(() => {
-  fetchSubscriptions();
+  subscriptionStore.fetchSubscriptions();
 });
-
-const subscribe = async (query: any) => {
-  const subscription = await query.subscribe();
-  subscription.on("create", (sub: Subscription) => {
-    rawSubscriptions.value.push(sub);
-  });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  subscription.on("update", (sub: Subscription) => {
-    const index = rawSubscriptions.value.findIndex((e) => e.id == sub.id);
-    if (index > -1) {
-      rawSubscriptions.value.splice(index, 1, sub);
-    }
-  });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  subscription.on("enter", (sub: Subscription) => {
-    // console.log("object entered");
-    rawSubscriptions.value.push(sub);
-  });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  subscription.on("leave", (sub: Subscription) => {
-    const index = rawSubscriptions.value.findIndex((e) => e.id == sub.id);
-    if (index > -1) {
-      rawSubscriptions.value.splice(index, 1);
-    }
-  });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  subscription.on("delete", (sub: Subscription) => {
-    const index = rawSubscriptions.value.findIndex((e) => e.id == sub.id);
-    if (index > -1) {
-      rawSubscriptions.value.splice(index, 1);
-    }
-  });
-  subscription.on("close", () => {
-    console.log("Subscriptions subscription closed");
-  });
-};
 
 const subscriptions = computed((): Subscription[] => {
   let subs = rawSubscriptions.value;
@@ -192,17 +132,23 @@ const subscriptions = computed((): Subscription[] => {
       return prots.includes(p.id);
     });
   }
+  if (searchGroup.value) {
+    subs = subs.filter((s) => {
+      const gr = s.get("Group");
+      return gr && gr.id == searchGroup.value?.id;
+    });
+  }
   return subs;
 });
 const showNoChannels = computed((): boolean => {
-  return !subscriptionsLoading.value && channelsModule.MYCHANNELS.length == 0;
+  return !loading && channelsModule.MYCHANNELS.length == 0;
 });
 const showNoSubscriptions = computed((): boolean => {
   return (
     !showNoChannels.value &&
     rawCount.value == 0 &&
     rawSubscriptions.value.length == 0 &&
-    !subscriptionsLoading.value
+    !loading.value
   );
 });
 

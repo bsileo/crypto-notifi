@@ -452,50 +452,6 @@ export class Protocol extends SubscriptionLimiter {
       return "";
     }
   }
-
-  public static async setupSubscription(
-    refresh: RefreshCallbackFunction,
-    manager?: boolean
-  ): Promise<any> {
-    const query = new Moralis.Query(Protocol);
-    if (manager == true) {
-      //const user = userModule._user;
-      //const uQuery = new Moralis.Query("User");
-      //uQuery.equalTo(user);
-      //query.matchesQuery("Managers", uQuery);
-    }
-    const sub = await query.subscribe();
-    sub.on("open", refresh);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sub.on("create", (object: Protocol) => {
-      console.log("Manager Protocols object created");
-      refresh(object);
-    });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sub.on("update", (object: Protocol) => {
-      console.log("Manager Protocols object updated");
-      refresh(object);
-    });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sub.on("enter", (object: Protocol) => {
-      console.log("Manager Protocols  object entered");
-      refresh(object);
-    });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sub.on("leave", (object: Protocol) => {
-      console.log("Manager Protocols object left");
-      refresh(object);
-    });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    sub.on("delete", (object: Protocol) => {
-      console.log("Manager Protocols  object deleted");
-      refresh(object);
-    });
-    sub.on("close", () => {
-      console.log("Manager Protocol subscription closed");
-    });
-    return query;
-  }
 }
 
 Moralis.Object.registerSubclass("Protocol", Protocol);
