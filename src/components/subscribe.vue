@@ -4,14 +4,20 @@
       <SubscribeType v-model="section" ref="typeSelector"></SubscribeType>
     </div>
     <div id="inset" class="flex xs12 ml-4">
-      <SubscribeWallet v-if="showWallet" ref="wallet"></SubscribeWallet>
+      <SubscribeWallet
+        v-if="showWallet"
+        :subscriptionID="subscriptionID"
+        ref="wallet"
+      ></SubscribeWallet>
       <SubscribeContract
         v-if="showContract"
+        :subscriptionID="subscriptionID"
         ref="contract"
         @changed="irrigate"
       ></SubscribeContract>
       <SubscribeProtocol
         v-if="showProtocol"
+        :subscriptionID="subscriptionID"
         ref="protocol"
         @changed="irrigate"
       ></SubscribeProtocol>

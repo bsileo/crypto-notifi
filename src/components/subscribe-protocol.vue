@@ -101,17 +101,34 @@ import { useRoute } from "vue-router";
 const props = defineProps({
   subscription: { type: Subscription, required: false },
   protocol: { type: Protocol, required: false },
+  subscriptionID: { type: String, required: false },
 });
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["changed"]);
 const route = useRoute();
 
-//const user: NotifiUser | undefined = inject("user");
+const fetchBySubscriptionID = async (subID: string): Promise<Subscription> => {
+  fetching.value = true;
+  const sub = await Subscription.fetch(subID);
+  if (sub) {
+    activeSubscription.value = sub;
+    const prot: Protocol = sub.protocol;
+    await prot.fetch();
+    intSelectedProtocol.value = prot;
+    console.log(sub.generalType);
+    intSubGeneralType.value = sub.generalType;
+    fetching.value = false;
+    return sub;
+  }
+  throw "Invalid Subscription ID";
+};
+
 const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
 const subGeneralTypes = ref<SubscriptionType[]>([]);
 const fetching = ref(false);
-
 const intSubGeneralType = ref<SubscriptionType | undefined>();
+const activeSubscription = ref<Subscription>();
+
 const selectedSubGeneralType = computed({
   get(): SubscriptionType | undefined {
     return intSubGeneralType.value;
@@ -153,15 +170,13 @@ const selectedSubGeneralTypeDescription = computed((): string | undefined => {
   return t?.description;
 });
 
-
-
 const fetchSubGeneralTypes = async (): Promise<void> => {
   fetching.value = true;
   const q = new Moralis.Query(SubscriptionType);
   q.equalTo("protocol", selectedProtocol.value);
   q.equalTo("status", SubscriptionTypeStatus.active);
   const res = await q.find();
-  selectedSubGeneralType.value = undefined;
+  //selectedSubGeneralType.value = undefined;
   subGeneralTypes.value.length = 0;
   subGeneralTypes.value.push(...res);
   fetching.value = false;
@@ -222,6 +237,9 @@ if (route.query.protocolID) {
   selectedProtocol.value = await Protocol.fetch(
     route.query.protocolID as string
   );
+}
+if (props.subscriptionID) {
+  await fetchBySubscriptionID(props.subscriptionID);
 }
 </script>
 
