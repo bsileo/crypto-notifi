@@ -89,8 +89,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, inject, getCurrentInstance } from "vue";
+<script setup lang="ts">
+import { inject, getCurrentInstance, ref, watch, computed } from "vue";
 
 import { userModule } from "@/store/user";
 import { Subscription } from "@/models/Subscription";
@@ -102,198 +102,200 @@ import { NotifiUser } from "@/models/NotifiUser";
 import ContractInput from "./contractInput.vue";
 import ChainPicker from "./ChainPicker.vue";
 
-export default defineComponent({
-  name: "SubscribeWallet",
-  components: { ContractInput, ChainPicker },
-  props: {
-    subscriptionID: { type: String, required: false },
-  },
-  emits: ["changed"],
-  data() {
-    return {
-      subName: "My Subscription",
-      newChannelIDs: [] as string[],
-      chain: "avalanche" as Chain,
-      validation: null,
-      chkFrom: false,
-      allowFrom: true,
-      newFrom: "",
-      myFromAddress: "",
-      fromMe: true,
-      chkTo: false,
-      allowTo: true,
-      newTo: "",
-      toMe: false,
-      myToAddress: "",
-      chkValue: false,
-      value: 0,
-      valueOp: "",
-      valueOperators: ["=", ">", "<"],
-      chkChain: true,
-    };
-  },
-  setup(props) {
-    const user: NotifiUser | undefined = inject("user");
-    const app = getCurrentInstance();
-    const vaToast = app?.appContext.config.globalProperties.$vaToast;
-    const showToast = vaToast.init;
+/* global defineProps  defineEmits */
+const props = defineProps({
+  subscriptionID: { type: String, required: false },
+});
+const emit = defineEmits(["changed"]);
 
-    return {
-      user,
-      showToast,
-    };
+const fetching = ref(false);
+const activeSubscription = ref<Subscription>();
+const fetchBySubscriptionID = async (subID: string): Promise<Subscription> => {
+  fetching.value = true;
+  const sub = await Subscription.fetch(subID);
+  if (sub) {
+    activeSubscription.value = sub;
+    from_address.value = sub.fromAddress;
+    to_address.value = sub.toAddress;
+    value.value = sub.value;
+    valueOp.value = sub.valueOperator;
+    chain.value = sub.get("chain");
+    fetching.value = false;
+    return sub;
+  }
+  throw "Invalid Subscription ID";
+};
+
+const chain = ref<Chain>("avalanche");
+const chkFrom = ref(false);
+const newFrom = ref("");
+const fromMe = ref(true);
+const chkTo = ref(false);
+const newTo = ref("");
+const toMe = ref(false);
+const chkValue = ref(false);
+const value = ref(0);
+const valueOp = ref("");
+const valueOperators = ref(["=", ">", "<"]);
+const chkChain = ref(true);
+
+watch(
+  value,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  (newVal: number, oldVal: number): void => {
+    if (newVal && parseFloat(newVal.toString())) {
+      chkValue.value = true;
+    }
+  }
+);
+
+/*  watch(subscription,
+    (newSub: Subscription, oldSub: Subscription): void => {
+      subName.value = newSub.attributes.name;
+      newFrom.value = newSub.attributes.fromAddress;
+      newTo.value = newSub.attributes.toAddress;
+    });
+*/
+// Should we enable the Value on/off slider?
+const allowValue = computed((): boolean => {
+  return value.value > 0 && valueOp.value != null;
+});
+// Are we allowed to enter a Value criteria for the current Subscription Type?
+const showValue = computed((): boolean => {
+  return true;
+});
+const showChain = computed((): boolean => {
+  return true;
+});
+const chains = computed((): Chain[] => {
+  return contractsModule.CHAINS;
+});
+const showFrom = computed((): boolean => {
+  return true;
+});
+const myAddresses = computed((): string[] => {
+  const user = Moralis.User.current();
+  if (user) {
+    return user.get("accounts");
+  }
+  return [];
+});
+const from_address = computed({
+  get: () => {
+    if (newFrom.value) {
+      return newFrom.value;
+    }
+    return "";
   },
-  watch: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    value(newVal: number, oldVal: number): void {
-      if (newVal && parseFloat(newVal.toString())) {
-        this.chkValue = true;
-      }
-    },
-    subscription(newSub: Subscription, oldSub: Subscription): void {
-      this.subName = newSub.attributes.name;
-      this.newFrom = newSub.attributes.fromAddress;
-      this.newTo = newSub.attributes.toAddress;
-    },
-  },
-  computed: {
-    // Should we enable the Value on/off slider?
-    allowValue(): boolean {
-      return this.value > 0 && this.valueOp != null;
-    },
-    // Are we allowed to enter a Value criteria for the current Subscription Type?
-    showValue(): boolean {
-      return true;
-    },
-    showChain(): boolean {
-      return true;
-    },
-    chains(): Chain[] {
-      return contractsModule.CHAINS;
-    },
-    showFrom(): boolean {
-      return true;
-    },
-    myAddresses(): string[] {
-      if (this.user) {
-        return this.user.get("accounts");
-      }
-      return [];
-    },
-    from_address: {
-      get() {
-        if (this.newFrom) {
-          return this.newFrom;
-        }
-        return "";
-      },
-      set(newValue: string) {
-        this.newFrom = newValue;
-        if (this.validFrom) this.chkFrom = true;
-      },
-    },
-    showTo(): boolean {
-      return true;
-    },
-    to_address: {
-      get() {
-        if (this.newTo) {
-          return this.newTo;
-        }
-        return "";
-      },
-      set(newValue: string) {
-        this.newTo = newValue;
-        if (this.validTo) this.chkTo = true;
-      },
-    },
-    validTo(): boolean {
-      return (
-        this.to_address?.length == 42 && this.from_address !== this.to_address
-      );
-    },
-    validFrom(): boolean {
-      return (
-        this.from_address?.length == 42 && this.from_address !== this.to_address
-      );
-    },
-    validSubmit(): boolean {
-      return this.validWalletSubmit;
-    },
-    validWalletSubmit(): boolean {
-      let dupAddresses = false;
-      if (this.chkTo && this.chkFrom) {
-        dupAddresses = this.to_address == this.from_address;
-      }
-      return (
-        !dupAddresses &&
-        (!this.chkTo || this.validTo) &&
-        (!this.chkFrom || this.validFrom) &&
-        (!this.chkValue || (this.valueOp != null && this.value > 0)) &&
-        this.chain != undefined
-      );
-    },
-    message(): string {
-      let msg = "Wallet Transactions";
-      if (this.chkFrom) {
-        msg = `${msg} <br/>received from <strong>${this.from_address}</strong>`;
-      }
-      if (this.chkTo) {
-        msg = `${msg} <br/>sent to <strong>${this.to_address}</strong>`;
-      }
-      if (this.chkValue) {
-        msg = `${msg} <br/>whose <strong>Value is ${this.valueOp} ${this.value}</strong>`;
-      }
-      if (this.chain != undefined && msg != "") {
-        msg = `${msg} <br/>on the <strong>${this.chain} blockchain</strong>`;
-      }
-      return msg;
-    },
-  },
-  methods: {
-    userID(): string {
-      if (userModule.user?.id) {
-        return userModule.user.id;
-      } else {
-        console.error("UserID is unset");
-        throw "UserID is unset";
-      }
-    },
-    setFromAddress(address: string) {
-      this.from_address = address;
-    },
-    setToAddress(address: string) {
-      this.to_address = address;
-    },
-    setChain(c: Chain) {
-      this.chain = c;
-    },
-    irrigate(s: Subscription): Subscription {
-      if (this.chkFrom) {
-        s.set("fromAddress", this.from_address);
-      }
-      if (this.chkTo) {
-        s.set("toAddress", this.to_address);
-      }
-      if (this.chkValue) {
-        s.set("value", this.value);
-        s.set("valueOperator", this.valueOp);
-      }
-      if (this.chkChain) {
-        s.set("chain", this.chain);
-      }
-      return s;
-    },
-    async getIcon(addr: string): Promise<string | undefined> {
-      // const chain = "0xa86a";
-      const options = { addresses: [addr] };
-      const tokenMetadata = await Moralis.Web3API.token.getTokenMetadata(
-        options
-      );
-      return tokenMetadata[0]?.thumbnail;
-    },
+  set: (newValue: string) => {
+    newFrom.value = newValue;
+    if (validFrom.value) chkFrom.value = true;
   },
 });
+const showTo = computed((): boolean => {
+  return true;
+});
+const to_address = computed({
+  get: () => {
+    if (newTo.value) {
+      return newTo.value;
+    }
+    return "";
+  },
+  set: (newValue: string) => {
+    newTo.value = newValue;
+    if (validTo.value) chkTo.value = true;
+  },
+});
+const validTo = computed((): boolean => {
+  return (
+    to_address.value?.length == 42 && from_address.value !== to_address.value
+  );
+});
+const validFrom = computed((): boolean => {
+  return (
+    from_address.value?.length == 42 && from_address.value !== to_address.value
+  );
+});
+const validSubmit = computed((): boolean => {
+  return validWalletSubmit.value;
+});
+const validWalletSubmit = computed((): boolean => {
+  let dupAddresses = false;
+  if (chkTo.value && chkFrom.value) {
+    dupAddresses = to_address.value == from_address.value;
+  }
+  return (
+    !dupAddresses &&
+    (!chkTo.value || validTo.value) &&
+    (!chkFrom.value || validFrom.value) &&
+    (!chkValue.value || (valueOp.value != null && value.value > 0)) &&
+    chain.value != undefined
+  );
+});
+const message = computed((): string => {
+  let msg = "Wallet Transactions";
+  if (chkFrom.value) {
+    msg = `${msg} <br/>received from <strong>${from_address.value}</strong>`;
+  }
+  if (chkTo.value) {
+    msg = `${msg} <br/>sent to <strong>${to_address.value}</strong>`;
+  }
+  if (chkValue.value) {
+    msg = `${msg} <br/>whose <strong>Value is ${valueOp.value} ${value.value}</strong>`;
+  }
+  if (chain.value != undefined && msg != "") {
+    msg = `${msg} <br/>on the <strong>${chain.value} blockchain</strong>`;
+  }
+  return msg;
+});
+
+const userID = (): string => {
+  if (Moralis.User.current()) {
+    return Moralis.User.current().id;
+  } else {
+    console.error("UserID is unset");
+    throw "UserID is unset";
+  }
+};
+const setFromAddress = (address: string) => {
+  from_address.value = address;
+};
+const setToAddress = (address: string) => {
+  to_address.value = address;
+};
+const setChain = (c: Chain) => {
+  chain.value = c;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const canComplete = computed((): boolean => {
+  return true;
+});
+
+const irrigate = (s: Subscription): Subscription => {
+  if (chkFrom.value) {
+    s.set("fromAddress", from_address.value);
+  }
+  if (chkTo.value) {
+    s.set("toAddress", to_address.value);
+  }
+  if (chkValue.value) {
+    s.set("value", `${value.value}`);
+    s.set("valueOperator", valueOp.value);
+  }
+  if (chkChain.value) {
+    s.set("chain", chain.value);
+  }
+  return s;
+};
+
+if (props.subscriptionID) {
+  await fetchBySubscriptionID(props.subscriptionID);
+}
+
+// eslint-disable-next-line no-undef
+defineExpose({ irrigate, message, validSubmit, canComplete });
 </script>
 
 <style scoped>

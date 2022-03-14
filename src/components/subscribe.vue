@@ -142,11 +142,10 @@ const section = ref<SubscriptionTypesName | "new">(
 const subName = ref<string>(subscription.value.name);
 
 const typeSelector = ref(null);
-//const wallet = ref<SubscribeWallet>(null);
 const wallet = ref(null);
+//const wallet = ref(null);
 const protocol = ref<SubscribeProtocol>(null);
-//const contract = ref<SubscribeContract>(null);
-const contract = ref(null);
+const contract = ref<SubscribeContract>(null);
 const position = ref<SubscribePosition>(null);
 
 const showDefinition = computed((): boolean => {

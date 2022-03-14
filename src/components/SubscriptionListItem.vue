@@ -62,6 +62,6 @@ const togglePause = async (): Promise<void> => {
   pausing.value = false;
 };
 const allowEdit = computed((): boolean => {
-  return props.subscription.subscriptionType == "Position";
+  return true;
 });
 </script>

@@ -58,13 +58,13 @@
       <va-select
         class="flex sm6"
         label="Contract Name"
-        v-model="contractAddress"
+        v-model="contractID"
         :options="contracts"
         :track-by="(option) => option.id"
         value-by="id"
         text-by="description"
         searchable
-        :rules="[validContract || 'Enter a valid contract address']"
+        :rules="[validContract || 'Select a contract']"
       />
       <va-select
         class="flex sm4"
@@ -100,202 +100,223 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, computed, ref } from "vue";
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
 
 import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
 import { ContractActivity } from "@/models/ContractActivity";
 
-import Moralis from "moralis";
 import { contractsModule } from "@/store/contracts";
 import { Contract } from "@/models/Contract";
 import ProtocolSelector from "./ProtocolSelector.vue";
 import ProtocolInfo from "./ProtocolInfo.vue";
+import { useRoute } from "vue-router";
 
-export default defineComponent({
-  name: "SubscribeContract",
-  components: { ProtocolSelector, ProtocolInfo },
-  props: {
-    subscription: { type: Subscription, required: false },
-    protocol: { type: Protocol, required: false },
-  },
-  data() {
-    return {
-      contractAddress: "",
-      contractIcon: "" as string | undefined,
-      contractActivities: [] as Array<ContractActivity>,
-      contractActivityID: undefined as string | undefined,
-    };
-  },
-  setup(props) {
-    const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
+/* global defineProps  defineEmits */
+const props = defineProps({
+  subscription: { type: Subscription, required: false },
+  protocol: { type: Protocol, required: false },
+  subscriptionID: { type: String, required: false },
+});
+const emit = defineEmits(["changed"]);
+const route = useRoute();
 
-    const clearProtocol = () => {
-      selectedProtocol.value = undefined;
-    };
-    const selectProtocol = (prot: Protocol) => {
-      selectedProtocol.value = prot;
-    };
-    const selectedProtocol = computed({
-      get(): Protocol | undefined {
-        return intSelectedProtocol.value;
-      },
-      set(val: Protocol | undefined) {
-        intSelectedProtocol.value = val;
-      },
-    });
-    const voteFor = async (): Promise<void> => {
-      if (!selectedProtocol.value) return undefined;
-      await selectedProtocol.value.siteVote();
-      //this.$forceUpdate();
-    };
-    return {
-      selectedProtocol,
-      selectProtocol,
-      clearProtocol,
-      voteFor,
-    };
+const fetchBySubscriptionID = async (subID: string): Promise<Subscription> => {
+  const sub = await Subscription.fetch(subID);
+  if (sub) {
+    activeSubscription.value = sub;
+    const prot: Protocol = sub.protocol;
+    await prot.fetch();
+    intSelectedProtocol.value = prot;
+    contractID.value = sub.contract.id;
+    contractActivityID.value = sub.contractActivity.id;
+    await fetchContractActivities();
+    fetching.value = false;
+    return sub;
+  }
+  throw "Invalid Subscription ID";
+};
+
+const fetching = ref(false);
+const activeSubscription = ref<Subscription>();
+
+if (props.subscriptionID) {
+  await fetchBySubscriptionID(props.subscriptionID);
+}
+
+const contractID = ref<string | undefined>();
+const contractActivityID = ref<string | undefined>();
+const intSelectedProtocol = ref<Protocol | undefined>(props.protocol);
+
+const contractActivities = ref<Array<ContractActivity>>([]);
+
+const clearProtocol = () => {
+  selectedProtocol.value = undefined;
+};
+const selectProtocol = (prot: Protocol) => {
+  selectedProtocol.value = prot;
+};
+const selectedProtocol = computed({
+  get(): Protocol | undefined {
+    return intSelectedProtocol.value;
   },
-  emits: ["changed"],
-  watch: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    selectedProtocol(newProtocol: string, oldProtocol: string) {
-      this.contractAddress = "";
-      this.contractActivityID = "";
-      //this.chain = this.protocolChains[0];
-    },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    contractAddress(newAddress: string, oldAddress: string) {
-      this.fetchContractActivities();
-    },
-  },
-  computed: {
-    selectedContract(): Contract | undefined {
-      return this.contracts.find((e) => e.id == this.contractAddress);
-    },
-    selectedContractActivity(): ContractActivity | undefined {
-      const ca = this.contractActivities.find(
-        (e) => e.id == this.contractActivityID
-      );
-      if (!ca) return undefined;
-      return ca;
-    },
-    activityDescription(): string {
-      const act = this.selectedContractActivity;
-      if (!act) return "";
-      let res = act.description;
-      if (!this.activityAllowed) {
-        const prot = this.selectedProtocol;
-        const actTokens = prot?.goldQuantity;
-        const symbol = prot?.symbol;
-        const bal = prot?.getWalletBalance();
-        res =
-          res +
-          `<br/><br/>Warning: Requires protocol level <strong>${act.level}</strong>.  Stake at least ${actTokens} tokens in ${symbol} to subscribe to this activity. Your wallet holds ${bal}`;
-      }
-      return res;
-    },
-    // True if the current user is allowed to subscribe to the selected ContractActivity
-    activityAllowed(): boolean {
-      const act = this.selectedContractActivity;
-      const prot = this.selectedProtocol;
-      if (!prot || !act) {
-        return false;
-      }
-      return prot.userSubscriptionAllowed(act);
-    },
-    validContract(): boolean {
-      return true;
-    },
-    protocolNoContracts(): boolean {
-      if (this.selectedProtocol) return this.contracts.length == 0;
-      return false;
-    },
-    showCompletion(): boolean {
-      return this.selectedProtocol != undefined && this.contracts.length > 0;
-    },
-    canComplete(): boolean {
-      return this.selectedProtocol != undefined && this.contracts.length > 0;
-    },
-    contracts(): Contract[] {
-      if (this.selectedProtocol) {
-        return contractsModule.allContracts.filter(
-          (c) => c.get("protocol").id == this.selectedProtocol?.id
-        );
-      }
-      return [];
-    },
-    validSubmit(): boolean {
-      return this.validContractSubmit;
-    },
-    validContractSubmit(): boolean {
-      return (
-        this.selectedContract != undefined &&
-        this.selectedContractActivity != undefined &&
-        this.activityAllowed
-      );
-    },
-    message(): string {
-      let msg = "";
-      if (this.selectedProtocol) {
-        msg = `the <strong>${this.selectedProtocol.name} Protocol</strong>`;
-      }
-      msg = `${msg} which trigger on`;
-      if (this.selectedContractActivity?.type == "Transaction") {
-        msg = `${msg} <strong>Transactions</strong>`;
-        if (this.selectedContract) {
-          msg = `${msg} for the contract <strong>${this.selectedContract.description}</strong>`;
-          msg = `${msg} on the <strong>${this.selectedContract.chain} blockchain</strong>`;
-        }
-      }
-      return msg;
-    },
-  },
-  methods: {
-    async fetchContractActivities(): Promise<void> {
-      const res: ContractActivity[] = [];
-      const ci = this.selectedContract;
-      if (ci) {
-        const actsRel = ci.relation("ContractActivities");
-        const acts: ContractActivity[] = await actsRel.query().find();
-        for (let i = 0; i < acts.length; i = i + 1) {
-          res.push(acts[i]);
-        }
-      }
-      this.contractActivityID = undefined;
-      this.contractActivities = res;
-    },
-    async irrigate(s: Subscription): Promise<void> {
-      if (this.selectedProtocol != undefined) {
-        s.protocol = this.selectedProtocol;
-      }
-      if (this.selectedContract) {
-        s.set("contract", this.selectedContract);
-        s.set("contractAddress", this.selectedContract.address);
-        s.set("contractChain", this.selectedContract.get("chain"));
-      }
-      if (this.selectedContractActivity) {
-        s.set("contractActivity", this.selectedContractActivity);
-      }
-    },
-    async getContractIcon(): Promise<string | undefined> {
-      const addr = this.contractAddress;
-      if (addr) {
-        this.contractIcon = await this.getIcon(addr);
-        return this.contractIcon;
-      }
-    },
-    async getIcon(addr: string): Promise<string | undefined> {
-      // const chain = "0xa86a";
-      const options = { addresses: [addr] };
-      const tokenMetadata = await Moralis.Web3API.token.getTokenMetadata(
-        options
-      );
-      return tokenMetadata[0]?.thumbnail;
-    },
+  set(val: Protocol | undefined) {
+    intSelectedProtocol.value = val;
   },
 });
+const voteFor = async (): Promise<void> => {
+  if (!selectedProtocol.value) return undefined;
+  await selectedProtocol.value.siteVote();
+  //this.$forceUpdate();
+};
+
+watch(selectedProtocol, (): void => {
+  contractID.value = "";
+  contractActivityID.value = "";
+});
+
+watch(contractID, () => {
+  fetchContractActivities();
+});
+
+const selectedContract = computed((): Contract | undefined => {
+  return contracts.value.find((e) => e.id == contractID.value);
+});
+
+const selectedContractActivity = computed((): ContractActivity | undefined => {
+  const ca = contractActivities.value.find(
+    (e) => e.id == contractActivityID.value
+  );
+  if (!ca) return undefined;
+  return ca;
+});
+
+const activityDescription = computed((): string => {
+  const act = selectedContractActivity.value;
+  if (!act) return "";
+  let res = act.description;
+  if (!activityAllowed.value) {
+    const prot = selectedProtocol.value;
+    const actTokens = prot?.goldQuantity;
+    const symbol = prot?.symbol;
+    const bal = prot?.getWalletBalance();
+    res =
+      res +
+      `<br/><br/>Warning: Requires protocol level <strong>${act.level}</strong>.  Stake at least ${actTokens} tokens in ${symbol} to subscribe to this activity. Your wallet holds ${bal}`;
+  }
+  return res;
+});
+
+// True if the current user is allowed to subscribe to the selected ContractActivity
+const activityAllowed = computed((): boolean => {
+  const act = selectedContractActivity.value;
+  const prot = selectedProtocol.value;
+  if (!prot || !act) {
+    return false;
+  }
+  return prot.userSubscriptionAllowed(act);
+});
+
+const validContract = computed((): boolean => {
+  return true;
+});
+const protocolNoContracts = computed((): boolean => {
+  if (selectedProtocol.value) return contracts.value.length == 0;
+  return false;
+});
+
+const showCompletion = computed((): boolean => {
+  return selectedProtocol.value != undefined && contracts.value.length > 0;
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const canComplete = computed((): boolean => {
+  return selectedProtocol.value != undefined && contracts.value.length > 0;
+});
+
+const contracts = computed((): Contract[] => {
+  if (selectedProtocol.value) {
+    return contractsModule.allContracts.filter(
+      (c) => c.get("protocol").id == selectedProtocol.value?.id
+    );
+  }
+  return [];
+});
+const validSubmit = computed((): boolean => {
+  return validContractSubmit.value;
+});
+
+const validContractSubmit = computed((): boolean => {
+  return (
+    selectedContract.value != undefined &&
+    selectedContractActivity.value != undefined &&
+    activityAllowed.value
+  );
+});
+
+const message = computed((): string => {
+  let msg = "";
+  if (selectedProtocol.value) {
+    msg = `the <strong>${selectedProtocol.value.name} Protocol</strong>`;
+  }
+  msg = `${msg} which trigger on`;
+  if (selectedContractActivity.value?.type == "Transaction") {
+    msg = `${msg} <strong>Transactions</strong>`;
+  } else {
+    msg = `${msg} <strong>${selectedContractActivity.value?.name}</strong>`;
+  }
+  if (selectedContract.value) {
+    msg = `${msg} for the contract <strong>${selectedContract.value.description}</strong>`;
+    msg = `${msg} on the <strong>${selectedContract.value.chain} blockchain</strong>`;
+  }
+  return msg;
+});
+
+const fetchContractActivities = async (): Promise<void> => {
+  const res: ContractActivity[] = [];
+  const ci = selectedContract.value;
+  let curFound = false;
+  if (ci) {
+    const actsRel = ci.relation("ContractActivities");
+    const acts: ContractActivity[] = await actsRel.query().find();
+    for (let i = 0; i < acts.length; i = i + 1) {
+      res.push(acts[i]);
+      if (acts[i].id == contractActivityID.value) curFound = true;
+    }
+  }
+  if (!curFound) contractActivityID.value = undefined;
+  contractActivities.value = res;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const irrigate = (s: Subscription): void => {
+  if (selectedProtocol.value != undefined) {
+    s.protocol = selectedProtocol.value;
+  }
+  if (selectedContract.value) {
+    s.set("contract", selectedContract.value);
+    s.set("contractAddress", selectedContract.value.address);
+    s.set("contractChain", selectedContract.value.get("chain"));
+  }
+  if (selectedContractActivity.value) {
+    s.set("contractActivity", selectedContractActivity.value);
+  }
+};
+
+if (route.query.protocolID) {
+  fetching.value = true;
+  selectedProtocol.value = await Protocol.fetch(
+    route.query.protocolID as string
+  );
+}
+
+if (props.subscriptionID) {
+  await fetchBySubscriptionID(props.subscriptionID);
+}
+
+// eslint-disable-next-line no-undef
+defineExpose({ irrigate, message, validSubmit, canComplete });
 </script>
 
 <style scoped>

@@ -279,10 +279,7 @@ export default defineComponent({
       return act?.type == "Event" ? "Event" : "Activity" || "Activity";
     },
     allowEdit(): boolean {
-      return (
-        this.subscriptionType == "Position" ||
-        this.subscriptionType == "Protocol Alerts"
-      );
+      return true;
     },
     generalTypeName(): string {
       return this.currentSubscription.generalTypeName();
@@ -429,6 +426,16 @@ export default defineComponent({
       } else if (this.subscriptionType == "Protocol Alerts") {
         this.$router.push({
           path: `/subscription/protocol/${this.subscription?.id}`,
+          query: { returnPath: path },
+        });
+      } else if (this.subscriptionType == "Smart Contracts") {
+        this.$router.push({
+          path: `/subscription/contract/${this.subscription?.id}`,
+          query: { returnPath: path },
+        });
+      } else if (this.subscriptionType == "My Wallet") {
+        this.$router.push({
+          path: `/subscription/wallet/${this.subscription?.id}`,
           query: { returnPath: path },
         });
       }
