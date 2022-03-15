@@ -19,8 +19,10 @@ export const useGroupsStore = defineStore("groups", {
       this.groups.push(...groups);
     },
     removeGroup(aGroup: Group) {
-      const idx = this.groups.findIndex( (g) => g == aGroup);
-      if (idx) this.groups.splice(idx,1);
+      const idx = this.groups.findIndex((g) => {
+        g.id == aGroup.id || g._localId == aGroup._localId;
+      });
+      if (idx) this.groups.splice(idx, 1);
       else console.log("Group to remove not found");
     },
     async fetchGroups() {

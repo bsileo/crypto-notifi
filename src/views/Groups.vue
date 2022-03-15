@@ -1,6 +1,6 @@
 <template>
   <div class="row pb-1 pt-1">
-    <div class="flex xs1 offset--xs11">
+    <div class="flex xs2 offset--xs10">
       <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
       <va-button
         @click.prevent="addGroup"
@@ -12,7 +12,21 @@
       </va-button>
     </div>
   </div>
-  <div class="row gutter--md mb-5">
+  <div v-if="showNoGroups" class="pt-3">
+    <div class="flex sm12" style="text-align: center">
+      <h2>
+        There are no Groups yet. Click to add your first Group.
+        <va-button
+          @click.prevent="addGroup"
+          icon-right="add"
+          size="large"
+          color="success"
+        >
+        </va-button>
+      </h2>
+    </div>
+  </div>
+  <div v-if="!showNoGroups" class="row gutter--md mb-5">
     <div class="flex xs12 lg8">
       <div class="row gutter--md">
         <div
@@ -77,20 +91,6 @@
           </va-card-content>
         </va-inner-loading>
       </va-card>
-    </div>
-  </div>
-  <div v-if="showNoGroups" class="pt-3">
-    <div class="flex sm12" style="text-align: center">
-      <h2>
-        There are no Groups yet.
-        <va-button
-          @click.prevent="addGroup"
-          icon-right="add"
-          size="large"
-          color="success"
-        >
-        </va-button>
-      </h2>
     </div>
   </div>
 </template>

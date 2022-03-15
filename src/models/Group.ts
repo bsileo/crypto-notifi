@@ -1,3 +1,4 @@
+import { useUserStore } from '@/store/pinia_user';
 import { Subscription } from "@/models/Subscription";
 import { AlertDay, GroupFrequency } from "@/notifi_types";
 import { userModule } from "@/store/user";
@@ -26,12 +27,14 @@ export class Group extends Moralis.Object {
   }
 
   async subscriptions(): Promise<Subscription[]> {
+    const userStore = useUserStore();
     const q = new Moralis.Query("Subscription");
     if (this.id) {
       q.equalTo("Group", this);
     } else {
       q.equalTo("Group", undefined);
     }
+    q.equalTo("User", userStore.user);
     return q.find();
   }
 
