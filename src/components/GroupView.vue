@@ -24,7 +24,7 @@
       <div class="row">
         <va-select
           v-show="pickDay"
-          class="flex xs6 sm6 lg4"
+          class="flex xs6 sm6 lg5"
           :options="alertDays"
           label="Alert Day"
           v-model="alertDay"
@@ -42,7 +42,7 @@
           v-model="alertTime"
           :minutesFilter="minFilter"
           ampm
-          class="flex xs5 sm4 lg3"
+          class="flex xs5 sm5 lg5"
         />
       </div>
     </div>
