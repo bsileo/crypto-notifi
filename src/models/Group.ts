@@ -5,6 +5,7 @@ import { userModule } from "@/store/user";
 import { nextDay } from "@/Utilities";
 import Moralis from "moralis";
 import { UserChannel } from "./Channel";
+import { NotifiUser } from './NotifiUser';
 
 export class Group extends Moralis.Object {
   constructor() {
@@ -13,10 +14,15 @@ export class Group extends Moralis.Object {
 
   static spawn(groupName = "My Group"): Group {
     const g = new Group();
+    const userStore = useUserStore();
     g.set("name", groupName);
     g.set("User", Moralis.User.current());
     g.set("alertDay", "Monday");
     g.set("alertTime", "09:00:00 GMT-0500 (Eastern Standard Time)");
+    const u = userStore.user;
+    if (u) {
+      g.setACL(this.getACL(u));
+    }
     return g;
   }
 
@@ -24,6 +30,15 @@ export class Group extends Moralis.Object {
     const query = new Moralis.Query(Group);
     query.equalTo("User", userModule.user);
     return await query.find();
+  }
+
+  static getACL(user: NotifiUser): any {
+    const acl = new Moralis.ACL();
+    acl.setReadAccess(user.id, true);
+    acl.setWriteAccess(user.id, true);
+    acl.setRoleWriteAccess("admins", true);
+    acl.setRoleReadAccess("admins", true);
+    return acl;
   }
 
   async subscriptions(): Promise<Subscription[]> {

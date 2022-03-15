@@ -49,7 +49,7 @@
           <va-button color="primary" @click.prevent="showChannels">
             My Channels
           </va-button>
-          under the My Account menu above.
+          to configure channels to receive alerts and then return here to Subscribe!
         </h2>
       </div>
     </div>
