@@ -104,6 +104,7 @@ import { computed, inject, onMounted, ref } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
 import { SiteStatus } from "@/notifi_types";
 import { appModule } from "@/store/app";
+import { useProtocolsStore } from "@/store/pinia_protocols";
 
 
 /* global defineProps, defineEmits */
@@ -201,6 +202,7 @@ const appendProtocols = async (): Promise<void> => {
   fetchProtocols();
 };
 const fetchProtocols = async (refresh?: boolean): Promise<void> => {
+  const protocolsStore = useProtocolsStore();
   loading.value = true;
   if (searchFavorites.value) {
     const u = Moralis.User.current();

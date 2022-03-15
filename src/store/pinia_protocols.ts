@@ -1,3 +1,4 @@
+import { useUserStore } from '@/store/pinia_user';
 import { Protocol } from "@/models/Protocol";
 import { Position } from "@/models/Position";
 import { PositionCache } from "@/notifi_types";
@@ -7,6 +8,7 @@ export const useProtocolsStore = defineStore("protocols", {
   state: () => {
     return {
       positions: {} as Record<string, PositionCache>,
+      favorites: [] as Protocol[],
     };
   },
   getters: {
@@ -27,6 +29,24 @@ export const useProtocolsStore = defineStore("protocols", {
     },
   },
   actions: {
+    async toggleFavorite(aProtocol: Protocol) {
+      const fav = await aProtocol.toggleFavorite();
+      if (fav) {
+        this.favorites.push(aProtocol);
+      } else {
+        const idx = this.favorites.findIndex((f) => f.id == aProtocol.id);
+        if (idx) this.favorites.splice(idx, 1);
+      }
+    },
+    async getFavorites(): Promise<Protocol[]> {
+      const userStore = useUserStore();
+      const user = userStore.user;
+      if (!user) return [];
+      const rel = user.relation("FavoriteProtocols");
+      const favs = await rel.query().find();
+      this.favorites = favs;
+      return favs;
+    },
     savePositions({
       protocol,
       positions,
