@@ -128,7 +128,7 @@ const fetchBySubscriptionID = async (subID: string): Promise<Subscription> => {
     activeSubscription.value = sub;
     const prot: Protocol = sub.protocol;
     await prot.fetch();
-    intSelectedProtocol.value = prot;
+    selectedProtocol.value = prot;
     contractID.value = sub.contract.id;
     contractActivityID.value = sub.contractActivity.id;
     await fetchContractActivities();
@@ -140,10 +140,6 @@ const fetchBySubscriptionID = async (subID: string): Promise<Subscription> => {
 
 const fetching = ref(false);
 const activeSubscription = ref<Subscription>();
-
-if (props.subscriptionID) {
-  await fetchBySubscriptionID(props.subscriptionID);
-}
 
 const contractID = ref<string | undefined>();
 const contractActivityID = ref<string | undefined>();
@@ -317,6 +313,11 @@ if (props.subscriptionID) {
 
 // eslint-disable-next-line no-undef
 defineExpose({ irrigate, message, validSubmit, canComplete });
+
+if (props.subscriptionID) {
+  await fetchBySubscriptionID(props.subscriptionID);
+}
+
 </script>
 
 <style scoped>

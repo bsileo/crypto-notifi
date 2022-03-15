@@ -8,9 +8,12 @@
       ></ChannelListItem>
     </va-inner-loading>
   </va-list>
+  <div v-if="noChannels" class="flex pl-2 pt-3">
+    <h3>Click Add below to create your first channel.</h3>
+  </div>
   <div class="flex pl-2 pt-3">
     <va-button
-      @click.prevent="this.showAdd = true"
+      @click.prevent="showAdd = true"
       :disabled="addNotAllowed"
       size="medium"
       icon-right="add"
@@ -34,7 +37,7 @@
       />
       <Twilio
         v-if="newChannel == 'twilio'"
-        @providerData="this.setProviderData"
+        @providerData="setProviderData"
       ></Twilio>
       <Discord
         v-if="newChannel == 'discord'"
@@ -88,6 +91,8 @@ const providerData = ref<ProviderData>({ to: undefined });
 const name = ref("");
 const intNewChannel = ref("");
 const showAdd = ref(false);
+
+const noChannels = computed(() => channels.value.length == 0);
 
 const newChannel = computed({
   get() {

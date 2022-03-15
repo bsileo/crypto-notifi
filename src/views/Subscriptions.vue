@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!showNoSubscriptions" class="row pb-1 pt-1">
+  <div v-if="!showNoSubscriptions && !showNoChannels" class="row pb-1 pt-1">
     <va-input class="flex xs3" label="Search Names" v-model="search"></va-input>
     <div class="flex xs4">
       <ProtocolSelector
@@ -82,9 +82,8 @@ import Moralis from "moralis";
 import { computed, onMounted, ref } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
-import { userModule } from "@/store/user";
-import { channelsModule } from "@/store/channels";
 import { useSubscriptionsStore } from "@/store/pinia_subscriptions";
+import { useUserChannelsStore } from "@/store/pinia_userChannel";
 import { useRouter } from "vue-router";
 import { Group } from "@/models/Group";
 import { storeToRefs } from "pinia";
@@ -141,7 +140,8 @@ const subscriptions = computed((): Subscription[] => {
   return subs;
 });
 const showNoChannels = computed((): boolean => {
-  return !loading && channelsModule.MYCHANNELS.length == 0;
+  const userChannelsStore = useUserChannelsStore();
+  return !loading.value && userChannelsStore.userChannels.length == 0;
 });
 const showNoSubscriptions = computed((): boolean => {
   return (
@@ -156,14 +156,14 @@ const addSubscription = (): void => {
   router.push({ name: "SubscriptionNew" });
 };
 const showChannels = (): void => {
-  emit("showChannels");
+  router.push({ name: "My Channels" });
 };
 const setSearchProtocols = (prots: Protocol[]): void => {
   searchProtocols.value = prots;
 };
 
 const allowAdd = computed((): boolean => {
-  return channelsModule.myChannels.length > 0;
+  return true;
 });
 </script>
 

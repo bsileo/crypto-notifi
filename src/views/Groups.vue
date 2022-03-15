@@ -84,7 +84,7 @@
       <h2>
         There are no Groups yet.
         <va-button
-          to="/groups/add"
+          @click.prevent="addGroup"
           icon-right="add"
           size="large"
           color="success"
