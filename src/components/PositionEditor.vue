@@ -25,27 +25,27 @@
   </div>
   <div class="row">
     <va-switch size="small" v-model="valueChk" class="flex xs1"></va-switch>
-    <va-input
-      v-model="lowValue"
-      class="flex xs3"
-      label="Less Than"
-      :rules="lowRules"
-      :error="newLowPositionViolated"
-      @change="setLowPercent"
-    ></va-input>
-    <va-slider
-      v-model="lowValuePercent"
-      :track-label="lowValueLabel + '%'"
-      track-label-visible
-      :max="maxValue"
-      :min="minValue"
-      class="flex xs1"
-    >
-    </va-slider>
-
+    <div class="flex xs4">
+      <va-slider
+        v-model="lowValuePercent"
+        :track-label="lowValueLabel + '%'"
+        track-label-visible
+        :max="maxValue"
+        :min="minValue"
+      >
+      </va-slider>
+      <va-input
+        v-model="lowValue"
+        label="Less Than"
+        :rules="lowRules"
+        :error="newLowPositionViolated"
+        @change="setLowPercent"
+      ></va-input>
+    </div>
     <va-input
       v-model="currentValue"
       readonly
+      style="align-self: end"
       class="flex xs3"
       :messages="currentValueMessages"
       label="Current Value"
@@ -59,22 +59,22 @@
         /></va-popover>
       </template>
     </va-input>
-    <va-slider
-      v-model="highValuePercent"
-      :track-label="highValuePercent + '%'"
-      track-label-visible
-      :max="maxValue"
-      :min="minValue"
-      class="flex xs1"
-    ></va-slider>
-    <va-input
-      v-model="highValue"
-      label="Greater Than"
-      class="flex xs3"
-      :rules="highRules"
-      :error="newHighPositionViolated"
-      @change="setHighPercent"
-    ></va-input>
+    <div class="flex xs4">
+      <va-slider
+        v-model="highValuePercent"
+        :track-label="highValuePercent + '%'"
+        track-label-visible
+        :max="maxValue"
+        :min="minValue"
+      ></va-slider>
+      <va-input
+        v-model="highValue"
+        label="Greater Than"
+        :rules="highRules"
+        :error="newHighPositionViolated"
+        @change="setHighPercent"
+      ></va-input>
+    </div>
   </div>
   <div :v-if="false" class="row pt-3">
     <SubscriptionFrequency
