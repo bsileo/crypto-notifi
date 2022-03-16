@@ -11,7 +11,7 @@
     <div class="flex xs2">
       <GroupPicker :editOnly="true" v-model="searchGroup"></GroupPicker>
     </div>
-    <div class="flex xs1 offset--xs2">
+    <div class="flex xs2 offset--xs1">
       <va-button icon="refresh" color="secondary" @click="refresh"></va-button>
       <va-popover message="Add a new Subscription">
         <va-button
