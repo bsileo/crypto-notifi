@@ -1,7 +1,6 @@
 import EmailCategory from "./EmailCategoryWidget.ce.vue";
 import Test from "./Test.ce.vue";
-import EmailCategory2 from "./EmailCategoryWidget.vue";
-import { createApp, defineCustomElement, defineComponent } from "vue";
+import { createApp, defineCustomElement } from "vue";
 import "vuestic-ui/dist/vuestic-ui.css";
 import MoralisConfig from "@/config/moralis";
 import { VuesticPlugin } from "vuestic-ui";

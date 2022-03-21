@@ -2,31 +2,21 @@
   <div class="container p-3 gutter--md" style="max-width: 300px">
     <div class="container">
       <div class="row pb-2">
-        <h3>Sign up for Alerts</h3>
+        Email Address
+        <input label="Email Address" v-model="email" />
       </div>
       <div class="row pb-2">
-        <va-input label="Email Address" v-model="email"></va-input>
-      </div>
-      <div class="row pb-2">
-        <va-select
-          v-model="selectedType"
-          label="Category"
-          value-by="id"
-          track-by="id"
-          text-by="name"
-          :options="types"
-        >
-        </va-select>
+        Category
+        <select v-model="selectedType">
+          <option v-for="type in types" :key="type.id" :value="type.id">
+            {{ type.name }}
+          </option>
+        </select>
       </div>
       <div>
-        <va-button
-          size="medium"
-          color="primary"
-          :disabled="!allowSubscribe"
-          @click.prevent="subscribe"
-        >
+        <button :disabled="!allowSubscribe" @click.prevent="subscribe">
           Subscribe
-        </va-button>
+        </button>
       </div>
       <div>
         <va-alert closeable v-model="showAlert" dense>
@@ -34,7 +24,6 @@
         </va-alert>
       </div>
     </div>
-    <va-divider></va-divider>
     <p class="powered">
       Powered by <a href="https://cryptonotifi.xyz">Notifi</a>
     </p>
@@ -47,25 +36,18 @@ import { SubscriptionType } from "@/models/SubscriptionType";
 import { NotifiUser } from "@/models/NotifiUser";
 import Moralis from "moralis";
 import { computed, onMounted, ref } from "vue";
-import {
-  VaInput,
-  VaButton,
-  VaSelect,
-  VaIcon,
-  VaAlert,
-  VaDivider,
-} from "vuestic-ui";
+import { VaAlert } from "vuestic-ui";
 
 interface UserResult {
   user: NotifiUser;
-  status: "new" | "existing";
+  status: "new" | "existing" | "failed";
 }
 
 export default {
   name: "EmailCategoryWidget",
 
   // eslint-disable-next-line vue/no-unused-components
-  components: { VaInput, VaButton, VaSelect, VaIcon, VaAlert, VaDivider },
+  components: { VaAlert },
   props: {
     protocol: { type: String, required: true },
   },
@@ -128,7 +110,9 @@ export default {
           u,
           this.selectedSubscriptionType
         );*/
-        if (stat == "new") {
+        if (stat == "failed") {
+          alertMessage.value = "Process failed. Please try again.";
+        } else if (stat == "new") {
           alertMessage.value =
             "Subscription Created. Please verify your email.";
         } else {
@@ -169,11 +153,13 @@ export default {
       user.set("email", email.value);
 
       try {
-        await user.signUp();
+        const res = await user.signUp();
         console.log("Sign-up complete!");
+        console.log(res);
       } catch (error: any) {
         // Show the error message somewhere and let the user try again.
         alert("Error: " + error.code + " " + error.message);
+        return { user: user, status: "failed" };
       }
       return { user: user, status: "new" };
     };

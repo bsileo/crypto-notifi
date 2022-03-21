@@ -1,6 +1,5 @@
 <template>
-  <div>Hello from Brad</div>
-  <EmailCategory2></EmailCategory2>
+  <div>Crypto Notifi</div>
 </template>
 
 <script lang="ts">
@@ -9,6 +8,6 @@ import EmailCategory2 from "./EmailCategoryWidget.vue";
 
 export default defineComponent({
   name: "App",
-  components: { EmailCategory2 },
+  components: { },
 });
 </script>

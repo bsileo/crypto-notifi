@@ -28,3 +28,6 @@ server.log
 deploy-godaddy.js
 .firebaserc
 .firebase/*
+*.d.ts
+*.js.map
+*.js

@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "..\\notifi-moralis-cloud"
+		},
+		{
+			"path": "..\\notifi-widgets"
 		}
 	],
 	"settings": {

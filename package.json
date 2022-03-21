@@ -1,7 +1,8 @@
 {
   "name": "crypto-notifi",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
+  "types":  "./typings.d.ts",
   "scripts": {
     "serve": "vue-cli-service serve --host localhost",
     "build": "vue-cli-service build",

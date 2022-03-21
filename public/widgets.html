@@ -15,9 +15,13 @@
     <title>Crypto Notifi</title>
   </head>
   <body>
+    <script type="module" src="http://localhost:4173/index.es.js"></script>
+    <script>
+      register()
+    </script>
+    <h1>Custom Element Demo 1</h1>
+    <dark-mode-switch></dark-mode-switch>
     <notifi-email-category protocol="hF1ZliReVGl5Etx41koLcmGC"></notifi-email-category>
-    <h1>Testing 1</h1>
-    <test-component></test-component>
     <noscript>
       <strong
         >We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work
@@ -25,7 +29,6 @@
         continue.</strong
       >
     </noscript>
-    <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>
 </html>
