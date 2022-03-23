@@ -14,7 +14,7 @@
 import { Chain } from "@/models/Contract";
 import { computed, ref } from "vue";
 import { Protocol } from "@/models/Protocol";
-import { contractsModule } from "@/store/contracts";
+import { useContractsStore } from "@/store/pinia_contracts";
 
 // eslint-disable-next-line no-undef
 const emit = defineEmits(["selected"]);
@@ -31,12 +31,15 @@ const valid = computed(() => {
 const selected = ref<Chain>(props.selectedChain as Chain);
 const label = "Chain";
 const messages = props.required ? "Required" : "";
-let initialChains: Chain[] = contractsModule.CHAINS;
+
+const contractsStore = useContractsStore();
+let initialChains: Chain[] = contractsStore.chains;
 if (props.protocol && props.protocol.chains) {
   // eslint-disable-next-line vue/no-setup-props-destructure
   initialChains = props.protocol.chains;
 }
 const chains = ref<Chain[]>(initialChains);
+
 const select = (chain: Chain) => {
   emit("selected", chain);
 };

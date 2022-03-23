@@ -88,9 +88,10 @@ import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
 import { SidebarDescriptor } from "@/notifi_types";
 import { onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
-import { appModule } from "@/store/app";
+import { useAppStore } from "@/store/pinia_app";
 
 const router = useRouter();
+const appStore = useAppStore();
 const moralis: any = inject("Moralis");
 const userIsManager = computed((): boolean => {
   const u = moralis.User.current();
@@ -189,12 +190,12 @@ const sidebarMinimizedWidth = ref<undefined | string | number>(undefined);
 
 const isMobile = ref(false);
 const isTablet = ref(false);
-const isSidebarMinimized = computed(() => appModule.isSidebarMinimized);
+const isSidebarMinimized = computed(() => appStore.isSidebarMinimized);
 const checkIsTablet = () => window.innerWidth <= tabletBreakPointPX;
 const checkIsMobile = () => window.innerWidth <= mobileBreakPointPX;
 
 const onResize = () => {
-  appModule.SidebarMinimized(checkIsTablet());
+  appStore.isSidebarMinimized = checkIsTablet();
 
   isMobile.value = checkIsMobile();
   isTablet.value = checkIsTablet();
@@ -213,7 +214,7 @@ onBeforeUnmount(() => {
 onBeforeRouteUpdate(() => {
   if (checkIsTablet()) {
     // Collapse sidebar after route change for Mobile
-    appModule.SidebarMinimized(true);
+    appStore.isSidebarMinimized = true;
   }
 });
 
@@ -224,12 +225,12 @@ const isFullScreenSidebar = computed(
 );
 
 const onCloseSidebarButtonClick = () => {
-  appModule.SidebarMinimized(true);
+  appStore.isSidebarMinimized = true;
 };
 
 const minimized = computed({
-  get: () => appModule.isSidebarMinimized,
-  set: (value) => appModule.SidebarMinimized(value),
+  get: () => appStore.isSidebarMinimized,
+  set: (value) => (appStore.isSidebarMinimized = value),
 });
 
 const logout = async () => {

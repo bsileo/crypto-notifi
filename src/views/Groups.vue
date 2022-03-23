@@ -100,7 +100,6 @@ import GroupView from "@/components/GroupView.vue";
 import SubscriptionListItem from "@/components/SubscriptionListItem.vue";
 import { Group } from "@/models/Group";
 import { Subscription } from "@/models/Subscription";
-import { userModule } from "@/store/user";
 import { load } from "dotenv";
 import Moralis from "moralis";
 import { computed, onMounted, ref } from "vue";

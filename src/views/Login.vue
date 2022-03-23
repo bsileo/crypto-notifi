@@ -53,46 +53,42 @@
   <Footer></Footer>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Moralis from "moralis";
-import { defineComponent } from "vue";
 import { NotifiUser } from "../models/NotifiUser";
 import { userModule } from "../store/user";
-import ProtocolSelector from "@/components/ProtocolSelector.vue";
+import { useUserStore } from "@/store/pinia_user";
 import Footer from "@/components/footer.vue";
-import Header from "@/components/header.vue";
-import Chain from "moralis";
+import { useRouter } from "vue-router";
 
-export default defineComponent({
-  name: "Login",
-  components: { ProtocolSelector, Header, Footer },
-  methods: {
-    async doLogin(): Promise<void> {
-      try {
-        const user = await Moralis.authenticate({
-          signingMessage: "Sign in to Notifi",
-        });
-        /*const user = await Moralis.authenticate({
+const router = useRouter();
+const userStore = useUserStore();
+
+const doLogin = async (): Promise<void> => {
+  try {
+    const user = await Moralis.authenticate({
+      signingMessage: "Sign in to Notifi",
+    });
+    /*const user = await Moralis.authenticate({
           provider: "web3Auth",
           theme: "light",
           chainId: 0xa86a,
           clientId:
             "BNAltJRis6TNpbJxvM4WwENUZbgdzE5sGXZ8bCYYHEXlxTrtLVVxwe6WrX80y6IvH14l_clPo_Eqs7ay3TLGKow",
         });*/
-        if (user) {
-          const q = new Moralis.Query(NotifiUser);
-          const newUser = await q.get(user.id);
-          user.setACL(new Moralis.ACL(user));
-          newUser.setACL(new Moralis.ACL(newUser));
-          userModule.SET_USER(user);
-          this.$router.push({ name: "Home" });
-        }
-      } catch (error) {
-        console.log({ error });
-      }
-    },
-  },
-});
+    if (user) {
+      const q = new Moralis.Query(NotifiUser);
+      const newUser = await q.get(user.id);
+      user.setACL(new Moralis.ACL(user));
+      newUser.setACL(new Moralis.ACL(newUser));
+      userModule.SET_USER(user);
+      userStore.SET_USER(user);
+      router.push({ name: "Home" });
+    }
+  } catch (error) {
+    console.log({ error });
+  }
+};
 </script>
 
 <style scoped>

@@ -107,11 +107,11 @@ import { Subscription } from "@/models/Subscription";
 import { Protocol } from "@/models/Protocol";
 import { ContractActivity } from "@/models/ContractActivity";
 
-import { contractsModule } from "@/store/contracts";
 import { Contract } from "@/models/Contract";
 import ProtocolSelector from "./ProtocolSelector.vue";
 import ProtocolInfo from "./ProtocolInfo.vue";
 import { useRoute } from "vue-router";
+import { useContractsStore } from "@/store/pinia_contracts";
 
 /* global defineProps  defineEmits */
 const props = defineProps({
@@ -168,8 +168,7 @@ const voteFor = async (): Promise<void> => {
 };
 
 watch(selectedProtocol, (): void => {
-  contractID.value = "";
-  contractActivityID.value = "";
+  fetchContracts();
 });
 
 watch(contractID, () => {
@@ -177,7 +176,7 @@ watch(contractID, () => {
 });
 
 const selectedContract = computed((): Contract | undefined => {
-  return contracts.value.find((e) => e.id == contractID.value);
+  return contracts.value?.find((e) => e.id == contractID.value);
 });
 
 const selectedContractActivity = computed((): ContractActivity | undefined => {
@@ -231,14 +230,8 @@ const canComplete = computed((): boolean => {
   return selectedProtocol.value != undefined && contracts.value.length > 0;
 });
 
-const contracts = computed((): Contract[] => {
-  if (selectedProtocol.value) {
-    return contractsModule.allContracts.filter(
-      (c) => c.get("protocol").id == selectedProtocol.value?.id
-    );
-  }
-  return [];
-});
+const contracts = ref<Contract[]>();
+
 const validSubmit = computed((): boolean => {
   return validContractSubmit.value;
 });
@@ -269,6 +262,21 @@ const message = computed((): string => {
   return msg;
 });
 
+const fetchContracts = async (): Promise<void> => {
+  let res: Contract[] = [];
+  const contractsStore = useContractsStore();
+  let curFound = false;
+  if (selectedProtocol.value) {
+    res = await contractsStore.getProtocolContracts(selectedProtocol.value);
+    for (let i = 0; i < res.length; i = i + 1) {
+      if (res[i].id == contractID.value) curFound = true;
+    }
+  }
+  if (!curFound) contractID.value = undefined;
+  contracts.value = res;
+  fetchContractActivities();
+};
+
 const fetchContractActivities = async (): Promise<void> => {
   const res: ContractActivity[] = [];
   const ci = selectedContract.value;
@@ -284,6 +292,7 @@ const fetchContractActivities = async (): Promise<void> => {
   if (!curFound) contractActivityID.value = undefined;
   contractActivities.value = res;
 };
+
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const irrigate = (s: Subscription): void => {

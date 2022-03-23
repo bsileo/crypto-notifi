@@ -103,7 +103,7 @@ import Moralis from "moralis";
 import { computed, inject, onMounted, ref } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
 import { SiteStatus } from "@/notifi_types";
-import { appModule } from "@/store/app";
+import { useAppStore } from "@/store/pinia_app";
 import { useProtocolsStore } from "@/store/pinia_protocols";
 
 
@@ -125,8 +125,10 @@ const props = defineProps({
   manager: { type: Boolean, required: false, default: false },
 });
 
+const appStore = useAppStore();
+
 const intSearch = ref("");
-const intSearchFavorites = ref(appModule.protocolSearchFavorites);
+const intSearchFavorites = ref(appStore.protocolSearchFavorites);
 const selectedProtocol = ref<Protocol | undefined>(undefined);
 const selectedProtocols = ref<Protocol[]>([]);
 const query = ref<any>(undefined);
@@ -172,7 +174,7 @@ const searchFavorites = computed({
   },
   set(newVal: boolean) {
     intSearchFavorites.value = newVal;
-    appModule.UpdateProtocolSearchFavorites(newVal);
+    appStore.protocolSearchFavorites = newVal;
     fetchProtocols(true);
   },
 });

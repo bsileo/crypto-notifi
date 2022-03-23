@@ -96,7 +96,6 @@ import { userModule } from "@/store/user";
 import { Subscription } from "@/models/Subscription";
 
 import Moralis from "moralis";
-import { contractsModule } from "@/store/contracts";
 import { Chain } from "@/models/Contract";
 import { NotifiUser } from "@/models/NotifiUser";
 import ContractInput from "./contractInput.vue";
@@ -167,9 +166,7 @@ const showValue = computed((): boolean => {
 const showChain = computed((): boolean => {
   return true;
 });
-const chains = computed((): Chain[] => {
-  return contractsModule.CHAINS;
-});
+
 const showFrom = computed((): boolean => {
   return true;
 });

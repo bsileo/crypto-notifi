@@ -2,7 +2,6 @@ import { SubscriptionLimiter } from "./lib/subscriptionLimits";
 import { ContractActivity } from "./ContractActivity";
 import { Chain, Contract } from "./Contract";
 import Moralis from "moralis";
-import { contractsModule } from "@/store/contracts";
 import { userModule } from "@/store/user";
 import { TokenBalance } from "@/models/NotifiUser";
 import { SubscriptionType } from "./SubscriptionType";
@@ -19,6 +18,7 @@ import {
 } from "@/notifi_types";
 import { Subscription } from "./Subscription";
 import { useProtocolsStore } from "@/store/pinia_protocols";
+import { useContractsStore } from '@/store/pinia_contracts';
 
 type RefreshCallbackFunction = (obj: any) => void;
 export class Protocol extends SubscriptionLimiter {
@@ -64,7 +64,8 @@ export class Protocol extends SubscriptionLimiter {
 
   get chains(): Chain[] {
     const chainNames = this.get("chains");
-    const chs = contractsModule.CHAINS;
+    const contractsStore = useContractsStore();
+    const chs = contractsStore.chains;
     const res = [] as Chain[];
     if (!chainNames) return res;
     chainNames.forEach((cn: string) => {

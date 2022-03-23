@@ -38,15 +38,16 @@
 
 <script setup lang="ts">
 import { computed, inject, ref } from "vue";
-import { appModule } from "@/store/app";
+import { useAppStore } from "@/store/pinia_app";
 import VaIconMenuCollapsed from "@/components/icons/VaIconMenuCollapsed.vue";
 import { useColors } from "vuestic-ui";
 
+const appStore = useAppStore();
 const { getColors } = useColors();
 const colors = computed(() => getColors());
 const minimized = computed({
-  get: () => appModule.isSidebarMinimized,
-  set: (value) => appModule.SidebarMinimized(value),
+  get: () => appStore.isSidebarMinimized,
+  set: (value) => (appStore.isSidebarMinimized = value),
 });
 
 const moralis: any = inject("Moralis");
