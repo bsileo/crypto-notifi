@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import { UserChannel } from "@/models/Channel";
-import { channelsModule } from "@/store/channels";
+import { useUserChannelsStore } from "@/store/pinia_userChannel";
 import { computed, getCurrentInstance, ref } from "vue";
 import { onBeforeRouteUpdate, useRoute, useRouter } from "vue-router";
 
@@ -122,6 +122,7 @@ const props = defineProps({
   returnPath: { type: String, required: false, default: "/subscriptions" },
 });
 const route = useRoute();
+const userChannelsStore = useUserChannelsStore();
 
 let sub: Subscription | undefined = undefined;
 if (props.subscriptionID) sub = await Subscription.fetch(props.subscriptionID);
@@ -198,7 +199,7 @@ const activeSection = computed((): any => {
 });
 
 const myChannels = computed((): channelInfo[] => {
-  return channelsModule.myChannels.map((v) => {
+  return userChannelsStore.activeChannels.map((v) => {
     const p = v.providerName;
     return {
       name: `${v.attributes.name} - (${p})`,

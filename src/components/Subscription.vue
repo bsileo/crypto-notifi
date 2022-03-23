@@ -179,7 +179,7 @@
 import { computed, defineComponent, ref, watchEffect } from "vue";
 import { Subscription } from "@/models/Subscription";
 import { UserChannel } from "@/models/Channel";
-import { channelsModule } from "@/store/channels";
+import { useUserChannelsStore } from "@/store/pinia_userChannel";
 import {
   SubscriptionTypes,
   SubscriptionTypesName,
@@ -203,9 +203,10 @@ export default defineComponent({
     const channels = ref([] as UserChannel[]);
 
     const activeSubscription = ref<Subscription>(new Subscription());
+    const userChannelsStore = useUserChannelsStore();
 
     const availableChannels = computed(() => {
-      const myChannels = channelsModule.myChannels;
+      const myChannels = userChannelsStore.activeChannels;
       const chans: UserChannel[] = [];
       for (let i = 0; i < myChannels.length; i++) {
         let cand = myChannels[i];

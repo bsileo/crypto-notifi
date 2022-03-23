@@ -1,4 +1,3 @@
-import { channelsModule } from "./channels";
 import { Chain } from "@/models/Contract";
 import Moralis from "moralis";
 import {
@@ -48,7 +47,7 @@ export class UserModule extends VuexModule {
   SET_USER(user: NotifiUser): void {
     this._user = user;
     //this.fetchUserTokens();
-    channelsModule.setupChannels();
+    //channelsModule.setupChannels();
   }
 
   @Mutation

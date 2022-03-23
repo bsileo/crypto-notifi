@@ -6,31 +6,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-import { NotifiUser } from "@/models/NotifiUser";
-import { userModule } from "@/store/user";
-import { computed } from "vue";
+<script setup lang="ts">
+import { provide } from "vue";
+import { useUserStore } from "@/store/pinia_user";
 import Footer from "@/components/footer.vue";
 import Header from "@/components/header.vue";
 
-export default defineComponent({
-  name: "Home",
-  components: {
-    Header,
-    Footer,
-  },
-  data() {
-    return {};
-  },
-  provide() {
-    return {
-      user: computed(() => userModule.user as NotifiUser),
-    };
-  },
-  computed: {},
-  methods: {},
-});
+const userStore = useUserStore();
+provide("user", userStore.user);
 </script>
 
 <style scoped>

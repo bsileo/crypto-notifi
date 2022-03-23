@@ -48,7 +48,6 @@ import { UserChannel } from "@/models/Channel";
 import { Subscription } from "@/models/Subscription";
 import { computed, onMounted, ref, watchEffect } from "vue";
 import { useUserChannelsStore } from "@/store/pinia_userChannel";
-import { channelsModule } from "@/store/channels";
 import { storeToRefs } from "pinia";
 
 const userChannelsStore = useUserChannelsStore();

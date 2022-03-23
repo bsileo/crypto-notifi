@@ -1,5 +1,5 @@
 import { NotifiUser } from "@/models/NotifiUser";
-import { channelsModule } from "@/store/channels";
+import { useUserChannelsStore } from "@/store/pinia_userChannel";
 import Moralis from "moralis";
 import { Subscription } from "@/models/Subscription";
 import {
@@ -116,7 +116,9 @@ export class UserChannel extends Moralis.Object {
   }
 
   get providerName(): ChannelNames {
-    const res = channelsModule.channels.find((e) => e.id == this.providerID);
+    const ucStore = useUserChannelsStore();
+    const chans = ucStore.definedChannels
+    const res = chans.find((e) => e.id == this.providerID);
     if (res) {
       return res.name;
     }
