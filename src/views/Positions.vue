@@ -37,137 +37,127 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import Moralis from "moralis";
-import { computed, defineComponent, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import ProtocolInfo from "@/components/ProtocolInfo.vue";
 import { Protocol } from "@/models/Protocol";
-import { userModule } from "@/store/user";
+import { useUserStore } from "@/store/pinia_user";
 
-export default defineComponent({
-  name: "Positions",
-  components: { ProtocolInfo },
-  props: {
-    showAdd: Boolean,
-  },
-  setup(props, { emit }) {
-    const rawProtocols = ref<Protocol[]>([]);
-    const intSearch = ref("");
-    const favorites = ref(true);
-    const queryLimit = ref(25);
-    const protocolsLoading = ref(false);
-    const rawCount = ref(0);
+/* global defineProps, defineEmits */
+const props = defineProps({
+  showAdd: { type: Boolean, required: false, default: false },
+});
 
-    const showNoPositions = computed(() => {
-      return rawCount.value == 0 && !protocolsLoading.value;
-    });
+const userStore = useUserStore();
 
-    return {
-      rawProtocols,
-      favorites,
-      intSearch,
-      queryLimit,
-      rawCount,
-      protocolsLoading,
-      showNoPositions,
-    };
-  },
-  async created() {
-    this.fetchProtocols();
-  },
-  emits: ["subscribe"],
-  computed: {
-    protocols(): Protocol[] {
-      let prots = this.rawProtocols;
-      return prots;
-    },
+const rawProtocols = ref<Protocol[]>([]);
+const intSearch = ref("");
+const favorites = ref(true);
+const queryLimit = ref(25);
+const protocolsLoading = ref(false);
+const rawCount = ref(0);
 
-    search: {
-      get(): string {
-        return this.intSearch;
-      },
-      set(newVal: string) {
-        this.intSearch = newVal;
-        this.rawProtocols.length = 0;
-        this.fetchProtocols();
-      },
-    },
+const showNoPositions = computed(() => {
+  return rawCount.value == 0 && !protocolsLoading.value;
+});
+
+onMounted(async () => {
+  fetchProtocols();
+});
+
+const protocols = computed((): Protocol[] => {
+  let prots = rawProtocols.value;
+  return prots;
+});
+
+const search = computed({
+  get(): string {
+    return intSearch.value;
   },
-  methods: {
-    edit(id: string): void {
-      console.log(`Edit ${id}`);
-    },
-    remove(id: string): void {
-      console.log(`remove ${id}`);
-      const query = new Moralis.Query("Subscription");
-      query.get(id).then((s: { destroy: () => Promise<unknown> }) => {
-        s.destroy().then((oldS) => {
-          console.log(`Success remove ${oldS}`);
-        });
-      });
-    },
-    refresh() {
-      this.rawProtocols.length = 0;
-      this.fetchProtocols();
-    },
-    async appendProtocols(): Promise<void> {
-      //console.log("Append");
-      this.fetchProtocols();
-    },
-    async fetchProtocols(): Promise<void> {
-      if (!userModule.user) return;
-      this.protocolsLoading = true;
-      const rel = userModule.user.relation("FavoriteProtocols");
-      const query = rel.query();
-      this.rawCount = await query.count();
-      if (this.search) {
-        query.matches("name", this.search);
-      }
-      query.limit(this.queryLimit);
-      query.skip(this.rawProtocols.length);
-      let subs = await query.find();
-      this.subscribe(query);
-      this.rawProtocols.push(...subs);
-      this.protocolsLoading = false;
-    },
-    async subscribe(query: any) {
-      const subscription = await query.subscribe();
-      subscription.on("create", (sub: Protocol) => {
-        this.rawProtocols.push(sub);
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("update", (sub: Protocol) => {
-        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawProtocols.splice(index, 1, sub);
-        }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("enter", (sub: Protocol) => {
-        console.log("Positions - Protocols object entered");
-        this.rawProtocols.push(sub);
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("leave", (sub: Protocol) => {
-        console.log("Positions - Protocols object left");
-        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawProtocols.splice(index, 1);
-        }
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      subscription.on("delete", (sub: Protocol) => {
-        const index = this.rawProtocols.findIndex((e) => e.id == sub.id);
-        if (index > -1) {
-          this.rawProtocols.splice(index, 1);
-        }
-      });
-      subscription.on("close", () => {
-        console.log("Protocols subscription closed");
-      });
-    },
+  set(newVal: string) {
+    intSearch.value = newVal;
+    rawProtocols.value.length = 0;
+    fetchProtocols();
   },
 });
+
+const edit = (id: string): void => {
+  console.log(`Edit ${id}`);
+};
+
+const remove = (id: string): void => {
+  console.log(`remove ${id}`);
+  const query = new Moralis.Query("Subscription");
+  query.get(id).then((s: { destroy: () => Promise<unknown> }) => {
+    s.destroy().then((oldS) => {
+      console.log(`Success remove ${oldS}`);
+    });
+  });
+};
+
+const refresh = () => {
+  rawProtocols.value.length = 0;
+  fetchProtocols();
+};
+
+const appendProtocols = async (): Promise<void> => {
+  fetchProtocols();
+};
+
+const fetchProtocols = async (): Promise<void> => {
+  if (!userStore.user) return;
+  protocolsLoading.value = true;
+  const rel = userStore.user.relation("FavoriteProtocols");
+  const query = rel.query();
+  rawCount.value = await query.count();
+  if (search.value) {
+    query.matches("name", search.value);
+  }
+  query.limit(queryLimit.value);
+  query.skip(rawProtocols.value.length);
+  let subs = await query.find();
+  subscribe(query);
+  rawProtocols.value.push(...subs);
+  protocolsLoading.value = false;
+};
+
+const subscribe = async (query: any) => {
+  const subscription = await query.subscribe();
+  subscription.on("create", (sub: Protocol) => {
+    rawProtocols.value.push(sub);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("update", (sub: Protocol) => {
+    const index = rawProtocols.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawProtocols.value.splice(index, 1, sub);
+    }
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("enter", (sub: Protocol) => {
+    console.log("Positions - Protocols object entered");
+    rawProtocols.value.push(sub);
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("leave", (sub: Protocol) => {
+    console.log("Positions - Protocols object left");
+    const index = rawProtocols.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawProtocols.value.splice(index, 1);
+    }
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  subscription.on("delete", (sub: Protocol) => {
+    const index = rawProtocols.value.findIndex((e) => e.id == sub.id);
+    if (index > -1) {
+      rawProtocols.value.splice(index, 1);
+    }
+  });
+  subscription.on("close", () => {
+    console.log("Protocols subscription closed");
+  });
+};
 </script>
 
 <style scoped>

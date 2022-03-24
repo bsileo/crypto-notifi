@@ -120,6 +120,7 @@ import { useRoute, useRouter } from "vue-router";
 /* global defineProps, defineEmits */
 const props = defineProps({
   position: { type: Position, required: true },
+  subscription: { type: Subscription, required: false },
   showChannels: { type: Boolean, required: false, default: true },
   showButtons: { type: Boolean, required: false, default: true },
   showName: { type: Boolean, required: false, default: true },
@@ -130,7 +131,7 @@ const emit = defineEmits(["saved", "canceled", "launched"]);
 const route = useRoute();
 const router = useRouter();
 
-const subscription = ref<Subscription | undefined>(props.position.subscription);
+const subscription = ref<Subscription | undefined>(props.subscription);
 const channels = ref<UserChannel[]>([]);
 const activePosition = ref<Position>(props.position);
 
@@ -139,7 +140,9 @@ onMounted(async () => {
 });
 
 const setupValues = async (): Promise<void> => {
-  subscription.value = await activePosition.value.fetchSubscription();
+  if (!subscription.value) {
+    subscription.value = await activePosition.value.fetchSubscription();
+  }
   const low =
     subscription.value != undefined &&
     subscription.value.positionLow !== undefined;

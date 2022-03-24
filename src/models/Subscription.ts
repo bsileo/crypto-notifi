@@ -209,11 +209,13 @@ export class Subscription extends Moralis.Object {
   }
 
   get positionLow(): number | undefined {
-    return this.get("positionLow");
+    const pl = this.get("positionLow");
+    return pl;
   }
   set positionLow(val: number | undefined) {
-    if (val) this.set("positionLow", parseFloat(val.toString()));
-    else this.unset("positionLow");
+    if (val) {
+      this.set("positionLow", parseFloat(val.toString()));
+    } else this.unset("positionLow");
   }
   get positionHigh(): number | undefined {
     return this.get("positionHigh");
